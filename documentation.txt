@@ -1,0 +1,6 @@
+DOCUMENTATION FOR FT_IRC
+
+Git project:
+https://github.com/levensta/IRC-Server.git
+
+

@@ -9,7 +9,7 @@
 # Channels
 - 1 o mas de un cliente puede entrar a un canal
 - Cuando el primer usuario entra se crea cuando el ultimo se va se destruye if (client[i].connect == 0) channel[i].destroy ??
-- El nombre del canal tiene max 200 caracteres y empiezan por # y & no tiene <espacios> o <,>
+- El nombre del canal tiene max 200 caracteres y empiezan por # y & no tiene < espacios > o <,>
 - Comando JOIN para entrar a un canal o crearlo si el canal esta en modo +i solo podras entrar si el Channel Operator lo invita
 
 # Channel operator

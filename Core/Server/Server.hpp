@@ -8,13 +8,18 @@
 
 class Server {
   public:
-    Server(char *, char *);
+    Server(const char *, const char *);
 
     ~Server();
 
     void ListenAndServe();
 
   private:
+    void createSocket();
+    void bindSocket();
+    void listenSockets();
+    void handleConns();
     std::string p_port;
     std::string p_password;
+    int sockfd;
 };

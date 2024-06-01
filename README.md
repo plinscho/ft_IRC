@@ -13,7 +13,43 @@ recv, signal, sigaction, lseek, fstat, fcntl, poll
 ___________________________________________________________________
 ___________________________________________________________________
 
+Basically, this is how we create a server:
 
+Creating a socket: 
+The socket() function creates an endpoint for communication and returns a file descriptor that refers to that endpoint.
+The file descriptor returned by a successful call will be the lowest-numbered file descriptor not currently open for the process.
+This file descriptor is used for further socket operations. 
+The domain argument specifies a communication domain; this selects the protocol family which will be used for communication. 
+In your case, it's AF_INET for IPv4.
+
+Binding the socket: 
+The bind() function assigns a local protocol address to a socket. With the Internet protocols, 
+the address is the combination of an IPv4 or IPv6 address and a port number. 
+In your case, you're using INADDR_ANY to bind to all available interfaces and a specific port number.
+
+Listening for connections:
+The listen() function marks the socket referred to by sockfd as a passive socket, 
+that is, as a socket that will be used to accept incoming connection requests using accept(). 
+The backlog argument defines the maximum length to which the queue of pending connections for sockfd may grow. 
+If a connection request arrives when the queue is full, the client may receive an error with an indication of ECONNREFUSED.
+
+Accepting connections:
+The accept() function is used to accept a connection on a socket.
+It extracts the first connection request on the queue of pending connections for the listening socket,
+creates a new connected socket, and returns a new file descriptor referring to that socket. 
+The newly created socket is not in the listening state. 
+The original socket sockfd is unaffected by this call.
+
+Handling connections: 
+Once a connection has been established, both ends can send and receive information. 
+The read() function is used to receive data from the client, and the send() function is used to send data to the client.
+
+Closing the connection: 
+When communication with a client is finished, 
+the connection needs to be closed to free up system resources that were being used by the connection.
+This is typically done with the close() function.
+
+_______________________________________________________________________________________________________________________
 DOCUMENTATION:
 
 int sockfd = socket(domain, type, protocol);
@@ -24,11 +60,17 @@ socket()  creates  an  endpoint  for communication and returns a file descriptor
        
       Common Domains:
     AF_UNIX (Local communication):
-        Used for communication between processes on the same machine. It's fast and efficient for local communication but cannot be used for communication across networks. (Refer to unix(7) man page for details)
+        Used for communication between processes on the same machine. 
+        It's fast and efficient for local communication but cannot be used for communication across networks. 
+        (Refer to unix(7) man page for details)
     AF_INET (IPv4 Internet protocols):
-        This is the most commonly used domain for network communication over the internet. It utilizes the IPv4 protocol for routing and addressing packets. (Refer to ip(7) man page)
+        This is the most commonly used domain for network communication over the internet. 
+        It utilizes the IPv4 protocol for routing and addressing packets. 
+        (Refer to ip(7) man page)
     AF_INET6 (IPv6 Internet protocols):
-        This domain uses the newer IPv6 protocol, which offers a larger address space and improved routing capabilities compared to IPv4. (Refer to ipv6(7) man page)
+        This domain uses the newer IPv6 protocol, 
+        which offers a larger address space and improved routing capabilities compared to IPv4. 
+        (Refer to ipv6(7) man page)
 
 AF_INET is the default choice for most network applications that require communication over the internet.
 
@@ -97,6 +139,7 @@ In network programming, struct sockaddr and struct sockaddr_in are related struc
 struct sockaddr is generic and can be used to represent various address families, while struct sockaddr_in is specifically designed for IPv4 addresses.
 Fields: struct sockaddr only has the sa_family field to identify the address family. 
 struct sockaddr_in inherits this field and adds additional fields like sin_port (port number) and sin_addr (IP address).
+
 Usage: Network functions like bind() and connect() often take a pointer to a struct sockaddr as an argument. 
 This allows them to work with different address families by checking the sa_family field and interpreting the remaining data accordingly.
 However, when specifically dealing with IPv4 addresses, you would use struct sockaddr_in.

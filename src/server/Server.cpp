@@ -122,6 +122,21 @@ void Server::ListenAndServe() {
     handleConns();
 }
 
+void Server::closeSockets()
+{
+    std::string ip = inet_ntoa(sockaddr.sin_addr);
+
+    // Cierra el socket del servidor
+	std::cout << "Cerrando sockets...\n" << std::endl;
+    // Cierra todos los sockets de los clientes
+    for (int i = 0; i < MAX_CLIENTS ; i++)
+	{
+		std::cout << "Cerrando socket ip: " << ip << std::endl;
+        close(users[i].fd);
+    }
+	close(sockfd);
+}
+
 void Server::getConnections()
 {
 	int pollReturn = poll(users, MAX_CLIENTS, -1);
@@ -161,27 +176,31 @@ void Server::getConnections()
 			char buffer[MAX_MSG_SIZE];
 			memset(buffer, 0, MAX_MSG_SIZE);
 			bytesReceived = recv(users[j].fd, buffer, MAX_MSG_SIZE, 0);
-		/*
-			if (bytesReceived <= 0)
+
+			if (bytesReceived < 0)
 			{
 				std::cerr << "Error receiving message" << std::endl;
 				close(users[j].fd);
 				users[j].fd = -1;
 				continue;
 			}
-		*/	
 
-			for (int z = 1 ; z < MAX_CLIENTS ; z++)
+			else if (bytesReceived == 0)
 			{
-				if (users[z].fd < 0)
-					continue;
-				if (z == j)
-					continue;
-				if (send(users[z].fd, buffer, bytesReceived, 0) < 0)
+				std::cout << "Cliente desconectado" << std::endl;
+				close(users[j].fd);
+				users[j].fd = -1;
+				continue;
+			}
+
+			else
+			{
+				std::cout << "Recibido: " << buffer << std::endl;
+				if (send(users[j].fd, buffer, bytesReceived, 0) < 0)
 				{
-					std::cerr << "Error sending message" << std::endl;
-					close(users[z].fd);
-					users[z].fd = -1;
+					std::cerr << "Error sending message\nClosing connection." << std::endl;
+					close(users[j].fd);
+					users[j].fd = -1;
 				}
 			}
 		}

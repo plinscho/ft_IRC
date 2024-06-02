@@ -42,5 +42,6 @@ int main(int argc, char **argv) {
 	{
 		server.getConnections();
 	}
+	server.closeSockets();
     return 0;
 }

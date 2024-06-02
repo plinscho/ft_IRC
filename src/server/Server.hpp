@@ -34,4 +34,5 @@ class Server {
     void listenSockets();
     void handleConns();
 	void getConnections();
+	void closeSockets();
 };

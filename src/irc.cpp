@@ -25,9 +25,9 @@ int main(int argc, char **argv) {
     }
     //    try {
     Server server(port, argv[2]);
-    server.ListenAndServe();
-    //  server.createSocket();
-    // server.bindSocket();
+    server.createSocket();
+    server.bindSocket();
+    server.listenSockets();
     // while (powerOn) {
     //  server.listenSockets();
 
@@ -37,5 +37,10 @@ int main(int argc, char **argv) {
     //  } catch (std::exception &e) {
     //    std::cerr << "Server FAILURE: " << e.what() << std::endl;
     //}
+
+	while (powerOn)
+	{
+		server.getConnections();
+	}
     return 0;
 }

@@ -9,6 +9,11 @@ Server::Server(int port, char *password) {
     _port = port;
     p_password = password;
     sockfd = -1;
+	for (int i = 0 ; i < MAX_CLIENTS ; i++)
+	{
+		users[i].fd = -1;
+		users[i].events = POLLIN;
+	}
 }
 Server::~Server() {
     if (sockfd != -1) {
@@ -45,10 +50,11 @@ void Server::bindSocket() {
 
 void Server::listenSockets() {
     // listen up to 10 connections from the socket fd
-    if (listen(sockfd, 10) < 0) {
+    if (listen(sockfd, MAX_CLIENTS) < 0) {
         std::cout << "Failed to listen on socket." << std::endl;
         exit(EXIT_FAILURE);
     }
+	users[0].fd = sockfd;
     /*
 
 F_SETFL (int)
@@ -114,4 +120,70 @@ void Server::ListenAndServe() {
     bindSocket();
     listenSockets();
     handleConns();
+}
+
+void Server::getConnections()
+{
+	int pollReturn = poll(users, MAX_CLIENTS, -1);
+	if (pollReturn < 0)
+	{
+		std::cerr << "Poll error" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	if (users[0].revents & POLLIN)
+	{
+		int newClient = accept(sockfd, NULL, NULL);
+		if (newClient < 0)
+		{
+			std::cerr << "Accept error" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+		int i;
+		for (i = 1 ; i < MAX_CLIENTS ; i++)
+		{
+			if (users[i].fd < 0)
+			{
+				users[i].fd = newClient;
+				break;
+			}
+		}
+		if (i == MAX_CLIENTS)
+		{
+			std::cerr << "Too many clients, closing the connection" << std::endl;
+			close(newClient);
+		}
+		for (int j = 1 ; j < MAX_CLIENTS ; j++)
+		{
+			int bytesReceived;
+			if (users[j].fd < 0)
+				continue;
+			
+			char buffer[MAX_MSG_SIZE];
+			memset(buffer, 0, MAX_MSG_SIZE);
+			bytesReceived = recv(users[j].fd, buffer, MAX_MSG_SIZE, 0);
+		/*
+			if (bytesReceived <= 0)
+			{
+				std::cerr << "Error receiving message" << std::endl;
+				close(users[j].fd);
+				users[j].fd = -1;
+				continue;
+			}
+		*/	
+
+			for (int z = 1 ; z < MAX_CLIENTS ; z++)
+			{
+				if (users[z].fd < 0)
+					continue;
+				if (z == j)
+					continue;
+				if (send(users[z].fd, buffer, bytesReceived, 0) < 0)
+				{
+					std::cerr << "Error sending message" << std::endl;
+					close(users[z].fd);
+					users[z].fd = -1;
+				}
+			}
+		}
+	}
 }

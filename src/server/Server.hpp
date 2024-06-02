@@ -10,29 +10,32 @@
 #include <poll.h>
 #include <vector>
 
+#define TIMEOUT 10000
 #define MAX_CLIENTS 10
 #define MAX_MSG_SIZE 1024
 
 class Server {
   private:
-    int _port;
-    int sockfd;
-    //	std::vector<User *>		connectedUsers;
-    //	std::vector<struct pollfd>	userFDs;
-    sockaddr_in sockaddr;
-
-    std::string p_port;
-    std::string p_password;
+	bool						powerOn;
+    int 						_port;
+    int 						sockfd;
+    sockaddr_in 				sockaddr;	// Server address
+    std::vector <Client *>		clientVector; // Clients connected to the server
+	std::vector <struct pollfd> pollVector;
+    std::string 				p_port;
+    std::string 				p_password;
 
   public:
-	pollfd 		users[MAX_CLIENTS];
+    int							conectedClients;
     Server(int, char *);
     ~Server();
-    void ListenAndServe();
-    void createSocket();
-    void bindSocket();
-    void listenSockets();
-    void handleConns();
-	void getConnections();
-	void closeSockets();
+	bool	isPowerOn() const;
+	void	shutDown();
+	int		getPort() const;
+	int		getSockfd() const;
+	void	handleNewConnection();
+	void	initPoll();
+    void	handleConns();
+	void	run();
+	void	closeSockets();
 };

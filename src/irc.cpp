@@ -6,9 +6,10 @@
 
 bool powerOn = true;
 
-void sigHandler(int sigNum) {
+void sigHandler(int sigNum) 
+{
     (void)sigNum;
-    powerOn = false;
+	powerOn = false;
 }
 
 int main(int argc, char **argv) {
@@ -23,24 +24,16 @@ int main(int argc, char **argv) {
         std::cout << "Wrong port!" << std::endl;
         exit(EXIT_FAILURE);
     }
-    //    try {
+
     Server server(port, argv[2]);
-    server.createSocket();
-    server.bindSocket();
-    server.listenSockets();
-    // while (powerOn) {
-    //  server.listenSockets();
+	server.initPoll();
 
     signal(SIGINT, sigHandler);
-    // server.handleConns();
-    //  }
-    //  } catch (std::exception &e) {
-    //    std::cerr << "Server FAILURE: " << e.what() << std::endl;
-    //}
 
-	while (powerOn)
+
+	while (server.isPowerOn())
 	{
-		server.getConnections();
+		server.run();
 	}
 	server.closeSockets();
     return 0;

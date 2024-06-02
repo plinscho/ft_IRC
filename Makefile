@@ -1,12 +1,19 @@
 MAKEFLAGS += --no-print-directory
 NAME = ircserv
 CFLAGS = -Wall -Werror -Wextra -std=c++98
-OBJECTS = App/Sources/main.cpp Core/Server/Server.cpp
-HEADERS = Core/Server/Server.hpp
+OBJECTS = src/main.cpp \
+			src/User.cpp \
+			src/Server.cpp
+#			Core/Server/Server.cpp
+#			Core/Server/Server.cpp
+#			Core/Server/Server.cpp
+
+HEADERS = include/Server.hpp \
+			include/User.hpp
 
 all: $(NAME)
 
-$(NAME): $(OBJECTS) $(HEADERS) Makefile
+$(NAME): $(OBJECTS) $(HEADERS) Makefile clean
 	@c++ $(CFLAGS) $(OBJECTS) -o $(NAME)
 
 fclean: 

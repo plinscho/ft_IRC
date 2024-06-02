@@ -1,9 +1,11 @@
-#include "Server.hpp"
+#include "../include/Server.hpp"
 #include <cstdlib>
 #include <cstring>
 #include <sys/types.h>
+#include <fcntl.h>
 
-Server::Server(const char *port, const char *password) {
+
+Server::Server(int port, const char *password) {
     p_port = port;
     p_password = password;
     sockfd = -1;
@@ -22,6 +24,7 @@ void Server::createSocket() {
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
         std::cerr << "Failed to create socket." << std::endl;
+		exit(EXIT_FAILURE);
     }
 }
 
@@ -30,7 +33,6 @@ void Server::createSocket() {
 // of an IP address and a port number.
 void Server::bindSocket() {
 
-    sockaddr_in sockaddr;
     sockaddr.sin_family = AF_INET;
     sockaddr.sin_addr.s_addr = INADDR_ANY; // man 7 ip
     sockaddr.sin_port = htons(std::atoi(p_port.c_str()));
@@ -46,6 +48,16 @@ void Server::listenSockets() {
         std::cout << "Failed to listen on socket." << std::endl;
         exit(EXIT_FAILURE);
     }
+		/*
+	
+       F_SETFL (int)
+        Set the file status flags to the value specified by arg.  File access mode (O_RDONLY, O_WRONLY, O_RDWR)
+        and  file creation flags (i.e., O_CREAT, O_EXCL, O_NOCTTY, O_TRUNC) in arg are ignored.  On Linux, this
+        command can change only the O_APPEND, O_ASYNC, O_DIRECT, O_NOATIME, and O_NONBLOCK flags.   It  is  not
+    	possible to change the O_DSYNC and O_SYNC flags; see BUGS, below.
+	
+					*/
+	fcntl(sockfd, F_SETFL, O_NONBLOCK);
 }
 
 /*

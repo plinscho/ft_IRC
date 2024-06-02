@@ -129,9 +129,9 @@ void Server::closeSockets()
     // Cierra el socket del servidor
 	std::cout << "Cerrando sockets...\n" << std::endl;
     // Cierra todos los sockets de los clientes
+	std::cout << "Cerrando socket ip: " << ip << std::endl;
     for (int i = 0; i < MAX_CLIENTS ; i++)
 	{
-		std::cout << "Cerrando socket ip: " << ip << std::endl;
         close(users[i].fd);
     }
 	close(sockfd);
@@ -139,6 +139,8 @@ void Server::closeSockets()
 
 void Server::getConnections()
 {
+	socklen_t addrlen = sizeof(sockaddr);
+
 	int pollReturn = poll(users, MAX_CLIENTS, -1);
 	if (pollReturn < 0)
 	{
@@ -147,11 +149,11 @@ void Server::getConnections()
 	}
 	if (users[0].revents & POLLIN)
 	{
-		int newClient = accept(sockfd, NULL, NULL);
+		int newClient = accept(sockfd, (struct sockaddr *)&sockaddr, &addrlen);
 		if (newClient < 0)
 		{
-			std::cerr << "Accept error" << std::endl;
-			exit(EXIT_FAILURE);
+			std::cerr << "Accept error.\nClosing connection." << std::endl;
+			close(newClient);
 		}
 		int i;
 		for (i = 1 ; i < MAX_CLIENTS ; i++)
@@ -174,7 +176,7 @@ void Server::getConnections()
 				continue;
 			
 			char buffer[MAX_MSG_SIZE];
-			memset(buffer, 0, MAX_MSG_SIZE);
+			memset(buffer, 0, sizeof(buffer));
 			bytesReceived = recv(users[j].fd, buffer, MAX_MSG_SIZE, 0);
 
 			if (bytesReceived < 0)

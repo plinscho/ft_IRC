@@ -7,7 +7,7 @@
 #include <sys/socket.h> // For socket functions
 #include <unistd.h>     // For read
 #include <stdlib.h>		// atoi
-#include "User.hpp"
+#include "../client/Client.hpp"
 
 
 class Server 

@@ -1,4 +1,5 @@
-#include "../include/Server.hpp"
+#include "server/Server.hpp"
+#include "client/Client.hpp"
 #include <iostream>
 #include <signal.h>
 

@@ -9,16 +9,9 @@
 class Client {
   public:
     Client(const char *, const char *);
-
     ~Client();
 
-    void ListenAndServe();
-
   private:
-    void createSocket();
-    void bindSocket();
-    void listenSockets();
-    void handleConns();
     std::string p_port;
     std::string p_password;
     int sockfd;

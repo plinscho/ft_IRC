@@ -1,15 +1,15 @@
 MAKEFLAGS += --no-print-directory
 NAME = ircserv
 CFLAGS = -Wall -Werror -Wextra -std=c++98
-OBJECTS = src/main.cpp \
-			src/User.cpp \
-			src/Server.cpp
+OBJECTS = src/irc.cpp \
+			src/client/Client.cpp \
+			src/server/Server.cpp \
 #			Core/Server/Server.cpp
 #			Core/Server/Server.cpp
 #			Core/Server/Server.cpp
 
-HEADERS = include/Server.hpp \
-			include/User.hpp
+HEADERS = src/server/Server.hpp \
+			src/client/Client.hpp
 
 all: $(NAME)
 

@@ -129,6 +129,8 @@ void Server::closeSockets()
 	// Cierra todos los sockets de los clientes
 	for (int i = 0; i < MAX_CLIENTS ; i++)
 	{
+		if (pollVector[i].fd < 0)
+			continue ;
 		close(pollVector[i].fd);
 		handleDisconnection(i);
 	}
@@ -250,7 +252,7 @@ void Server::run()
 				else
 				{
 					std::cout << tmpClient->getNickname() +"@"+ tmpClient->getAddress() + ": ";
-					std::cout << tmpClient->getRecvBuffer() << std::endl;
+					std::cout << tmpClient->getRecvBuffer();
 					tmpClient->sendData(pollVector[i].fd);
 				}
 			}

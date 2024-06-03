@@ -1,22 +1,26 @@
 #include <iostream>
 #include "Client.hpp"
 
-Client::Client(int fd, struct sockaddr_in address) : clientSocketFd(fd), clientAddr(address)
+Client::Client(int fd, std::string address) : clientSocketFd(fd), clientIp(address)
 {
-	std::cout << "Client connected" << std::endl;
-	std::cout << "Client address: " << inet_ntoa(clientAddr.sin_addr) << std::endl;
+	std::cout << "New connection established with ip: " + clientIp << std::endl;
+	nickName = "newNickname";
 }
 
 Client::~Client() 
 {
-	std::cout << "Client disconnected" << std::endl;
+	std::cout << "Client " + getAddress() + " has disconnected" << std::endl;
 	close(clientSocketFd);
+}
+
+std::string Client::getNickname() const
+{
+	return (nickName);
 }
 
 std::string Client::getAddress() const
 {
-	std::string ip = inet_ntoa(clientAddr.sin_addr);
-	return (ip);
+	return (clientIp);
 }
 
 int Client::getFd() const
@@ -24,14 +28,37 @@ int Client::getFd() const
 	return (clientSocketFd);
 }
 
-size_t Client::receiveData(char* buffer, size_t msgLenght)
+std::string	Client::getRecvBuffer() const 
 {
-	int bytesReceived = recv(clientSocketFd, buffer, msgLenght, 0);
+	return (std::string(recvBuffer));
+}
+
+int Client::receiveData(int serverFd)
+{
+	memset(recvBuffer, 0, sizeof(recvBuffer));
+	int bytesReceived = recv(serverFd, recvBuffer, sizeof(recvBuffer), 0);
 	if (bytesReceived < 0)
 	{
 		std::cerr << "Error receiving data" << std::endl;
 		return (-1);
 	}
-	return (0);
+	else if (bytesReceived == 0)
+    {
+        std::cerr << "Connection closed by server" << std::endl;
+        return (-1);
+    }
+	return (bytesReceived);
+}
+
+int Client::sendData(int serverFd)
+{
+	memset(sendBuffer, 0, sizeof(sendBuffer));
+	int bytesSend = send(serverFd, sendBuffer, sizeof(sendBuffer), 0);
+    if (bytesSend < 0)
+    {
+        std::cerr << "Error sending data" << std::endl;
+        return -1;
+    }
+    return bytesSend;
 }
 

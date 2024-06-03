@@ -23,10 +23,19 @@ Server::Server(int port, char *password) {
 	sockaddr.sin_addr.s_addr = INADDR_ANY;	// Accept connections from any IP address
 	sockaddr.sin_port = htons(_port);		// Port to listen on
 
+
+//	configurar el socket para que reutilice la dirección y el puerto cuando se cierre.
+	int opt = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+	{
+		std::cerr << "Error: setsockopt failed" << std::endl;
+		exit (EXIT_FAILURE);
+	}
+
 // 	The bind() function assigns a IP address to a socket & a port number in the local machine.
 //	The data is specified in "sockaddr", where one field is the IP address and the other is the port number.
 	if (bind(sockfd, (struct sockaddr *)&sockaddr, sizeof(sockaddr)) < 0) {
-		std::cerr << "Failed to bind to port" << _port << "." << std::endl;
+		std::cerr << "Failed to bind to port " << _port << "." << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
@@ -47,6 +56,7 @@ Server::~Server() {
 void Server::shutDown()
 {
 	this->powerOn = false;
+
 }
 
 bool Server::isPowerOn() const
@@ -117,10 +127,10 @@ void Server::closeSockets()
 	// Cierra el socket del servidor
 	std::cout << "Cerrando sockets...\n" << std::endl;
 	// Cierra todos los sockets de los clientes
-	std::cout << "Cerrando socket ip: " << ip << std::endl;
 	for (int i = 0; i < MAX_CLIENTS ; i++)
 	{
 		close(pollVector[i].fd);
+		handleDisconnection(i);
 	}
 	close(sockfd);
 }
@@ -144,14 +154,14 @@ void Server::initPoll()
 void Server::handleNewConnection()
 {
 	socklen_t addrlen = sizeof(sockaddr);
-	int newClient = accept(getSockfd(), (struct sockaddr *)&sockaddr, &addrlen);
-	if (newClient < 0)
+	int newClientFd = accept(getSockfd(), (struct sockaddr *)&sockaddr, &addrlen);
+	if (newClientFd < 0)
 	{
         // No connections available to accept
         if (errno == EAGAIN || errno == EWOULDBLOCK)
             return;
 		std::cerr << "Accept error.\nClosing connection." << std::endl;
-		close(newClient);
+		close(newClientFd);
 	}
 	else
 	{
@@ -159,13 +169,52 @@ void Server::handleNewConnection()
 		{
 			if (pollVector[i].fd == -1)
 			{
-				pollVector[i].fd = newClient;
+
+				pollVector[i].fd = newClientFd;
 				pollVector[i].events = POLLIN;
+
+				// Create a new client object and add it to clientVector
+				std::string newClientIp = inet_ntoa(sockaddr.sin_addr);
+				Client *newClientObj = new Client(newClientFd, newClientIp);
+				clientVector.push_back(newClientObj);
 				break;
 			}
 		}
-		std::cout << "New connection established with ip: " << inet_ntoa(sockaddr.sin_addr) << std::endl;
 	}
+}
+
+void Server::handleDisconnection(int index)
+{
+	int disconnectedFd = pollVector[index].fd;
+	std::vector<Client *>::iterator clientIterator;
+
+	if (pollVector[index].fd == -1) 
+		return ;
+
+	close(pollVector[index].fd);
+	pollVector[index].fd = -1;
+	for (clientIterator = clientVector.begin() ; 
+			clientIterator != clientVector.end() ; clientIterator++)
+	{
+		if (disconnectedFd == (*clientIterator)->getFd())
+		{
+			delete *clientIterator;
+			clientVector.erase(clientIterator);
+			break ;
+		}
+	}
+	std::cout << "Client erased from list."<< std::endl;
+}
+
+Client * Server::getClientByFd(int fdMatch)
+{
+	std::vector<Client *>::iterator tmp;
+	for (tmp = clientVector.begin() ; tmp != clientVector.end() ; tmp++)
+    {
+        if ((*tmp)->getFd() == fdMatch)
+            return *tmp;
+    }
+    return NULL; // Return nullptr if no client matches the fd
 }
 
 void Server::run()
@@ -174,8 +223,10 @@ void Server::run()
 	{
 		//	pollVector[0] is the listening socket, the rest are the clients
 		int pollReturn = poll(&pollVector[0], MAX_CLIENTS, TIMEOUT);
-		if (pollReturn < 0 && isPowerOn())
+		if (isPowerOn() && pollReturn < 0)
 		{
+			if (errno == EINTR) // Mira si ha devuelto -1 por ctrl + C de apagado
+				break;
 			std::cerr << "Error: Poll error" << std::endl;
 			exit(EXIT_FAILURE);
 		}
@@ -187,25 +238,22 @@ void Server::run()
 		{
 			if (pollVector[i].fd < 0)
 				continue;
-			if (pollVector[i].revents & POLLIN)
+			if (pollVector[i].revents & POLLIN) // miramos los eventos de cada cliente[i]
 			{
-				char buffer[MAX_MSG_SIZE];
-				memset(buffer, 0, MAX_MSG_SIZE);
-				int bytesRead = recv(pollVector[i].fd, buffer, MAX_MSG_SIZE, 0);
+				Client * tmpClient = getClientByFd(pollVector[i].fd); // comparamos los fd del cliente con el almacenado en el servidor.
+				if (tmpClient == NULL)
+					continue ;
+
+				int bytesRead = tmpClient->receiveData(pollVector[i].fd); // Receive data from server
 				if (bytesRead <= 0)
-				{
-					std::cout << "Client disconnected" << std::endl;
-					close(pollVector[i].fd);
-					pollVector[i].fd = -1;
-				}
+					handleDisconnection(i);
 				else
 				{
-					std::cout << "Message from client: " << buffer << std::endl;
-					send(pollVector[i].fd, buffer, MAX_MSG_SIZE, 0);
+					std::cout << tmpClient->getNickname() +"@"+ tmpClient->getAddress() + ": ";
+					std::cout << tmpClient->getRecvBuffer() << std::endl;
+					tmpClient->sendData(pollVector[i].fd);
 				}
 			}
 		}
-		
-
 	}
 }

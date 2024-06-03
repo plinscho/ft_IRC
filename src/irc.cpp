@@ -31,10 +31,11 @@ int main(int argc, char **argv) {
     signal(SIGINT, sigHandler);
 
 
-	while (server.isPowerOn())
+	while (powerOn)
 	{
 		server.run();
 	}
 	server.closeSockets();
+	server.shutDown();
     return 0;
 }

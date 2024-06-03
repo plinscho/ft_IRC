@@ -184,6 +184,8 @@ void Server::handleNewConnection()
 			close(newClientFd);
 			return ;
 		}
+		else
+			sendMsgFd(newClientFd, "Password correct.\nWelcome\n", MSG_DONTWAIT);
 		for (int i = 1 ; i < MAX_CLIENTS ; i++)
 		{
 			if (pollVector[i].fd == -1)
@@ -236,6 +238,14 @@ Client * Server::getClientByFd(int fdMatch)
     return NULL; // Return nullptr if no client matches the fd
 }
 
+void Server::handleCmd(const char *buffer, Client *clientObj)
+{
+	std::string tmpStr(buffer);
+
+	if (tmpStr.find("/nick") == 0)
+		sendMsgFd(clientObj->getFd(), "Change you nickname: ", MSG_DONTWAIT);
+}
+
 void Server::run()
 {
 	while (true)
@@ -262,14 +272,15 @@ void Server::run()
 				Client * tmpClient = getClientByFd(pollVector[i].fd); // comparamos los fd del cliente con el almacenado en el servidor.
 				if (tmpClient == NULL)
 					continue ;
-
-				int bytesRead = tmpClient->receiveData(pollVector[i].fd); // Receive data from server
-				if (bytesRead <= 0)
+				sendMsgFd(tmpClient->getFd(), tmpClient->getNickname() + ": ", MSG_DONTWAIT);
+				int bytesReceived = recv(pollVector[i].fd, buffer, sizeof(buffer), 0);
+				if (bytesReceived <= 0)
 					handleDisconnection(i);
 				else
 				{
+					handleCmd(buffer, tmpClient);	// check if the client has sent a command
 					std::cout << tmpClient->getNickname() +"@"+ tmpClient->getAddress() + ": ";
-					std::cout << tmpClient->getRecvBuffer();
+					std::cout << buffer;
 					tmpClient->sendData(pollVector[i].fd);
 				}
 			}

@@ -26,9 +26,11 @@ class Server {
 
   public:
 	int							conectedClients;
+	char						buffer[MAX_MSG_SIZE];
 	Server(int, char *);
 	~Server();
 	Client * getClientByFd(int fdMatch);
+	void	handleCmd(const char *buffer, Client *clientObj);
 	bool	isPowerOn() const;
 	void	shutDown();
 	int		getPort() const;

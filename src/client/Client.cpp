@@ -33,6 +33,13 @@ std::string	Client::getRecvBuffer() const
 	return (std::string(recvBuffer));
 }
 
+void	Client::setNickname(std::string newNick)
+{
+	if (newNick.empty())
+		return ;
+	this->nickName = newNick;
+}
+
 int Client::receiveData(int serverFd)
 {
 	memset(recvBuffer, 0, sizeof(recvBuffer));

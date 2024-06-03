@@ -23,10 +23,11 @@ class Client {
     ~Client();
 	std::string		getNickname() const ;
 	std::string		getAddress() const ;
-	int				getFd() const ;
-	int				receiveData(int serverFd);
 	std::string		getRecvBuffer() const ;
+	int				getFd() const ;
+	void			setNickname(std::string newNick);
 	int				sendData(int serverFd);
+	int				receiveData(int serverFd);
 
 
 };

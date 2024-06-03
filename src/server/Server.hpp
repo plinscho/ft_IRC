@@ -40,3 +40,18 @@ class Server {
 	void	run();
 	void	closeSockets();
 };
+
+
+/*
+
+send() flags:
+
+MSG_CONFIRM: 	This flag is not relevant for send(). It's used in sendto() function to tell the kernel that more data is coming in a subsequent call to sendto().
+MSG_DONTROUTE: 	This flag requests that the data should not be subject to routing. The data should be sent only to hosts on directly connected networks.
+MSG_DONTWAIT: 	This flag specifies that the operation should be performed in non-blocking mode. If the operation would block, send() will fail with the error EAGAIN or EWOULDBLOCK.
+MSG_EOR: 		This flag indicates end-of-record for record-based sockets (SOCK_SEQPACKET and SOCK_RDM).
+MSG_MORE: 		This flag indicates that more data is coming. The data will be bundled together into a single TCP segment if possible.
+MSG_NOSIGNAL: 	This flag requests not to send the SIGPIPE signal if an attempt to send is made on a stream socket that is no longer connected.
+MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
+*/
+int		sendMsgFd(int destFd, std::string msg, int flag);

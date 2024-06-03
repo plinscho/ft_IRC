@@ -167,6 +167,23 @@ void Server::handleNewConnection()
 	}
 	else
 	{
+		// Ask the user for server password:
+		sendMsgFd(newClientFd, "Please enter the server password: ", MSG_DONTWAIT);
+
+		//Read if the client has send a correct password
+		char	buffer[32] = {0};
+		int		bytesRead = read(newClientFd, buffer, 32);
+		buffer[bytesRead] = '\0';
+
+		std::string clientPassword(buffer);
+		clientPassword.erase(clientPassword.find_last_not_of(" \n\t\r") + 1);
+		if (clientPassword != p_password)
+		{
+			memset(buffer, 0, sizeof(buffer));
+			sendMsgFd(newClientFd, "Password incorrect.\nClosing connection...\n", MSG_DONTWAIT);
+			close(newClientFd);
+			return ;
+		}
 		for (int i = 1 ; i < MAX_CLIENTS ; i++)
 		{
 			if (pollVector[i].fd == -1)
@@ -258,4 +275,14 @@ void Server::run()
 			}
 		}
 	}
+}
+
+/*
+	OTHER FUNCTIONS THAT ARE NOT METHODS
+*/
+
+int	sendMsgFd(int destFd, std::string msg, int flag)
+{
+	int	bytesSend =	send(destFd, msg.c_str(), msg.size(), flag);
+	return (bytesSend);
 }

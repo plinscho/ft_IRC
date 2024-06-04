@@ -55,8 +55,64 @@ the connection needs to be closed to free up system resources that were being us
 This is typically done with the close() function.
 We will close the fd that was given by the accept() function.
 
-We are going to manage the requests of the fd that are allocated in the server with the poll() function.
-There are some alternatives, like epoll().
+select(), poll() and epoll() are functions that manage the connected fd's.
+These functions manage the data for each fd that is saved in the struct:
+
+ struct pollfd {
+               int   fd;         /* file descriptor */
+               short events;     /* requested events */
+               short revents;    /* returned events */
+           };
+
+For each client, a new struct is created. So we will create an array (or vector in c++) with N positions, 
+where N is the max. server members. Here is an example on how we can use poll():
+
+
+#include <sys/poll.h>
+
+int main() {
+  // ... server setup (socket creation, binding, listening)
+
+  struct pollfd fds[MAX_CLIENTS]; // Array to store client info
+  int num_fds = 0; // Number of connected clients
+
+  while (1) {
+    int ret = poll(fds, num_fds, -1); // Wait indefinitely
+    if (ret == -1) {
+      // Handle error
+    } else if (ret == 0) {
+      // Timeout (no events)
+      // Iterate through fds array
+      for (int i = 0; i < num_fds; i++) {
+        if (fds[i].revents & POLLIN) {
+          // Data available to read from client
+          // ... read data from client
+        } else if (fds[i].revents & POLLOUT) {
+          // Socket ready for writing
+          // ... send data to client
+        } else if (fds[i].revents & POLLERR) {
+          // Error on socket
+          // ... close connection and remove client from fds
+        } else if (fds[i].revents & POLLHUP) {
+          // Connection closed by client
+          // ... close connection and remove client from fds
+        } else if (fds[i].fd == listening_socket) {
+          // New connection request
+          // ... accept connection and add new client to fds
+        } else {
+          // Timeout on this descriptor
+          // ... handle timeout for this client
+        }
+      }
+    } else {
+      // At least one event occurred
+      // ... handle events as before
+    }
+  }
+}
+
+
+Note that this is written in pure C and we could use some c++ functions.
 
 _______________________________________________________________________________________________________________________
 SPECIFIC DOCUMENTATION:

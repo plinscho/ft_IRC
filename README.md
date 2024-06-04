@@ -23,34 +23,43 @@ The domain argument specifies a communication domain; this selects the protocol 
 In your case, it's AF_INET for IPv4.
 
 Binding the socket: 
-The bind() function assigns a local protocol address to a socket. With the Internet protocols, 
-the address is the combination of an IPv4 or IPv6 address and a port number. 
-In your case, you're using INADDR_ANY to bind to all available interfaces and a specific port number.
+The bind() function assigns a local protocol address to a socket. 
+With the Internet protocols, the address is the combination of an IPv4 or IPv6 address and a port number. 
+In this case, we're using INADDR_ANY to bind to all available interfaces and a specific port number.
 
 Listening for connections:
 The listen() function marks the socket referred to by sockfd as a passive socket, 
-that is, as a socket that will be used to accept incoming connection requests using accept(). 
-The backlog argument defines the maximum length to which the queue of pending connections for sockfd may grow. 
+that is, a socket that will be used to accept incoming connection requests using accept(). 
+The second argument defines the maximum length to which the queue of pending connections for sockfd may grow. 
 If a connection request arrives when the queue is full, the client may receive an error with an indication of ECONNREFUSED.
 
 Accepting connections:
 The accept() function is used to accept a connection on a socket.
 It extracts the first connection request on the queue of pending connections for the listening socket,
 creates a new connected socket, and returns a new file descriptor referring to that socket. 
-The newly created socket is not in the listening state. 
+The newly created socket is not in the listening state, but can operate read() and write() functions.
+That's why we need the server to accept the incoming user before doing anything.
 The original socket sockfd is unaffected by this call.
 
 Handling connections: 
 Once a connection has been established, both ends can send and receive information. 
-The read() function is used to receive data from the client, and the send() function is used to send data to the client.
+We can use the read()/write() functions is used to receive and send data from the client.
+However, send() and recv() are more suitable because they work only on socket descriptors,
+but let you specify certain options for the actual operation. 
+Those functions are slightly more specialized 
+(for instance, you can set a flag to ignore SIGPIPE, or to send out-of-band messages...)
 
 Closing the connection: 
 When communication with a client is finished, 
 the connection needs to be closed to free up system resources that were being used by the connection.
 This is typically done with the close() function.
+We will close the fd that was given by the accept() function.
+
+We are going to manage the requests of the fd that are allocated in the server with the poll() function.
+There are some alternatives, like epoll().
 
 _______________________________________________________________________________________________________________________
-DOCUMENTATION:
+SPECIFIC DOCUMENTATION:
 
 int sockfd = socket(domain, type, protocol);
 

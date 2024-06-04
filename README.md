@@ -58,11 +58,11 @@ We will close the fd that was given by the accept() function.
 select(), poll() and epoll() are functions that manage the connected fd's.
 These functions manage the data for each fd that is saved in the struct:
 
- struct pollfd {
-               int   fd;         /* file descriptor */
-               short events;     /* requested events */
-               short revents;    /* returned events */
-           };
+    struct pollfd {
+                  int   fd;         /* file descriptor */
+                  short events;     /* requested events */
+                  short revents;    /* returned events */
+              };
 
 For each client, a new struct is created. So we will create an array (or vector in c++) with N positions, 
 where N is the max. server members. Here is an example on how we can use poll():

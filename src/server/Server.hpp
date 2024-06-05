@@ -10,6 +10,8 @@
 #include <poll.h>
 #include <vector>
 
+extern bool power;
+
 #define TIMEOUT 10000
 #define MAX_CLIENTS 10
 
@@ -56,4 +58,15 @@ MSG_MORE: 		This flag indicates that more data is coming. The data will be bundl
 MSG_NOSIGNAL: 	This flag requests not to send the SIGPIPE signal if an attempt to send is made on a stream socket that is no longer connected.
 MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
 */
-int		sendMsgFd(int destFd, std::string msg, int flag);
+void	sendMsgFd(int destFd, std::string msg, int flag);
+int		recvMsgFd(int originFd, char *buffer, size_t maxLen, int flag);
+int		checkNick(std::string newNick);
+
+enum nickReturn
+{
+	NICK_OK = 0,
+	EMPTY_NICK,
+	SIZE_EXCEED,
+	HAS_SPACE,
+	IS_NOT_ALNUM,	
+};

@@ -5,11 +5,11 @@
 #include <iostream>
 #include <signal.h>
 
-bool powerOn = true;
+bool power = true;
 
 void sigHandler(int sigNum) {
     (void)sigNum;
-    powerOn = false;
+    power = false;
 }
 
 int main(int argc, char **argv) {
@@ -36,7 +36,8 @@ int main(int argc, char **argv) {
 
     signal(SIGINT, sigHandler);
 
-    while (powerOn) {
+    while (power) 
+    {
         server.run();
     }
     server.closeSockets();

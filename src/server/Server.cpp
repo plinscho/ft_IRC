@@ -122,9 +122,6 @@ void Server::handleConns() {
 
 void Server::closeSockets()
 {
-	std::string ip = inet_ntoa(sockaddr.sin_addr);
-
-	// Cierra el socket del servidor
 	std::cout << "Cerrando sockets...\n" << std::endl;
 	// Cierra todos los sockets de los clientes
 	for (int i = 0; i < MAX_CLIENTS ; i++)
@@ -134,6 +131,7 @@ void Server::closeSockets()
 		close(pollVector[i].fd);
 		handleDisconnection(i);
 	}
+	// Cierra el socket del servidor
 	close(sockfd);
 }
 
@@ -169,15 +167,14 @@ void Server::handleNewConnection()
 	{
 		// Ask the user for server password:
 		sendMsgFd(newClientFd, "Please enter the server password: ", MSG_DONTWAIT);
-
 		//Read if the client has send a correct password
-		char	buffer[32] = {0};
-		int		bytesRead = read(newClientFd, buffer, 32);
+		char	buffer[64];
+		int		bytesRead = read(newClientFd, buffer, 64);
 		buffer[bytesRead] = '\0';
 
 		std::string clientPassword(buffer);
 		clientPassword.erase(clientPassword.find_last_not_of(" \n\t\r") + 1);
-		if (clientPassword != p_password)
+		if (strcmp(clientPassword.c_str(), p_password.c_str()) != 0)
 		{
 			memset(buffer, 0, sizeof(buffer));
 			sendMsgFd(newClientFd, "Password incorrect.\nClosing connection...\n", MSG_DONTWAIT);
@@ -190,10 +187,9 @@ void Server::handleNewConnection()
 		{
 			if (pollVector[i].fd == -1)
 			{
-
 				pollVector[i].fd = newClientFd;
 				pollVector[i].events = POLLIN;
-
+				conectedClients++;
 				// Create a new client object and add it to clientVector
 				std::string newClientIp = inet_ntoa(sockaddr.sin_addr);
 				Client *newClientObj = new Client(newClientFd, newClientIp);
@@ -203,6 +199,39 @@ void Server::handleNewConnection()
 		}
 	}
 }
+
+/*
+	FUNCTION TO PARSE NICKNAME
+
+	int nickOk = 42;
+			if (nickOk)
+			{
+				sendMsgFd(newClientFd, "Please choose a nickname: ", MSG_DONTWAIT);
+				memset(buffer, 0, 64);
+				int bytesRecv = recvMsgFd(newClientFd, buffer, 64, 0);
+				if (bytesRecv < 0)
+				{
+					close(newClientFd);
+					return ;
+				}
+				buffer[bytesRecv] = '\0';
+				std::string receivedData(buffer, bytesRecv);
+				std::cout << "Received data: " << receivedData << std::endl;
+				std::string tmpNick(buffer, bytesRecv);
+				nickOk = checkNick(tmpNick);
+				if (nickOk == EMPTY_NICK)
+					sendMsgFd(newClientFd, "Nickname cannot be empty!\n", 0);
+				else if (nickOk == SIZE_EXCEED)
+					sendMsgFd(newClientFd, "Nickname cannot be more than 12 characters!\n", 0);
+				else if (nickOk == HAS_SPACE)
+					sendMsgFd(newClientFd, "Nickname cannot have spaces!\n", 0);
+				else if (nickOk == IS_NOT_ALNUM)
+					sendMsgFd(newClientFd, "Nickname can only be alfa numeric chars!\n", 0);
+			}
+		}
+
+
+*/
 
 void Server::handleDisconnection(int index)
 {
@@ -221,6 +250,7 @@ void Server::handleDisconnection(int index)
 		{
 			delete *clientIterator;
 			clientVector.erase(clientIterator);
+			conectedClients--;
 			break ;
 		}
 	}
@@ -243,7 +273,8 @@ void Server::handleCmd(const char *buffer, Client *clientObj)
 	std::string tmpStr(buffer);
 
 	if (tmpStr.find("/nick") == 0)
-		sendMsgFd(clientObj->getFd(), "Change you nickname: ", MSG_DONTWAIT);
+		sendMsgFd(clientObj->getFd(), "Usage: /nick [newNick]\n", MSG_DONTWAIT);
+	
 }
 
 void Server::run()
@@ -274,12 +305,13 @@ void Server::run()
 					continue ;
 				sendMsgFd(tmpClient->getFd(), tmpClient->getNickname() + ": ", MSG_DONTWAIT);
 				int bytesReceived = recv(pollVector[i].fd, buffer, sizeof(buffer), 0);
+				buffer[bytesReceived] = '\0'; // NULL terminate string.
 				if (bytesReceived <= 0)
 					handleDisconnection(i);
 				else
 				{
-					handleCmd(buffer, tmpClient);	// check if the client has sent a command
 					std::cout << tmpClient->getNickname() +"@"+ tmpClient->getAddress() + ": ";
+					handleCmd(buffer, tmpClient);	// check if the client has sent a command
 					std::cout << buffer;
 					tmpClient->sendData(pollVector[i].fd);
 				}
@@ -292,8 +324,53 @@ void Server::run()
 	OTHER FUNCTIONS THAT ARE NOT METHODS
 */
 
-int	sendMsgFd(int destFd, std::string msg, int flag)
+// Most usually the flag is MSG_DONTWAIT
+void	sendMsgFd(int destFd, std::string msg, int flag)
 {
-	int	bytesSend =	send(destFd, msg.c_str(), msg.size(), flag);
-	return (bytesSend);
+  // Check if socket is ready for writing using poll (non-blocking)
+  struct pollfd pfd;
+  pfd.fd = destFd;
+  pfd.events = POLLOUT;
+  int pollResult = poll(&pfd, 1, 0);
+
+  if (pollResult == -1) {
+    // Handle error on poll
+    std::cerr << "Error polling socket for write readiness: " << strerror(errno) << std::endl;
+    return;
+  } else if (pollResult == 0) {
+    // Socket not ready for writing yet (may need to retry later)
+    return;
+  }
+
+  // Socket is ready for writing, send the message
+  ssize_t bytesSent = send(destFd, msg.c_str(), msg.length(), flag);
+  if (bytesSent < 0) {
+    std::cerr << "Error sending message to client " << destFd << ": " << strerror(errno) << std::endl;
+    // Consider closing the connection if error persists
+  }
+}
+
+// Most usually the flag is MSG_DONTWAIT
+int		recvMsgFd(int originFd, char *buffer, size_t maxLen, int flag)
+{
+	int bytesRecv = recv(originFd, buffer, maxLen - 1, flag);
+	buffer[bytesRecv] = '\0';
+	return (bytesRecv);
+}
+
+int	checkNick(std::string newNick)
+{
+	if (newNick.empty())
+		return EMPTY_NICK;
+	if (newNick.size() > 12)
+		return SIZE_EXCEED;
+	if (newNick.find(' '))
+		return HAS_SPACE;
+	for (int i = 0 ; newNick.size() ; i++)
+	{
+		char c = newNick[i];
+		if (!isalnum(c))
+			return IS_NOT_ALNUM;
+	}
+	return NICK_OK;
 }

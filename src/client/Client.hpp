@@ -12,11 +12,11 @@
 
 class Client {
   private:
-	char				recvBuffer[MAX_MSG_SIZE];
-	char				sendBuffer[MAX_MSG_SIZE];
-	int 				clientSocketFd;
-	std::string			clientIp;
-	std::string			nickName;
+	char				_recvBuffer[MAX_MSG_SIZE];
+	char				_sendBuffer[MAX_MSG_SIZE];
+	int 				_clientSocketFd;
+	std::string			_clientIp;
+	std::string			_nickName;
 
   public:
     Client(int fd, std::string ip);
@@ -25,9 +25,9 @@ class Client {
 	std::string		getAddress() const ;
 	std::string		getRecvBuffer() const ;
 	int				getFd() const ;
+
 	void			setNickname(std::string newNick);
+
 	int				sendData(int serverFd);
 	int				receiveData(int serverFd);
-
-
 };

@@ -1,7 +1,6 @@
 #pragma once
 #include "../client/Client.hpp"
 #include <cerrno>
-#include <cstdlib>      // For exit() and EXIT_FAILURE
 #include <iostream>     // For cout
 #include <netinet/in.h> // For sockaddr_in
 #include <stdlib.h>     // atoi
@@ -9,40 +8,48 @@
 #include <unistd.h>     // For read
 #include <poll.h>
 #include <vector>
+#include <map>
+#include <arpa/inet.h>
+#include <cstring>
+#include <fcntl.h>
+#include <sys/types.h>
 
 extern bool power;
 
 #define TIMEOUT 10000
 #define MAX_CLIENTS 10
 
+class Client;
+
 class Server {
   private:
-	bool						powerOn;
 	int 						_port;
-	int 						sockfd;
-	sockaddr_in 				sockaddr;	// Server address
-	std::vector <Client *>		clientVector; // Clients connected to the server
-	std::vector <struct pollfd> pollVector;
-	std::string 				p_port;
-	std::string 				p_password;
+	int 						_sockfd;
+	std::string 				_password;
+
+	sockaddr_in 				_sockaddr;	// Server address
+	std::vector <Client *>		_vectorClients; // Clients connected to the server
+	std::vector <struct pollfd> _vectorPoll;
+    std::map<int, Client*> 		_fdToClientMap; // Map file descriptors to Client pointers
+
 
   public:
+
 	int							conectedClients;
 	char						buffer[MAX_MSG_SIZE];
 	Server(int, char *);
 	~Server();
-	Client * getClientByFd(int fdMatch);
-	void	handleCmd(const char *buffer, Client *clientObj);
-	bool	isPowerOn() const;
-	void	shutDown();
-	int		getPort() const;
-	int		getSockfd() const;
-	void	handleNewConnection();
-	void	handleDisconnection(int index);
-	void	initPoll();
-	void	handleConns();
-	void	run();
-	void	closeSockets();
+	void						handleCmd(const char *buffer, Client *clientObj);
+
+	int							grabConnection();
+	void						run();
+	void						closeSockets();
+	void						initPoll();
+	void						handleDisconnection(int index);
+	void						handleConns();
+	Client * 					getClientByFd(int fdMatch);
+	int							getPort() const;
+	int							getSockfd() const;
 };
 
 
@@ -60,6 +67,7 @@ MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
 */
 void	sendMsgFd(int destFd, std::string msg, int flag);
 int		recvMsgFd(int originFd, char *buffer, size_t maxLen, int flag);
+int		quickError(std::string msg);
 int		checkNick(std::string newNick);
 
 enum nickReturn

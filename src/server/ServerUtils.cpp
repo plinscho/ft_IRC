@@ -33,8 +33,8 @@ int	checkNick(std::string newNick)
 	return NICK_OK;
 }
 
-int	quickError(std::string msg)
+int	quickError(std::string msg, int errcode)
 {
 	std::cerr << msg << std::endl;
-	return (1);
+	return (errcode);
 }

@@ -66,7 +66,7 @@ MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
 */
 void	sendMsgFd(int destFd, std::string msg, int flag);
 int		recvMsgFd(int originFd, char *buffer, size_t maxLen, int flag);
-int		quickError(std::string msg);
+int		quickError(std::string msg, int errcode);
 int		checkNick(std::string newNick);
 
 enum nickReturn

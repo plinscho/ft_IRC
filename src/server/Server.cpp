@@ -66,6 +66,7 @@ int Server::grabConnection()
 	sockaddr_in clientAddr;
 	socklen_t	clientAddrLen = sizeof(clientAddr);
 
+	// check if listening fd has found a new connection
 	int checker = poll(&_vectorPoll[0], 1, 1000);
 	if (!checker)
 		return (0);
@@ -76,9 +77,17 @@ int Server::grabConnection()
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
 			return 0;
 		else
-			return (quickError("Error.\nAccept() failed in grabConnection()."));
+			return (quickError("Error.\nAccept() failed in grabConnection().", EXIT_FAILURE));
 	}
 	
+	// set the client to nonblocking
+	if (fcntl(newClientFd, F_SETFL, O_NONBLOCK) < 0)
+	{
+		close(newClientFd);
+		return (quickError("Error.\nNew connection could not be accepted.", EXIT_SUCCESS));
+	}
+
+
 	// get the ip in a readable way
 	std::string clientIp = inet_ntoa(clientAddr.sin_addr);
 
@@ -95,8 +104,6 @@ int Server::grabConnection()
 	// save client in map, associated with the fd
 	_fdToClientMap[newClientFd] = newClient;
 	conectedClients++;
-
-	std::cout << "New connection from " << clientIp << " accepted" << std::endl;
 	return (0);
 }
 
@@ -177,11 +184,16 @@ int Server::run()
 {
 	static int i = 0;
 	int ret;
-	ret = poll(_vectorPoll.data(), _vectorPoll.size(), 5000);
+	ret = poll(_vectorPoll.data(), _vectorPoll.size(), 50000);
 	if (ret < 0)
-		return (quickError("Error.\nPoll() function failed."));
+	{
+		if (errno == EINTR)
+			return 0;
+		else
+			return (quickError("Error.\nPoll() function failed.", EXIT_FAILURE));
+	}
 	else if (ret == 0)
-		return (quickError("Server timed out.\n"));
+		return (quickError("Server timed out.\n", EXIT_FAILURE));
 	else
 	{
 		// loop through the poll vector to check events:
@@ -190,16 +202,27 @@ int Server::run()
 			if (_vectorPoll[i].fd < 0)
 				continue ;
 			
-			// check the read events
-			if (_vectorPoll[i].revents & POLLIN)
+			// check the disconnection events
+			if (_vectorPoll[i].revents & (POLLHUP | POLLERR))
 			{
-				
+				handleDisconnection(i);
+				continue;
 			}
 				// check the write events:
 			if (_vectorPoll[i].revents & POLLIN)
 			{
+				char buffer[1024] = {0};
+				size_t bytesRead = recv(_vectorPoll[i].fd, buffer, sizeof(buffer), O_NONBLOCK);
+				if (bytesRead <= 0)
+				{
+					handleDisconnection(i);
+					continue;
 				}
-				// clear the poll() revents field
+				else
+					std::cout << buffer << std::endl;
+			}
+
+			// clear the poll() revents field
 			_vectorPoll[i].revents = 0;
 		}
 	}

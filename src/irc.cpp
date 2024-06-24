@@ -13,10 +13,8 @@ void sigHandler(int sigNum) {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 3) {
-        std::cerr << "Error: use ./ircserv <port> <password>" << std::endl;
-        return 1;
-    }
+    if (argc != 3)
+        return (quickError("Error.\n Use: ./ircserv <port> <password>", EXIT_FAILURE));
 
     int port = atoi(argv[1]);
 

@@ -13,10 +13,8 @@ void sigHandler(int sigNum) {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 3) {
-        std::cerr << "Error: use ./ircserv <port> <password>" << std::endl;
-        return 1;
-    }
+    if (argc != 3)
+        return (quickError("Error.\n Use: ./ircserv <port> <password>", EXIT_FAILURE));
 
     int port = atoi(argv[1]);
 
@@ -32,15 +30,18 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
     Server server(port, argv[2]);
-    server.initPoll();
 
+	server.initPoll();
+	
     signal(SIGINT, sigHandler);
 
     while (power) 
     {
-        server.run();
+		if (server.grabConnection())
+			return (1);
+        if (server.run())
+			return (1);
     }
     server.closeSockets();
-    server.shutDown();
     return 0;
 }

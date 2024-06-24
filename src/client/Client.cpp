@@ -1,49 +1,49 @@
 #include <iostream>
 #include "Client.hpp"
 
-Client::Client(int fd, std::string address) : clientSocketFd(fd), clientIp(address)
+Client::Client(int fd, std::string address) : _clientSocketFd(fd), _clientIp(address)
 {
-	std::cout << "New connection established with ip: " + clientIp << std::endl;
-	nickName = "newNickname";
+	std::cout << "New connection established with ip: " + _clientIp << std::endl;
+	_nickName = "newNickname";
 }
 
 Client::~Client() 
 {
 	std::cout << "Client " + getAddress() + " has disconnected" << std::endl;
-	close(clientSocketFd);
+	close(_clientSocketFd);
 }
 
 std::string Client::getNickname() const
 {
-	return (nickName);
+	return (_nickName);
 }
 
 std::string Client::getAddress() const
 {
-	return (clientIp);
+	return (_clientIp);
 }
 
 int Client::getFd() const
 {
-	return (clientSocketFd);
+	return (_clientSocketFd);
 }
 
 std::string	Client::getRecvBuffer() const 
 {
-	return (std::string(recvBuffer));
+	return (std::string(_recvBuffer));
 }
 
 void	Client::setNickname(std::string newNick)
 {
 	if (newNick.empty())
 		return ;
-	this->nickName = newNick;
+	this->_nickName = newNick;
 }
 
 int Client::receiveData(int serverFd)
 {
-	memset(recvBuffer, 0, sizeof(recvBuffer));
-	int bytesReceived = recv(serverFd, recvBuffer, sizeof(recvBuffer), 0);
+	memset(_recvBuffer, 0, sizeof(_recvBuffer));
+	int bytesReceived = recv(serverFd, _recvBuffer, sizeof(_recvBuffer), 0);
 	if (bytesReceived < 0)
 	{
 		std::cerr << "Error receiving data" << std::endl;
@@ -59,8 +59,8 @@ int Client::receiveData(int serverFd)
 
 int Client::sendData(int serverFd)
 {
-	memset(sendBuffer, 0, sizeof(sendBuffer));
-	int bytesSend = send(serverFd, sendBuffer, sizeof(sendBuffer), 0);
+	memset(_sendBuffer, 0, sizeof(_sendBuffer));
+	int bytesSend = send(serverFd, _sendBuffer, sizeof(_sendBuffer), 0);
     if (bytesSend < 0)
     {
         std::cerr << "Error sending data" << std::endl;

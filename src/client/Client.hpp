@@ -2,6 +2,7 @@
 #include <string.h>
 #include <cerrno>
 #include <cstdlib>      // For exit() and EXIT_FAILURE
+#include <poll.h>
 #include <iostream>     // For cout
 #include <netinet/in.h> // For sockaddr_in
 #include <sys/socket.h> // For socket functions

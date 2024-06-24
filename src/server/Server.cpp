@@ -34,6 +34,7 @@ Server::Server(int port, char *password) {
 		exit(EXIT_FAILURE);
 	}
 
+	initPoll();
 	//  listen() marks the socket referred to by _sockfd as a passive socket, that is, as a socket that will be used to
 	//   accept incoming connection requests using accept(2).
 	listen(_sockfd, MAX_CLIENTS);
@@ -50,13 +51,13 @@ Server::~Server() {
 // 0. Start the poll vector. 1st vector is the listen one:
 void Server::initPoll(void)
 {
-	struct pollfd listenSocketPoll;
+	struct pollfd _serverPoll;
 
-	listenSocketPoll.fd = _sockfd;
-	listenSocketPoll.events = POLLIN; // flag set to "there is data to read"
-	listenSocketPoll.revents = 0; // This will be populated in each poll() call.
+	_serverPoll.fd = _sockfd;
+	_serverPoll.events = POLLIN; // flag set to "there is data to read"
+	_serverPoll.revents = 0; // This will be populated in each poll() call.
 
-	_vectorPoll.push_back(listenSocketPoll); // set listen poll struct into the vector.
+	_vectorPoll.push_back(_serverPoll); // set listen poll struct into the vector.
 }
 
 // 1. While server is listening, keep an eye on new connections
@@ -65,12 +66,18 @@ int Server::grabConnection()
 	sockaddr_in clientAddr;
 	socklen_t	clientAddrLen = sizeof(clientAddr);
 
-	int checker = poll(&_vectorPoll[0], 1, -1);
+	int checker = poll(&_vectorPoll[0], 1, 1000);
 	if (!checker)
 		return (0);
 	int newClientFd = accept(_sockfd, (struct sockaddr *)&clientAddr, &clientAddrLen);
 	if (newClientFd < 0)
-		return (quickError("Error.\nAccept() failed in grabConnection()."));
+	{
+		// If ctrl + c is pressed, return 0 and shut down server.
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return 0;
+		else
+			return (quickError("Error.\nAccept() failed in grabConnection()."));
+	}
 	
 	// get the ip in a readable way
 	std::string clientIp = inet_ntoa(clientAddr.sin_addr);
@@ -78,9 +85,7 @@ int Server::grabConnection()
 	// create a new client and set the fd and ip from earlier
 	Client *newClient = new Client(newClientFd, clientIp);
 
-	// save the new client into the client vector from server
-	_vectorClients.push_back(newClient);
-
+	// give the client a poll struct.
 	struct pollfd newClientPoll;
 	newClientPoll.fd = newClientFd;
 	newClientPoll.events = POLLIN;
@@ -114,69 +119,92 @@ void Server::handleConns()
 
 void Server::closeSockets()
 {
-	std::cout << "Cerrando sockets...\n" << std::endl;
+	std::map<int, Client *>::iterator it;
+
+	std::cout << "Closing server ...\n" << std::endl;
+
 	// Cierra todos los sockets de los clientes
-	for (int i = 0; i < MAX_CLIENTS ; i++)
+	while (!_fdToClientMap.empty())
 	{
-		if (_vectorPoll[i].fd < 0)
-			continue ;
-		close(_vectorPoll[i].fd);
-		handleDisconnection(i);
+		it = _fdToClientMap.begin();
+		for (size_t i = 0 ; i < _vectorPoll.size() ; ++i)
+		{
+			if (_vectorPoll[i].fd == it->first)
+			{
+				handleDisconnection(i);
+				break;
+			}
+		}
 	}
-	// Cierra el socket del servidor
-	close(_sockfd);
+	
+	if (_sockfd >= 0)
+	{
+		close(_sockfd);
+		_sockfd = -1;
+	}
 }
 
 
 void Server::handleDisconnection(int index)
 {
-	int disconnectedFd = _vectorPoll[index].fd;
-	std::vector<Client *>::iterator clientIterator;
-
 	if (_vectorPoll[index].fd == -1) 
 		return ;
+	
+	std::map<int, Client *>::iterator clientIterator;
+	Client *tmpClient = NULL;
+	
+	int disconnectedFd = _vectorPoll[index].fd;
+	clientIterator = _fdToClientMap.find(disconnectedFd);
 
-	close(_vectorPoll[index].fd);
-	_vectorPoll[index].fd = -1;
-	for (clientIterator = _vectorClients.begin() ; 
-			clientIterator != _vectorClients.end() ; clientIterator++)
+	if (clientIterator != _fdToClientMap.end())
 	{
-		if (disconnectedFd == (*clientIterator)->getFd())
+		tmpClient = clientIterator->second;
+		std::cout << tmpClient->getNickname() << " with ip: "
+		<< tmpClient->getAddress() << " disconnected from server." << std::endl;
+		close(_vectorPoll[index].fd);
+		_vectorPoll[index].fd = -1;
+
+		// free memory 
+		delete tmpClient;
+		tmpClient = NULL;
+		_fdToClientMap.erase(clientIterator);
+		_vectorPoll.erase(_vectorPoll.begin() + index);	
+		conectedClients--;
+	}
+}
+
+int Server::run()
+{
+	static int i = 0;
+	int ret;
+	ret = poll(_vectorPoll.data(), _vectorPoll.size(), 5000);
+	if (ret < 0)
+		return (quickError("Error.\nPoll() function failed."));
+	else if (ret == 0)
+		return (quickError("Server timed out.\n"));
+	else
+	{
+		// loop through the poll vector to check events:
+		for (size_t i = 0 ; i < _vectorPoll.size() ; ++i)
 		{
-			delete *clientIterator;
-			_vectorClients.erase(clientIterator);
-			conectedClients--;
-			break ;
+			if (_vectorPoll[i].fd < 0)
+				continue ;
+			
+			// check the read events
+			if (_vectorPoll[i].revents & POLLIN)
+			{
+				
+			}
+				// check the write events:
+			if (_vectorPoll[i].revents & POLLIN)
+			{
+				}
+				// clear the poll() revents field
+			_vectorPoll[i].revents = 0;
 		}
 	}
-	std::cout << "Client erased from list."<< std::endl;
+	std::cout << "loops: " << ++i << std::endl;
+	return (0);
 }
 
-Client * Server::getClientByFd(int fdMatch)
-{
-	std::vector<Client *>::iterator tmp;
-	for (tmp = _vectorClients.begin() ; tmp != _vectorClients.end() ; tmp++)
-    {
-        if ((*tmp)->getFd() == fdMatch)
-            return *tmp;
-    }
-    return NULL; // Return nullptr if no client matches the fd
-}
-
-/*
-
-void Server::handleCmd(const char *buffer, Client *clientObj)
-{
-	std::string tmpStr(buffer);
-
-	if (tmpStr.find("/nick") == 0)
-		sendMsgFd(clientObj->getFd(), "Usage: /nick [newNick]\n", MSG_DONTWAIT);
-	
-}
-
-*/
-void Server::run()
-{
-
-}
 

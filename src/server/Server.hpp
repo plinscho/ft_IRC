@@ -28,7 +28,6 @@ class Server {
 	std::string 				_password;
 
 	sockaddr_in 				_sockaddr;	// Server address
-	std::vector <Client *>		_vectorClients; // Clients connected to the server
 	std::vector <struct pollfd> _vectorPoll;
     std::map<int, Client*> 		_fdToClientMap; // Map file descriptors to Client pointers
 
@@ -42,7 +41,7 @@ class Server {
 	void						handleCmd(const char *buffer, Client *clientObj);
 
 	int							grabConnection();
-	void						run();
+	int							run();
 	void						closeSockets();
 	void						initPoll();
 	void						handleDisconnection(int index);

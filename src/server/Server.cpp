@@ -138,7 +138,7 @@ void Server::closeSockets()
 		{
 			if (_vectorPoll[i].fd == it->first)
 			{
-				handleDisconnection(i);
+				handleDisconnection(_vectorPoll[i].fd);
 				break;
 			}
 		}
@@ -152,29 +152,30 @@ void Server::closeSockets()
 }
 
 
-void Server::handleDisconnection(int index)
+void Server::handleDisconnection(int fd)
 {
-	if (_vectorPoll[index].fd == -1) 
+	if (fd == -1) 
 		return ;
 	
 	std::map<int, Client *>::iterator clientIterator;
 	Client *tmpClient = NULL;
-	
-	int disconnectedFd = _vectorPoll[index].fd;
-	clientIterator = _fdToClientMap.find(disconnectedFd);
+
+	clientIterator = _fdToClientMap.find(fd);
 
 	if (clientIterator != _fdToClientMap.end())
 	{
 		tmpClient = clientIterator->second;
 		std::cout << tmpClient->getNickname() << " with ip: "
 		<< tmpClient->getAddress() << " disconnected from server." << std::endl;
-		close(_vectorPoll[index].fd);
-		_vectorPoll[index].fd = -1;
+		close(fd);
+
 
 		// free memory 
 		delete tmpClient;
 		tmpClient = NULL;
 		_fdToClientMap.erase(clientIterator);
+
+	//	handle erasing vectorPoll with fd	
 		_vectorPoll.erase(_vectorPoll.begin() + index);	
 		conectedClients--;
 	}
@@ -211,15 +212,16 @@ int Server::run()
 				// check the write events:
 			if (_vectorPoll[i].revents & POLLIN)
 			{
-				char buffer[1024] = {0};
-				size_t bytesRead = recv(_vectorPoll[i].fd, buffer, sizeof(buffer), O_NONBLOCK);
 				if (bytesRead <= 0)
 				{
 					handleDisconnection(i);
 					continue;
 				}
 				else
-					std::cout << buffer << std::endl;
+				{
+					//std::cout << buffer << std::endl;
+					receiveData(vectorPoll[i].fd);
+				}
 			}
 
 			// clear the poll() revents field
@@ -228,6 +230,35 @@ int Server::run()
 	}
 	std::cout << "loops: " << ++i << std::endl;
 	return (0);
+}
+
+void	Server::receiveData(int fd)
+{
+	// Vector to save the split cmd
+	std::vector<std::string> cmd;
+
+	char buffer[512] = {0};
+	Client *tmpClient = NULL;
+
+	// find the client object correspondant from fd
+	tmpClient = _fdToClientMap.find(fd);
+
+	// load the message into a buffer
+	size_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
+	if (bytesRead <= 0)
+	{
+		handleDisconnection(fd);
+	}
+	else
+	{
+		// handle receiving message
+		buffer[bytesRead] = '\0';
+		std::cout << buffer << std::endl;
+	}
+
+
+
+
 }
 
 

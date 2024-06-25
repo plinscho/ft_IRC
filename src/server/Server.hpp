@@ -42,6 +42,7 @@ class Server {
 
 	int							grabConnection();
 	int							run();
+	void						receiveData(int fd);
 	void						closeSockets();
 	void						initPoll();
 	void						handleDisconnection(int index);

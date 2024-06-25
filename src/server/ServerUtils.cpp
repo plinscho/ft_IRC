@@ -38,3 +38,13 @@ int	quickError(std::string msg, int errcode)
 	std::cerr << msg << std::endl;
 	return (errcode);
 }
+
+int sendWelcome(int fd)
+{
+	char buffer[] = "___________________________________________\
+					\n\tIRC SERVER\n___________________________________________\
+					\nCOMMANDS:\n/login\t<password> <nickname>\n/join\t<channel>\n\n";
+	if (fd < 0 || send(fd, buffer, sizeof(buffer), MSG_DONTWAIT) == -1)
+		return (quickError("Error.\nWecolme message could not be send!", EXIT_FAILURE));
+	return (0);
+}

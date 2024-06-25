@@ -87,14 +87,13 @@ int Server::grabConnection()
 		return (quickError("Error.\nNew connection could not be accepted.", EXIT_SUCCESS));
 	}
 
-
 	// get the ip in a readable way
 	std::string clientIp = inet_ntoa(clientAddr.sin_addr);
 
 	// create a new client and set the fd and ip from earlier
 	Client *newClient = new Client(newClientFd, clientIp);
 
-	// give the client a poll struct.
+	// give the client a poll struct and save it.
 	struct pollfd newClientPoll;
 	newClientPoll.fd = newClientFd;
 	newClientPoll.events = POLLIN;
@@ -103,6 +102,9 @@ int Server::grabConnection()
 
 	// save client in map, associated with the fd
 	_fdToClientMap[newClientFd] = newClient;
+	if (sendWelcome(newClientFd) != 0)
+		handleDisconnection(newClientFd);
+
 	conectedClients++;
 	return (0);
 }
@@ -151,32 +153,44 @@ void Server::closeSockets()
 	}
 }
 
+std::vector<pollfd>::iterator Server::findPollFd(int fdToMatch)
+{
+	std::vector<pollfd>::iterator it;
+
+	for (it = _vectorPoll.begin() ; it != _vectorPoll.end() ; ++it)
+	{
+		if (it->fd == fdToMatch)
+			return it;
+	}
+	return (_vectorPoll.end());
+}
 
 void Server::handleDisconnection(int fd)
 {
 	if (fd == -1) 
 		return ;
 	
+	std::vector<pollfd>::iterator pollIterator;
 	std::map<int, Client *>::iterator clientIterator;
 	Client *tmpClient = NULL;
 
 	clientIterator = _fdToClientMap.find(fd);
+	pollIterator = findPollFd(fd);
 
-	if (clientIterator != _fdToClientMap.end())
+	if (clientIterator != _fdToClientMap.end() && pollIterator != _vectorPoll.end())
 	{
 		tmpClient = clientIterator->second;
 		std::cout << tmpClient->getNickname() << " with ip: "
 		<< tmpClient->getAddress() << " disconnected from server." << std::endl;
 		close(fd);
 
-
 		// free memory 
 		delete tmpClient;
 		tmpClient = NULL;
-		_fdToClientMap.erase(clientIterator);
 
-	//	handle erasing vectorPoll with fd	
-		_vectorPoll.erase(_vectorPoll.begin() + index);	
+	//	Erasing vectorPoll & Client map with fd	
+		_fdToClientMap.erase(clientIterator);
+		_vectorPoll.erase(pollIterator);	
 		conectedClients--;
 	}
 }
@@ -212,16 +226,8 @@ int Server::run()
 				// check the write events:
 			if (_vectorPoll[i].revents & POLLIN)
 			{
-				if (bytesRead <= 0)
-				{
-					handleDisconnection(i);
-					continue;
-				}
-				else
-				{
 					//std::cout << buffer << std::endl;
-					receiveData(vectorPoll[i].fd);
-				}
+					receiveData(_vectorPoll[i].fd);
 			}
 
 			// clear the poll() revents field
@@ -236,12 +242,17 @@ void	Server::receiveData(int fd)
 {
 	// Vector to save the split cmd
 	std::vector<std::string> cmd;
+	std::map<int, Client *>::iterator it;
 
 	char buffer[512] = {0};
 	Client *tmpClient = NULL;
 
 	// find the client object correspondant from fd
-	tmpClient = _fdToClientMap.find(fd);
+	it = _fdToClientMap.find(fd);
+	tmpClient = it->second;
+
+
+	(void)tmpClient;
 
 	// load the message into a buffer
 	size_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
@@ -255,10 +266,6 @@ void	Server::receiveData(int fd)
 		buffer[bytesRead] = '\0';
 		std::cout << buffer << std::endl;
 	}
-
-
-
-
 }
 
 

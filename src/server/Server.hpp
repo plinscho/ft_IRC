@@ -23,33 +23,33 @@ class Client;
 
 class Server {
   private:
-	int 						_port;
-	int 						_sockfd;
-	std::string 				_password;
+	int 							_port;
+	int 							_sockfd;
+	std::string 					_password;
 
-	sockaddr_in 				_sockaddr;	// Server address
-	std::vector <struct pollfd> _vectorPoll;
-    std::map<int, Client*> 		_fdToClientMap; // Map file descriptors to Client pointers
+	sockaddr_in 					_sockaddr;	// Server address
+	std::vector <struct pollfd> 	_vectorPoll;
+    std::map<int, Client*> 			_fdToClientMap; // Map file descriptors to Client pointers
 
 
   public:
 
-	int							conectedClients;
-	char						buffer[MAX_MSG_SIZE];
+	int								conectedClients;
+	char							buffer[MAX_MSG_SIZE];
 	Server(int, char *);
 	~Server();
-	void						handleCmd(const char *buffer, Client *clientObj);
-
-	int							grabConnection();
-	int							run();
-	void						receiveData(int fd);
-	void						closeSockets();
-	void						initPoll();
-	void						handleDisconnection(int index);
-	void						handleConns();
-	Client * 					getClientByFd(int fdMatch);
-	int							getPort() const;
-	int							getSockfd() const;
+	void							handleCmd(const char *buffer, Client *clientObj);
+	int								grabConnection();
+	int								run();
+	void							receiveData(int fd);
+	void							closeSockets();
+	void							initPoll();
+	void							handleDisconnection(int index);
+	void							handleConns();
+	Client * 						getClientByFd(int fdMatch);
+	int								getPort() const;
+	int								getSockfd() const;
+	std::vector<pollfd>::iterator	findPollFd(int fd);
 };
 
 
@@ -69,6 +69,8 @@ void	sendMsgFd(int destFd, std::string msg, int flag);
 int		recvMsgFd(int originFd, char *buffer, size_t maxLen, int flag);
 int		quickError(std::string msg, int errcode);
 int		checkNick(std::string newNick);
+int 	sendWelcome(int fd);
+
 
 enum nickReturn
 {

@@ -195,11 +195,16 @@ void Server::handleDisconnection(int fd)
 	}
 }
 
+
+// Because we can only use poll() 1 time to manage all the revents
+// this is the logic I have found the best.
 int Server::run()
 {
 	static int i = 0;
 	int ret;
-	ret = poll(_vectorPoll.data(), _vectorPoll.size(), 50000);
+
+	// call poll() one time and update the _vectorPoll vector.
+	ret = poll(_vectorPoll.data(), _vectorPoll.size(), POLL_TIMEOUT);
 	if (ret < 0)
 	{
 		if (errno == EINTR)
@@ -216,17 +221,20 @@ int Server::run()
 		{
 			if (_vectorPoll[i].fd < 0)
 				continue ;
-			
+
 			// check the disconnection events
-			if (_vectorPoll[i].revents & (POLLHUP | POLLERR))
+			else if (_vectorPoll[i].revents & (POLLHUP | POLLERR))
 			{
 				handleDisconnection(i);
 				continue;
 			}
-				// check the write events:
+
+			// check the write events:
 			if (_vectorPoll[i].revents & POLLIN)
 			{
-					//std::cout << buffer << std::endl;
+				if (_vectorPoll[i].fd == _sockfd)
+					grabConnection();
+				else
 					receiveData(_vectorPoll[i].fd);
 			}
 

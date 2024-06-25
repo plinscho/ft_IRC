@@ -16,7 +16,7 @@
 
 extern bool power;
 
-#define TIMEOUT 10000
+#define POLL_TIMEOUT -1
 #define MAX_CLIENTS 10
 
 class Client;

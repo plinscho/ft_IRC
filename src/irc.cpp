@@ -36,12 +36,8 @@ int main(int argc, char **argv) {
     signal(SIGINT, sigHandler);
 
     while (power) 
-    {
-		if (server.grabConnection())
-			return (1);
-        if (server.run())
-			return (1);
-    }
+        server.run();
+
     server.closeSockets();
     return 0;
 }

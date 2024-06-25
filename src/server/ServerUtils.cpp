@@ -38,3 +38,21 @@ int	quickError(std::string msg, int errcode)
 	std::cerr << msg << std::endl;
 	return (errcode);
 }
+
+int sendWelcome(int fd)
+{
+	char buffer[] = "___________________________________________\
+	\n\tMIDDLEMAN IRC SERVER\n___________________________________________\
+	\nCOMMANDS:\
+	\n/login\t\t<password> <nickname>\
+	\n/join\t\t<channel>\
+	\n/setnick\t<new nick>\t(max 8 characters)\
+	\n/setuname\t<new username>\t(max 8 characters)\
+	\n/send\t\t<ip addr> | <nickname>\t(send a private msg)\
+	\n/help\t\t(print this message again)\n\
+	\n";
+
+	if (fd < 0 || send(fd, buffer, sizeof(buffer), MSG_DONTWAIT) == -1)
+		return (quickError("Error.\nWecolme message could not be send!", EXIT_FAILURE));
+	return (0);
+}

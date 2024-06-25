@@ -87,14 +87,13 @@ int Server::grabConnection()
 		return (quickError("Error.\nNew connection could not be accepted.", EXIT_SUCCESS));
 	}
 
-
 	// get the ip in a readable way
 	std::string clientIp = inet_ntoa(clientAddr.sin_addr);
 
 	// create a new client and set the fd and ip from earlier
 	Client *newClient = new Client(newClientFd, clientIp);
 
-	// give the client a poll struct.
+	// give the client a poll struct and save it.
 	struct pollfd newClientPoll;
 	newClientPoll.fd = newClientFd;
 	newClientPoll.events = POLLIN;
@@ -103,6 +102,9 @@ int Server::grabConnection()
 
 	// save client in map, associated with the fd
 	_fdToClientMap[newClientFd] = newClient;
+	if (sendWelcome(newClientFd) != 0)
+		handleDisconnection(newClientFd);
+
 	conectedClients++;
 	return (0);
 }
@@ -138,7 +140,7 @@ void Server::closeSockets()
 		{
 			if (_vectorPoll[i].fd == it->first)
 			{
-				handleDisconnection(i);
+				handleDisconnection(_vectorPoll[i].fd);
 				break;
 			}
 		}
@@ -151,40 +153,58 @@ void Server::closeSockets()
 	}
 }
 
-
-void Server::handleDisconnection(int index)
+std::vector<pollfd>::iterator Server::findPollFd(int fdToMatch)
 {
-	if (_vectorPoll[index].fd == -1) 
+	std::vector<pollfd>::iterator it;
+
+	for (it = _vectorPoll.begin() ; it != _vectorPoll.end() ; ++it)
+	{
+		if (it->fd == fdToMatch)
+			return it;
+	}
+	return (_vectorPoll.end());
+}
+
+void Server::handleDisconnection(int fd)
+{
+	if (fd == -1) 
 		return ;
 	
+	std::vector<pollfd>::iterator pollIterator;
 	std::map<int, Client *>::iterator clientIterator;
 	Client *tmpClient = NULL;
-	
-	int disconnectedFd = _vectorPoll[index].fd;
-	clientIterator = _fdToClientMap.find(disconnectedFd);
 
-	if (clientIterator != _fdToClientMap.end())
+	clientIterator = _fdToClientMap.find(fd);
+	pollIterator = findPollFd(fd);
+
+	if (clientIterator != _fdToClientMap.end() && pollIterator != _vectorPoll.end())
 	{
 		tmpClient = clientIterator->second;
 		std::cout << tmpClient->getNickname() << " with ip: "
 		<< tmpClient->getAddress() << " disconnected from server." << std::endl;
-		close(_vectorPoll[index].fd);
-		_vectorPoll[index].fd = -1;
+		close(fd);
 
 		// free memory 
 		delete tmpClient;
 		tmpClient = NULL;
+
+	//	Erasing vectorPoll & Client map with fd	
 		_fdToClientMap.erase(clientIterator);
-		_vectorPoll.erase(_vectorPoll.begin() + index);	
+		_vectorPoll.erase(pollIterator);	
 		conectedClients--;
 	}
 }
 
+
+// Because we can only use poll() 1 time to manage all the revents
+// this is the logic I have found the best.
 int Server::run()
 {
 	static int i = 0;
 	int ret;
-	ret = poll(_vectorPoll.data(), _vectorPoll.size(), 50000);
+
+	// call poll() one time and update the _vectorPoll vector.
+	ret = poll(_vectorPoll.data(), _vectorPoll.size(), POLL_TIMEOUT);
 	if (ret < 0)
 	{
 		if (errno == EINTR)
@@ -201,25 +221,21 @@ int Server::run()
 		{
 			if (_vectorPoll[i].fd < 0)
 				continue ;
-			
+
 			// check the disconnection events
-			if (_vectorPoll[i].revents & (POLLHUP | POLLERR))
+			else if (_vectorPoll[i].revents & (POLLHUP | POLLERR))
 			{
 				handleDisconnection(i);
 				continue;
 			}
-				// check the write events:
+
+			// check the write events:
 			if (_vectorPoll[i].revents & POLLIN)
 			{
-				char buffer[1024] = {0};
-				size_t bytesRead = recv(_vectorPoll[i].fd, buffer, sizeof(buffer), O_NONBLOCK);
-				if (bytesRead <= 0)
-				{
-					handleDisconnection(i);
-					continue;
-				}
+				if (_vectorPoll[i].fd == _sockfd)
+					grabConnection();
 				else
-					std::cout << buffer << std::endl;
+					receiveData(_vectorPoll[i].fd);
 			}
 
 			// clear the poll() revents field
@@ -228,6 +244,36 @@ int Server::run()
 	}
 	std::cout << "loops: " << ++i << std::endl;
 	return (0);
+}
+
+void	Server::receiveData(int fd)
+{
+	// Vector to save the split cmd
+	std::vector<std::string> cmd;
+	std::map<int, Client *>::iterator it;
+
+	char buffer[512] = {0};
+	Client *tmpClient = NULL;
+
+	// find the client object correspondant from fd
+	it = _fdToClientMap.find(fd);
+	tmpClient = it->second;
+
+
+	(void)tmpClient;
+
+	// load the message into a buffer
+	size_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
+	if (bytesRead <= 0)
+	{
+		handleDisconnection(fd);
+	}
+	else
+	{
+		// handle receiving message
+		buffer[bytesRead] = '\0';
+		std::cout << buffer << std::endl;
+	}
 }
 
 

@@ -1,10 +1,26 @@
 #include <iostream>
 #include "Client.hpp"
 
-Client::Client(int fd, std::string address) : _clientSocketFd(fd), _clientIp(address)
+Client::Client()
 {
+	_nickName = "";
+	_userName = "";
+	_clientSocketFd = -1;
+	_registered = false;
+	_clientIp = "";
+	_logged = false;
+}
+
+Client::Client(int fd, std::string address)
+{
+	_clientSocketFd = fd;
+	_clientIp = address;
+	_nickName = "";
+	_userName = "";
+	_logged = false;
+	_registered = true;
 	std::cout << "New connection established with ip: " + _clientIp << std::endl;
-	_nickName = "newNickname";
+
 }
 
 Client::~Client() 
@@ -35,7 +51,7 @@ std::string	Client::getRecvBuffer() const
 
 void	Client::setNickname(std::string newNick)
 {
-	if (newNick.empty())
+	if (newNick.empty() || newNick.size() > 8)
 		return ;
 	this->_nickName = newNick;
 }

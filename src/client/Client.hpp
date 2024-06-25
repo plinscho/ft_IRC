@@ -18,8 +18,14 @@ class Client {
 	int 				_clientSocketFd;
 	std::string			_clientIp;
 	std::string			_nickName;
+	std::string			_userName;
+
+	bool				_registered;
+	bool				_logged;
+
 
   public:
+	Client();
     Client(int fd, std::string ip);
     ~Client();
 	std::string		getNickname() const ;

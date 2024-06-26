@@ -41,7 +41,7 @@ cmdType getCommandType(const std::string &cmd)
     else return (SEND_MSG);    
 }
 
-int handleInput (char *buffer, Client *user)
+int Server::handleInput (char *buffer, Client *user)
 {
     if (!buffer)
         return (1);
@@ -50,9 +50,9 @@ int handleInput (char *buffer, Client *user)
 
     cmd = stringSplit(std::string(buffer), ' ');
     if (cmd.empty())
-        return (1);
+        return (0);
     cmdType type = getCommandType(cmd[0]);
-
+	std::cout << "Command: " << cmd[0] << std::endl;
     switch (type)
     {
         case (CMD_LOGIN):

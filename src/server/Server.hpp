@@ -21,56 +21,43 @@ extern bool power;
 
 class Client;
 
-class Server {
+class Server 
+{
   private:
+
 	int 							_port;
 	int 							_sockfd;
 	std::string 					_password;
-
 	sockaddr_in 					_sockaddr;	// Server address
 	std::vector <struct pollfd> 	_vectorPoll;
     std::map<int, Client*> 			_fdToClientMap; // Map file descriptors to Client pointers
 
-
   public:
 
-	int								conectedClients;
-	char							buffer[MAX_MSG_SIZE];
 	Server(int, char *);
 	~Server();
-	void							handleCmd(const char *buffer, Client *clientObj);
+	
+	int								conectedClients;
+	char							buffer[MAX_MSG_SIZE];
 	int								grabConnection();
 	int								run();
 	void							receiveData(int fd);
 	void							closeSockets();
 	void							initPoll();
 	void							handleDisconnection(int index);
-	void							handleConns();
-	Client * 						getClientByFd(int fdMatch);
 	int								getPort() const;
 	int								getSockfd() const;
 	std::vector<pollfd>::iterator	findPollFd(int fd);
+	int								handleInput(char *buffer, Client *user);
+
+	// COMMANDS
+	int 							cmdLogin(std::vector<std::string> cmd, Client *user);
+	int 							cmdJoin(std::vector<std::string> cmd, Client *user);
+	int 							cmdSetNick(std::vector<std::string> cmd, Client *user);
+	int 							cmdSetUname(std::vector<std::string> cmd, Client *user);
+	int 							cmdSend(std::vector<std::string> cmd, Client *user);
+	int 							cmdHelp(std::vector<std::string> cmd, Client *user);
 };
-
-
-/*
-
-send() flags:
-
-MSG_CONFIRM: 	This flag is not relevant for send(). It's used in sendto() function to tell the kernel that more data is coming in a subsequent call to sendto().
-MSG_DONTROUTE: 	This flag requests that the data should not be subject to routing. The data should be sent only to hosts on directly connected networks.
-MSG_DONTWAIT: 	This flag specifies that the operation should be performed in non-blocking mode. If the operation would block, send() will fail with the error EAGAIN or EWOULDBLOCK.
-MSG_EOR: 		This flag indicates end-of-record for record-based sockets (SOCK_SEQPACKET and SOCK_RDM).
-MSG_MORE: 		This flag indicates that more data is coming. The data will be bundled together into a single TCP segment if possible.
-MSG_NOSIGNAL: 	This flag requests not to send the SIGPIPE signal if an attempt to send is made on a stream socket that is no longer connected.
-MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
-*/
-void	sendMsgFd(int destFd, std::string msg, int flag);
-int		recvMsgFd(int originFd, char *buffer, size_t maxLen, int flag);
-int		handleInput(char *buffer, Client *user);
-int		quickError(std::string msg, int errcode);
-int		checkNick(std::string newNick);
-int 	sendWelcome(int fd);
 
 // COMMANDS
 
@@ -85,9 +72,21 @@ enum cmdType
 	SEND_MSG
 };
 
-int cmdLogin(std::vector<std::string> cmd, Client *user);
-int cmdJoin(std::vector<std::string> cmd, Client *user);
-int cmdSetNick(std::vector<std::string> cmd, Client *user);
-int cmdSetUname(std::vector<std::string> cmd, Client *user);
-int cmdSend(std::vector<std::string> cmd, Client *user);
-int cmdHelp(std::vector<std::string> cmd, Client *user);
+/*
+
+send() flags:
+
+MSG_CONFIRM: 	This flag is not relevant for send(). It's used in sendto() function to tell the kernel that more data is coming in a subsequent call to sendto().
+MSG_DONTROUTE: 	This flag requests that the data should not be subject to routing. The data should be sent only to hosts on directly connected networks.
+MSG_DONTWAIT: 	This flag specifies that the operation should be performed in non-blocking mode. If the operation would block, send() will fail with the error EAGAIN or EWOULDBLOCK.
+MSG_EOR: 		This flag indicates end-of-record for record-based sockets (SOCK_SEQPACKET and SOCK_RDM).
+MSG_MORE: 		This flag indicates that more data is coming. The data will be bundled together into a single TCP segment if possible.
+MSG_NOSIGNAL: 	This flag requests not to send the SIGPIPE signal if an attempt to send is made on a stream socket that is no longer connected.
+MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
+*/
+
+int		quickError(std::string msg, int errcode);
+int		checkNick(std::string newNick);
+int 	sendWelcome(int fd);
+
+

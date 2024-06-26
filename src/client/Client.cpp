@@ -6,6 +6,7 @@ Client::Client()
 	_nickName = "";
 	_userName = "";
 	_clientSocketFd = -1;
+	_loginAtempts = 0;
 	_registered = false;
 	_clientIp = "";
 	_logged = false;
@@ -15,6 +16,7 @@ Client::Client(int fd, std::string address)
 {
 	_clientSocketFd = fd;
 	_clientIp = address;
+	_loginAtempts = 0;
 	_nickName = "";
 	_userName = "";
 	_logged = false;
@@ -51,9 +53,12 @@ std::string	Client::getRecvBuffer() const
 
 void	Client::setNickname(std::string newNick)
 {
-	if (newNick.empty() || newNick.size() > 8)
-		return ;
 	this->_nickName = newNick;
+}
+
+void	Client::addLoginTry(void)
+{
+	_loginAtempts += 1;
 }
 
 int Client::receiveData(int serverFd)

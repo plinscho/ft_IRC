@@ -48,7 +48,7 @@ Server::~Server() {
 	}
 }
 
-// 0. Start the poll vector. 1st vector is the listen one:
+// Start the poll vector. 1st vector is the listen one:
 void Server::initPoll(void)
 {
 	struct pollfd _serverPoll;
@@ -60,7 +60,7 @@ void Server::initPoll(void)
 	_vectorPoll.push_back(_serverPoll); // set listen poll struct into the vector.
 }
 
-// 1. While server is listening, keep an eye on new connections
+// 
 int Server::grabConnection()
 {
 	sockaddr_in clientAddr;
@@ -118,13 +118,6 @@ int		Server::getSockfd() const
 {
 	return (_sockfd);
 }
-
-void Server::handleConns()
-{
-
-
-}
-
 
 void Server::closeSockets()
 {
@@ -268,9 +261,9 @@ void	Server::receiveData(int fd)
 	else
 	{
 		// handle receiving message
-		buffer[bytesRead] = '\0';
-		std::cout << buffer << std::endl;
-		handleInput(buffer, tmpClient);
+		buffer[bytesRead - 1] = '\0';
+		if (handleInput(buffer, tmpClient) == -1)
+			handleDisconnection(tmpClient->getFd());
 	}
 }
 

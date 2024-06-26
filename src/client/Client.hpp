@@ -25,6 +25,8 @@ class Client {
 
 
   public:
+	int					_loginAtempts;
+	
 	Client();
     Client(int fd, std::string ip);
     ~Client();
@@ -34,7 +36,7 @@ class Client {
 	int				getFd() const ;
 
 	void			setNickname(std::string newNick);
-
+	void			addLoginTry(void);
 	int				sendData(int serverFd);
 	int				receiveData(int serverFd);
 };

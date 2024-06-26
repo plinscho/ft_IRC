@@ -20,7 +20,7 @@ int	checkNick(std::string newNick)
 {
 	if (newNick.empty())
 		return EMPTY_NICK;
-	if (newNick.size() > 12)
+	if (newNick.size() > 8)
 		return SIZE_EXCEED;
 	if (newNick.find(' '))
 		return HAS_SPACE;

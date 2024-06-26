@@ -38,3 +38,13 @@ class Client {
 	int				sendData(int serverFd);
 	int				receiveData(int serverFd);
 };
+
+enum nickReturn
+{
+	NICK_OK = 0,
+	EMPTY_NICK,
+	SIZE_EXCEED,
+	HAS_SPACE,
+	IS_NOT_ALNUM,	
+};
+

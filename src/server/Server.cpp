@@ -259,9 +259,6 @@ void	Server::receiveData(int fd)
 	it = _fdToClientMap.find(fd);
 	tmpClient = it->second;
 
-
-	(void)tmpClient;
-
 	// load the message into a buffer
 	size_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
 	if (bytesRead <= 0)
@@ -273,6 +270,7 @@ void	Server::receiveData(int fd)
 		// handle receiving message
 		buffer[bytesRead] = '\0';
 		std::cout << buffer << std::endl;
+		handleInput(buffer, tmpClient);
 	}
 }
 

@@ -67,16 +67,27 @@ MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
 */
 void	sendMsgFd(int destFd, std::string msg, int flag);
 int		recvMsgFd(int originFd, char *buffer, size_t maxLen, int flag);
+int		handleInput(char *buffer, Client *user);
 int		quickError(std::string msg, int errcode);
 int		checkNick(std::string newNick);
 int 	sendWelcome(int fd);
 
+// COMMANDS
 
-enum nickReturn
+enum cmdType
 {
-	NICK_OK = 0,
-	EMPTY_NICK,
-	SIZE_EXCEED,
-	HAS_SPACE,
-	IS_NOT_ALNUM,	
+	CMD_LOGIN = 0,
+	CMD_JOIN,
+	CMD_SETNICK,
+	CMD_SETUNAME,
+	CMD_SEND,
+	CMD_HELP,
+	SEND_MSG
 };
+
+int cmdLogin(std::vector<std::string> cmd, Client *user);
+int cmdJoin(std::vector<std::string> cmd, Client *user);
+int cmdSetNick(std::vector<std::string> cmd, Client *user);
+int cmdSetUname(std::vector<std::string> cmd, Client *user);
+int cmdSend(std::vector<std::string> cmd, Client *user);
+int cmdHelp(std::vector<std::string> cmd, Client *user);

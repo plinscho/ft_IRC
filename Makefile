@@ -4,9 +4,11 @@ CFLAGS = -Wall -Werror -Wextra -std=c++98
 OBJECTS = src/irc.cpp \
 			src/client/Client.cpp \
 			src/server/Server.cpp \
-			src/server/ServerUtils.cpp
-#			Core/Server/Server.cpp
-#			Core/Server/Server.cpp
+			src/server/ServerUtils.cpp \
+			src/server/Cmd.cpp \
+			src/server/CmdUtils.cpp
+#			src/
+
 
 HEADERS = src/server/Server.hpp \
 			src/client/Client.hpp

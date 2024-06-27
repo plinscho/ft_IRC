@@ -4,6 +4,8 @@ Server::Server(int port, char *password) {
 	
 	_port = port;
 	_password = std::string(password);
+
+	// Empezamos el servidor
 	_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_sockfd == -1) {
 		std::cerr << "Failed to create socket." << std::endl;
@@ -48,7 +50,7 @@ Server::~Server() {
 	}
 }
 
-// 0. Start the poll vector. 1st vector is the listen one:
+// Start the poll vector. 1st vector is the listen one:
 void Server::initPoll(void)
 {
 	struct pollfd _serverPoll;
@@ -60,7 +62,7 @@ void Server::initPoll(void)
 	_vectorPoll.push_back(_serverPoll); // set listen poll struct into the vector.
 }
 
-// 1. While server is listening, keep an eye on new connections
+// 
 int Server::grabConnection()
 {
 	sockaddr_in clientAddr;
@@ -118,13 +120,6 @@ int		Server::getSockfd() const
 {
 	return (_sockfd);
 }
-
-void Server::handleConns()
-{
-
-
-}
-
 
 void Server::closeSockets()
 {
@@ -246,6 +241,37 @@ int Server::run()
 	return (0);
 }
 
+int Server::handleInput (char *buffer, Client *user)
+{
+    if (!buffer)
+        return (1);
+    
+    std::vector<std::string> cmd;
+    cmd = stringSplit(buffer, ' ');
+    if (cmd.empty())
+        return (0);
+    cmdType type = getCommandType(cmd[0]);
+	std::cout << "Command: " << cmd[0] << std::endl;
+    switch (type)
+    {
+        case (CMD_LOGIN):
+            return cmdLogin(cmd, user);
+        case (CMD_JOIN):
+            return (cmdJoin(cmd, user));
+        case (CMD_SETNICK):
+            return (cmdSetNick(cmd, user));
+        case (CMD_SETUNAME):
+            return (cmdSetUname(cmd, user));
+        case (CMD_SEND):
+            return (cmdSend(cmd, user));
+        case (CMD_HELP):
+            return (cmdHelp(cmd, user));
+        case (SEND_MSG):
+            return type;
+    }
+    return (0);
+}
+
 void	Server::receiveData(int fd)
 {
 	// Vector to save the split cmd
@@ -259,9 +285,6 @@ void	Server::receiveData(int fd)
 	it = _fdToClientMap.find(fd);
 	tmpClient = it->second;
 
-
-	(void)tmpClient;
-
 	// load the message into a buffer
 	size_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
 	if (bytesRead <= 0)
@@ -271,8 +294,9 @@ void	Server::receiveData(int fd)
 	else
 	{
 		// handle receiving message
-		buffer[bytesRead] = '\0';
-		std::cout << buffer << std::endl;
+		buffer[bytesRead - 1] = '\0';
+		if (handleInput(buffer, tmpClient) == -1)
+			handleDisconnection(tmpClient->getFd());
 	}
 }
 

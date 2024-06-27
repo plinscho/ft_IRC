@@ -10,27 +10,20 @@ void	sendMsgFd(int destFd, std::string msg, int flag)
 }
 
 // Most usually the flag is MSG_DONTWAIT
-int		recvMsgFd(int originFd, char *buffer, size_t maxLen, int flag)
+int		recvMsgFd(int originFd, char *buffer, ssize_t maxLen, int flag)
 {
 
 }
 */
 
-int	checkNick(std::string newNick)
+int	sendMessage(Client *user, const std::string &msg)
 {
-	if (newNick.empty())
-		return EMPTY_NICK;
-	if (newNick.size() > 12)
-		return SIZE_EXCEED;
-	if (newNick.find(' '))
-		return HAS_SPACE;
-	for (int i = 0 ; newNick.size() ; i++)
-	{
-		char c = newNick[i];
-		if (!isalnum(c))
-			return IS_NOT_ALNUM;
-	}
-	return NICK_OK;
+	if (!user || msg.empty())
+		return (-1);
+//	std::cout << "sendmsg: " << msg << std::endl;
+	if (send(user->getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT) == -1)
+		return (-1);
+	return (0);
 }
 
 int	quickError(std::string msg, int errcode)

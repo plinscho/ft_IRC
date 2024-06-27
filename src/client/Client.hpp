@@ -25,6 +25,8 @@ class Client {
 
 
   public:
+	int					_loginAtempts;
+	
 	Client();
     Client(int fd, std::string ip);
     ~Client();
@@ -32,9 +34,22 @@ class Client {
 	std::string		getAddress() const ;
 	std::string		getRecvBuffer() const ;
 	int				getFd() const ;
+	bool			getLogin(void) const;
+
 
 	void			setNickname(std::string newNick);
-
+	void			addLoginTry(void);
 	int				sendData(int serverFd);
 	int				receiveData(int serverFd);
+	void			setLogin(bool option);
 };
+
+enum nickReturn
+{
+	NICK_OK = 0,
+	EMPTY_NICK,
+	SIZE_EXCEED,
+	HAS_SPACE,
+	IS_NOT_ALNUM,	
+};
+

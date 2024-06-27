@@ -85,8 +85,12 @@ MSG_NOSIGNAL: 	This flag requests not to send the SIGPIPE signal if an attempt t
 MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
 */
 
-int		quickError(std::string msg, int errcode);
-int		checkNick(std::string newNick);
-int 	sendWelcome(int fd);
+int							sendMessage(Client *user, const std::string &msg);
+int							quickError(std::string msg, int errcode);
+int							checkNick(std::string newNick);
+int 						sendWelcome(int fd);
+cmdType 					getCommandType(const std::string &cmd);
+std::vector<std::string> 	stringSplit(const char *str, const char& c);
+
 
 

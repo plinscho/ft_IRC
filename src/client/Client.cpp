@@ -61,6 +61,16 @@ void	Client::addLoginTry(void)
 	_loginAtempts += 1;
 }
 
+void	Client::setLogin(bool option)
+{
+	this->_logged = option;
+}
+
+bool	Client::getLogin(void) const
+{
+	return (this->_logged);
+}
+
 int Client::receiveData(int serverFd)
 {
 	memset(_recvBuffer, 0, sizeof(_recvBuffer));

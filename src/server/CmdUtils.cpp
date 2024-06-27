@@ -3,31 +3,34 @@
 #include <string>
 #include <vector>
 
-const std::vector<std::string> stringSplit(const std::string& str, const char& c)
+std::vector<std::string> stringSplit(const char *str, const char& c)
 {
-	std::string buff = "";
-	std::vector<std::string> split;
-    std::string::const_iterator strIt;
+    std::string buff = "";           // Buffer to build each substring
+    std::vector<std::string> split;  // Vector to hold the resulting substrings
 
-        
-    if (str.empty()) { return (split); }
-	
-	for(strIt = str.begin() ; strIt != str.end() ; ++strIt)
-	{
-		if(*strIt != c)
-            buff+=*strIt; 
+    for (int i = 0; str[i] != '\0'; ++i)
+    {
+        if (str[i] != c)
+        {
+            buff += str[i];  // Append character to buffer if not the delimiter
+        }
         else
         {
-            if(buff != "")
-            {   
-                split.push_back(buff);
-                buff = "";
+            if (!buff.empty())
+            {
+                split.push_back(buff);  // Add buffer to vector if it's not empty
+                buff.clear();           // Clear the buffer for the next substring
             }
         }
-	}
-	if(buff != "")
+    }
+
+    // If there is any remaining buffer, add it to the vector
+    if (!buff.empty())
+    {
         split.push_back(buff);
-	return split;
+    }
+
+    return split;
 }
 
 cmdType getCommandType(const std::string &cmd)
@@ -41,35 +44,22 @@ cmdType getCommandType(const std::string &cmd)
     else return (SEND_MSG);    
 }
 
-int Server::handleInput (char *buffer, Client *user)
+int	checkNick(std::string newNick)
 {
-    if (!buffer)
-        return (1);
-    
-    std::vector<std::string> cmd;
-
-    cmd = stringSplit(std::string(buffer), ' ');
-    if (cmd.empty())
-        return (0);
-    cmdType type = getCommandType(cmd[0]);
-	std::cout << "Command: " << cmd[0] << std::endl;
-    switch (type)
-    {
-        case (CMD_LOGIN):
-            return cmdLogin(cmd, user);
-        case (CMD_JOIN):
-            return (cmdJoin(cmd, user));
-        case (CMD_SETNICK):
-            return (cmdSetNick(cmd, user));
-        case (CMD_SETUNAME):
-            return (cmdSetUname(cmd, user));
-        case (CMD_SEND):
-            return (cmdSend(cmd, user));
-        case (CMD_HELP):
-            return (cmdHelp(cmd, user));
-        case (SEND_MSG):
-            return type;
-    }
-    return (0);
+	if (newNick.empty())
+		return EMPTY_NICK;
+	if (newNick.size() > 8)
+		return SIZE_EXCEED;
+	if (newNick.find(' ') != std::string::npos)
+		return HAS_SPACE;
+	for (ssize_t i = 0 ; newNick[i] != '\0'; ++i)
+	{
+		unsigned char c = newNick[i];
+		if (!isalnum(c))
+			return IS_NOT_ALNUM;
+	}
+	return NICK_OK;
 }
+
+
 

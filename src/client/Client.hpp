@@ -34,11 +34,14 @@ class Client {
 	std::string		getAddress() const ;
 	std::string		getRecvBuffer() const ;
 	int				getFd() const ;
+	bool			getLogin(void) const;
+
 
 	void			setNickname(std::string newNick);
 	void			addLoginTry(void);
 	int				sendData(int serverFd);
 	int				receiveData(int serverFd);
+	void			setLogin(bool option);
 };
 
 enum nickReturn

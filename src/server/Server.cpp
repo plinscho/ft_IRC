@@ -4,6 +4,8 @@ Server::Server(int port, char *password) {
 	
 	_port = port;
 	_password = std::string(password);
+
+	// Empezamos el servidor
 	_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_sockfd == -1) {
 		std::cerr << "Failed to create socket." << std::endl;
@@ -237,6 +239,37 @@ int Server::run()
 	}
 	std::cout << "loops: " << ++i << std::endl;
 	return (0);
+}
+
+int Server::handleInput (char *buffer, Client *user)
+{
+    if (!buffer)
+        return (1);
+    
+    std::vector<std::string> cmd;
+    cmd = stringSplit(buffer, ' ');
+    if (cmd.empty())
+        return (0);
+    cmdType type = getCommandType(cmd[0]);
+	std::cout << "Command: " << cmd[0] << std::endl;
+    switch (type)
+    {
+        case (CMD_LOGIN):
+            return cmdLogin(cmd, user);
+        case (CMD_JOIN):
+            return (cmdJoin(cmd, user));
+        case (CMD_SETNICK):
+            return (cmdSetNick(cmd, user));
+        case (CMD_SETUNAME):
+            return (cmdSetUname(cmd, user));
+        case (CMD_SEND):
+            return (cmdSend(cmd, user));
+        case (CMD_HELP):
+            return (cmdHelp(cmd, user));
+        case (SEND_MSG):
+            return type;
+    }
+    return (0);
 }
 
 void	Server::receiveData(int fd)

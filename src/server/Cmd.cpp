@@ -13,22 +13,21 @@
 int Server::cmdLogin(std::vector<std::string> cmd, Client *user)
 {
     if (cmd.empty() || !user || user->_loginAtempts >= 3) 
-	{
-		send(user->getFd(), "Logging failed.\nDisconnecting user...\n", 39, MSG_DONTWAIT);
-		return (-1);
-	}
+		return (sendMessage(user, "Logging failed.\nDisconnecting user...\n"));
+	else if (user->getLogin() == true)
+		return (sendMessage(user, "User already logged in!\n"));
 
 	int attempts = 3 - user->_loginAtempts; 
 	std::stringstream ss;
 	ss << "Incorrect password.\n" << attempts << " attemps left.\n";
 	std::string errpsw = ss.str();
 	
+	if (cmd.size() != 3 || cmd[1].empty() || cmd[2].empty())
+		return (sendMessage(user, "Usage: /login <password> <nickname>\n"));
 	if (cmd[1] != _password)
 	{
-		if (send(user->getFd(), errpsw.c_str(), errpsw.length(), MSG_DONTWAIT) == -1)
-			return (-1);
 		user->_loginAtempts++;
-		return (0);
+		return (sendMessage(user, errpsw));
 	}
 
 	int nick = checkNick(cmd[2]);
@@ -66,7 +65,11 @@ int Server::cmdLogin(std::vector<std::string> cmd, Client *user)
 			break;
 		}
 	}
-	return (0);
+	user->setLogin(true);
+	std::stringstream ss2;
+	ss2 << "User " << user->getNickname() << " logged in succesfully\n";
+	std::string logedIn = ss2.str();
+	return (sendMessage(user, logedIn));
 }
 
 int Server::cmdJoin(std::vector<std::string> cmd, Client *user)

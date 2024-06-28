@@ -192,6 +192,8 @@ int Server::handleInput (char *buffer, Client *user)
             return (cmdSend(cmd, user));
         case (CMD_HELP):
             return (cmdHelp(cmd, user));
+		case (CMD_CHNNL):
+			return (cmdChannel(cmd, user));
         case (SEND_MSG):
             return type;
     }

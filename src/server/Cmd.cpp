@@ -11,11 +11,12 @@
 */
 
 int Server::cmdLogin(std::vector<std::string> cmd, Client *user)
-{
-    if (cmd.empty() || !user || user->_loginAtempts >= 3) 
+{	
+	if (user->_loginAtempts >= 3){
 		return (sendMessage(user, "Logging failed.\nDisconnecting user...\n"));
-	else if (user->getLogin() == true)
-		return (sendMessage(user, "User already logged in!\n"));
+	} else if (cmd.empty() || !user) {
+		return (-1);
+	}
 
 	int attempts = 3 - user->_loginAtempts; 
 	std::stringstream ss;
@@ -45,21 +46,28 @@ int Server::cmdLogin(std::vector<std::string> cmd, Client *user)
 
 int Server::cmdJoin(std::vector<std::string> cmd, Client *user)
 {
-    if (cmd.empty() || !user)
-        return (-1);
-	else if (user->getLogin() == false)
-		return (sendMessage(user, "Error: You need to be logged in before!\n"));
-    return (0);
+	int ret;
+
+	ret = preCmdCheck(cmd, user);
+	if (ret == -1)
+		return (-1);
+	else if (ret != 0)
+		return (1);
+	
+
+	return (0);
 }
 
 int Server::cmdSetNick(std::vector<std::string> cmd, Client *user)
 {
 	int type;
+	int ret;
 
-	if (cmd.empty() || !user)
+	ret = preCmdCheck(cmd, user);
+	if (ret == -1)
 		return (-1);
-	else if (user->getLogin() == false)
-		return  (sendMessage(user, "User not registered\nYou need to /login first!\n"));
+	else if (ret != 0)
+		return (1);
 	else if (cmd.size() != 2 || cmd[1].empty())
 		return (sendMessage(user, "Usage: /setnick <newnick>\n"));
 	type = checkNick(cmd[1]);
@@ -70,27 +78,59 @@ int Server::cmdSetNick(std::vector<std::string> cmd, Client *user)
 
 int Server::cmdSetUname(std::vector<std::string> cmd, Client *user)
 {
-    if (cmd.empty() || !user)
-        return (-1);
-	else if (user->getLogin() == false)
-		return (sendMessage(user, "Error: You need to be logged in before!\n"));
-    return (0);
+	int ret;
+
+	ret = preCmdCheck(cmd, user);
+	if (ret == -1)
+		return (-1);
+	else if (ret != 0)
+		return (1);
+	
+
+	return (0);
 }
 
 int Server::cmdSend(std::vector<std::string> cmd, Client *user)
 {
-    if (cmd.empty() || !user)
-        return (-1);
-	else if (user->getLogin() == false)
-		return (sendMessage(user, "Error: You need to be logged in before!\n"));
-    return (0);
+	int ret;
+
+	ret = preCmdCheck(cmd, user);
+	if (ret == -1)
+		return (-1);
+	else if (ret != 0)
+		return (1);
+	
+
+	return (0);
+}
+
+int	Server::cmdChannel(std::vector<std::string> cmd, Client *user)
+{
+	int ret;
+
+	ret = preCmdCheck(cmd, user);
+	if (ret == -1)
+		return (-1);
+	else if (ret != 0)
+		return (1);
+
+	std::map<int, Channel *>::iterator mapIt;
+	for (mapIt = _channels.begin() ; mapIt != _channels.end() ; ++mapIt)
+	{
+		sendMessage(user, mapIt->second->getChannelName());
+	}
+	return (0);
 }
 
 int Server::cmdHelp(std::vector<std::string> cmd, Client *user)
 {
-    if (cmd.empty() || !user)
-        return (-1);
-    if (user->getFd() == -1)
-        return (-1);
-    return (sendWelcome(user->getFd()));
+	int ret;
+
+	ret = preCmdCheck(cmd, user);
+	if (ret == -1)
+		return (-1);
+	else if (ret != 0)
+		return (1);
+	
+	return (sendWelcome(user->getFd()));
 }

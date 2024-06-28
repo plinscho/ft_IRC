@@ -26,24 +26,32 @@ int		Server::getSockfd() const
 	return (_sockfd);
 }
 
-void Server::closeSockets()
+
+
+void Server::closeServer()
 {
-	std::map<int, Client *>::iterator it;
+	std::map<int, Client *>::iterator clientIt;
+	std::map<int, Channel *>::iterator channelIt;
 
 	std::cout << "Closing server ...\n" << std::endl;
 
 	// Cierra todos los sockets de los clientes
 	while (!_fdToClientMap.empty())
 	{
-		it = _fdToClientMap.begin();
+		clientIt = _fdToClientMap.begin();
 		for (size_t i = 0 ; i < _vectorPoll.size() ; ++i)
 		{
-			if (_vectorPoll[i].fd == it->first)
+			if (_vectorPoll[i].fd == clientIt->first)
 			{
 				handleDisconnection(_vectorPoll[i].fd);
 				break;
 			}
 		}
+	}
+	
+	for (channelIt = _channels.begin(); channelIt != _channels.end()  ; ++channelIt)
+	{
+		delete channelIt->second;
 	}
 	
 	if (_sockfd >= 0)

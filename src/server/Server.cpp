@@ -21,6 +21,9 @@ Server::Server(int port, char *password) {
 	_sockaddr.sin_port = htons(_port);		// Port to listen on
 
 
+//	Crear los canales principales
+	initChannels();
+
 //	configurar el socket para que reutilice la dirección y el puerto cuando se cierre.
 	int opt = 1;
 	if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)

@@ -43,6 +43,8 @@ class Server
 	int								conectedClients;
 	char							buffer[MAX_MSG_SIZE];
 
+//	CHANNEL MANAGING
+	void							initChannels();
 	void							createChannel(int id, const std::string channelName);
 	void							deleteChannel(int id);
 	void							addClientToChannel(Client *user, Channel *channel);
@@ -50,7 +52,7 @@ class Server
 	int								grabConnection();
 	int								run();
 	void							receiveData(int fd);
-	void							closeSockets();
+	void							closeServer();
 	void							initPoll();
 	void							handleDisconnection(int index);
 	int								getPort() const;

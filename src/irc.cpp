@@ -38,6 +38,6 @@ int main(int argc, char **argv) {
     while (power) 
         server.run();
 
-    server.closeSockets();
+    server.closeServer();
     return 0;
 }

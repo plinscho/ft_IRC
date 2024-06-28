@@ -16,6 +16,85 @@ int		recvMsgFd(int originFd, char *buffer, ssize_t maxLen, int flag)
 }
 */
 
+int		Server::getPort() const
+{
+	return (this->_port);
+}
+
+int		Server::getSockfd() const
+{
+	return (_sockfd);
+}
+
+void Server::closeSockets()
+{
+	std::map<int, Client *>::iterator it;
+
+	std::cout << "Closing server ...\n" << std::endl;
+
+	// Cierra todos los sockets de los clientes
+	while (!_fdToClientMap.empty())
+	{
+		it = _fdToClientMap.begin();
+		for (size_t i = 0 ; i < _vectorPoll.size() ; ++i)
+		{
+			if (_vectorPoll[i].fd == it->first)
+			{
+				handleDisconnection(_vectorPoll[i].fd);
+				break;
+			}
+		}
+	}
+	
+	if (_sockfd >= 0)
+	{
+		close(_sockfd);
+		_sockfd = -1;
+	}
+}
+
+void Server::handleDisconnection(int fd)
+{
+	if (fd == -1) 
+		return ;
+	
+	std::vector<pollfd>::iterator pollIterator;
+	std::map<int, Client *>::iterator clientIterator;
+	Client *tmpClient = NULL;
+
+	clientIterator = _fdToClientMap.find(fd);
+	pollIterator = findPollFd(fd);
+
+	if (clientIterator != _fdToClientMap.end() && pollIterator != _vectorPoll.end())
+	{
+		tmpClient = clientIterator->second;
+		std::cout << tmpClient->getNickname() << " with ip: "
+		<< tmpClient->getAddress() << " disconnected from server." << std::endl;
+		close(fd);
+
+		// free memory 
+		delete tmpClient;
+		tmpClient = NULL;
+
+	//	Erasing vectorPoll & Client map with fd	
+		_fdToClientMap.erase(clientIterator);
+		_vectorPoll.erase(pollIterator);	
+		conectedClients--;
+	}
+}
+
+std::vector<pollfd>::iterator Server::findPollFd(int fdToMatch)
+{
+	std::vector<pollfd>::iterator it;
+
+	for (it = _vectorPoll.begin() ; it != _vectorPoll.end() ; ++it)
+	{
+		if (it->fd == fdToMatch)
+			return it;
+	}
+	return (_vectorPoll.end());
+}
+
 int	sendMessage(Client *user, const std::string &msg)
 {
 	if (!user || msg.empty())

@@ -1,5 +1,4 @@
 #include "Server.hpp"
-#include "../client/Client.hpp"
 #include <string>
 #include <vector>
 
@@ -59,6 +58,45 @@ int	checkNick(std::string newNick)
 			return IS_NOT_ALNUM;
 	}
 	return NICK_OK;
+}
+
+int	setNick(int type, Client *user, std::string newNick)
+{
+	switch (type)
+	{
+		case NICK_OK:
+		{
+			user->setNickname(newNick);
+			if (send(user->getFd(), "Nickname succesfully changed\n", 30, MSG_DONTWAIT) == -1)
+				return (-1);
+			break;
+		}
+		case EMPTY_NICK:
+		{
+			if (send(user->getFd(), "Error. Empty nick is not allowed\n", 34, MSG_DONTWAIT) == -1)
+				return (-1);
+			break;
+		}
+		case SIZE_EXCEED:
+		{
+			if (send(user->getFd(), "Error. Nick is more than 8 chars\n", 34, MSG_DONTWAIT) == -1)
+				return (-1);
+			break;
+		}
+		case HAS_SPACE:
+		{
+			if (send(user->getFd(), "Error. Space chars in nick are not allowed\n", 44, MSG_DONTWAIT) == -1)
+				return (-1);
+			break;
+		}
+		case IS_NOT_ALNUM:
+		{
+			if (send(user->getFd(), "Error. Non alnum chars in nick detected\n", 41, MSG_DONTWAIT) == -1)
+				return (-1);
+			break;
+		}
+	}
+	return (0);
 }
 
 

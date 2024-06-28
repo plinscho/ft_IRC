@@ -1,5 +1,7 @@
 #pragma once
 #include "../client/Client.hpp"
+#include "Channel.hpp"
+
 #include <cerrno>
 #include <iostream>     // For cout
 #include <netinet/in.h> // For sockaddr_in
@@ -31,6 +33,7 @@ class Server
 	sockaddr_in 					_sockaddr;	// Server address
 	std::vector <struct pollfd> 	_vectorPoll;
     std::map<int, Client*> 			_fdToClientMap; // Map file descriptors to Client pointers
+	std::map<int, Channel*>			_channels;
 
   public:
 
@@ -39,6 +42,11 @@ class Server
 	
 	int								conectedClients;
 	char							buffer[MAX_MSG_SIZE];
+
+	void							createChannel(int id, const std::string channelName);
+	void							deleteChannel(int id);
+	void							addClientToChannel(Client *user, Channel *channel);
+
 	int								grabConnection();
 	int								run();
 	void							receiveData(int fd);
@@ -88,6 +96,7 @@ MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
 int							sendMessage(Client *user, const std::string &msg);
 int							quickError(std::string msg, int errcode);
 int							checkNick(std::string newNick);
+int							setNick(int type, Client *user, std::string newNick);
 int 						sendWelcome(int fd);
 cmdType 					getCommandType(const std::string &cmd);
 std::vector<std::string> 	stringSplit(const char *str, const char& c);

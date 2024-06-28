@@ -30,44 +30,15 @@ int Server::cmdLogin(std::vector<std::string> cmd, Client *user)
 		return (sendMessage(user, errpsw));
 	}
 
-	int nick = checkNick(cmd[2]);
-	switch (nick)
+	int type = checkNick(cmd[2]);
+	if (setNick(type, user, cmd[2]) == -1)
 	{
-		case NICK_OK:
-		{
-			user->setNickname(cmd[2]);
-			if (send(user->getFd(), "Nickname succesfully changed\n", 30, MSG_DONTWAIT) == -1)
-				return (-1);
-			break;
-		}
-		case EMPTY_NICK:
-		{
-			if (send(user->getFd(), "Error. Empty nick is not allowed\n", 34, MSG_DONTWAIT) == -1)
-				return (-1);
-			break;
-		}
-		case SIZE_EXCEED:
-		{
-			if (send(user->getFd(), "Error. Nick is more than 8 chars\n", 34, MSG_DONTWAIT) == -1)
-				return (-1);
-			break;
-		}
-		case HAS_SPACE:
-		{
-			if (send(user->getFd(), "Error. Space chars in nick are not allowed\n", 44, MSG_DONTWAIT) == -1)
-				return (-1);
-			break;
-		}
-		case IS_NOT_ALNUM:
-		{
-			if (send(user->getFd(), "Error. Non alnum chars in nick detected\n", 41, MSG_DONTWAIT) == -1)
-				return (-1);
-			break;
-		}
+		handleDisconnection(user->getFd());
+		return (0);
 	}
 	user->setLogin(true);
 	std::stringstream ss2;
-	ss2 << "User " << user->getNickname() << " logged in succesfully\n";
+	ss2 << "User " << user->getNickname() << " logged in .\n";
 	std::string logedIn = ss2.str();
 	return (sendMessage(user, logedIn));
 }
@@ -76,22 +47,33 @@ int Server::cmdJoin(std::vector<std::string> cmd, Client *user)
 {
     if (cmd.empty() || !user)
         return (-1);
+	else if (user->getLogin() == false)
+		return (sendMessage(user, "Error: You need to be logged in before!\n"));
     return (0);
 }
 
 int Server::cmdSetNick(std::vector<std::string> cmd, Client *user)
 {
-    if (cmd.empty() || !user)
-        return (-1);
+	int type;
 
-    return (0);
+	if (cmd.empty() || !user)
+		return (-1);
+	else if (user->getLogin() == false)
+		return  (sendMessage(user, "User not registered\nYou need to /login first!\n"));
+	else if (cmd.size() != 2 || cmd[1].empty())
+		return (sendMessage(user, "Usage: /setnick <newnick>\n"));
+	type = checkNick(cmd[1]);
+	if (setNick(type, user, cmd[1]) == -1)
+		return (-1);
+	return (0);
 }
 
 int Server::cmdSetUname(std::vector<std::string> cmd, Client *user)
 {
     if (cmd.empty() || !user)
         return (-1);
-
+	else if (user->getLogin() == false)
+		return (sendMessage(user, "Error: You need to be logged in before!\n"));
     return (0);
 }
 
@@ -99,7 +81,8 @@ int Server::cmdSend(std::vector<std::string> cmd, Client *user)
 {
     if (cmd.empty() || !user)
         return (-1);
-
+	else if (user->getLogin() == false)
+		return (sendMessage(user, "Error: You need to be logged in before!\n"));
     return (0);
 }
 

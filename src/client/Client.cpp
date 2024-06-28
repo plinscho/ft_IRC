@@ -3,12 +3,11 @@
 
 Client::Client()
 {
-	_nickName = "";
-	_userName = "";
+	_nickName = "RandomUser";
+	_userName = "RandomUser";
 	_clientSocketFd = -1;
 	_loginAtempts = 0;
-	_registered = false;
-	_clientIp = "";
+	_clientIp = "0";
 	_logged = false;
 }
 
@@ -17,10 +16,9 @@ Client::Client(int fd, std::string address)
 	_clientSocketFd = fd;
 	_clientIp = address;
 	_loginAtempts = 0;
-	_nickName = "";
-	_userName = "";
+	_nickName = "RandomUser";
+	_userName = "RandomUser";
 	_logged = false;
-	_registered = true;
 	std::cout << "New connection established with ip: " + _clientIp << std::endl;
 
 }

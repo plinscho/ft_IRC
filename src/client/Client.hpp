@@ -19,8 +19,6 @@ class Client {
 	std::string			_clientIp;
 	std::string			_nickName;
 	std::string			_userName;
-
-	bool				_registered;
 	bool				_logged;
 
 

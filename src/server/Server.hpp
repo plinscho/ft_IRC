@@ -49,6 +49,8 @@ class Server
 	void							deleteChannel(int id);
 	void							addClientToChannel(Client *user, Channel *channel);
 
+	int								updatePoll();
+	void							handleWriteEvent(int fd);
 	int								grabConnection();
 	int								run();
 	void							receiveData(int fd);

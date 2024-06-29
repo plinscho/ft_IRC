@@ -9,6 +9,7 @@ OBJECTS = src/irc.cpp \
 			src/server/CmdUtils.cpp \
 			src/server/ServerChannel.cpp \
 			src/server/Channel.cpp \
+			src/server/ServerAA.cpp 
 #			src/
 
 

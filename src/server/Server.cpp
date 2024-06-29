@@ -122,52 +122,41 @@ int Server::grabConnection()
 int Server::run()
 {
 	static int i = 0;
-	int ret;
+	updatePoll();
 
-	// call poll() one time and update the _vectorPoll vector.
-	ret = poll(_vectorPoll.data(), _vectorPoll.size(), POLL_TIMEOUT);
-	if (ret < 0)
+	// loop through the poll vector to check events:
+	for (size_t i = 0 ; i < _vectorPoll.size() ; ++i)
 	{
-		if (errno == EINTR)
-			return 0;
-		else
-			return (quickError("Error.\nPoll() function failed.", EXIT_FAILURE));
-	}
-	else if (ret == 0)
-		return (quickError("Server timed out.\n", EXIT_FAILURE));
-	else
-	{
-		// loop through the poll vector to check events:
-		for (size_t i = 0 ; i < _vectorPoll.size() ; ++i)
-		{
-			if (_vectorPoll[i].fd < 0)
-				continue ;
-
+		if (_vectorPoll[i].fd < 0)
+			continue ;
 			// check the disconnection events
-			else if (_vectorPoll[i].revents & (POLLHUP | POLLERR))
-			{
-				handleDisconnection(i);
-				continue;
-			}
-
-			// check the write events:
-			if (_vectorPoll[i].revents & POLLIN)
-			{
-				if (_vectorPoll[i].fd == _sockfd)
-					grabConnection();
-				else
-					receiveData(_vectorPoll[i].fd);
-			}
-
-			// clear the poll() revents field
-			_vectorPoll[i].revents = 0;
+		else if (_vectorPoll[i].revents & (POLLHUP | POLLERR))
+		{
+			handleDisconnection(i);
+			continue;
 		}
+			// check the write events:
+		if (_vectorPoll[i].revents & POLLIN)
+		{
+			if (_vectorPoll[i].fd == _sockfd) // return enum USER_NEW
+				grabConnection();
+			else
+				receiveData(_vectorPoll[i].fd); // return 
+		}
+		if (_vectorPoll[i].revents & POLLOUT)
+        {
+            handleWriteEvent(_vectorPoll[i].fd);
+        }
+
+		// clear the poll() revents field
+		_vectorPoll[i].revents = 0;
 	}
-	std::cout << "loops: " << ++i << std::endl;
+	
+	std::cout << "<Poll Events updated: " << ++i << std::endl;
 	return (0);
 }
 
-int Server::handleInput (char *buffer, Client *user)
+int Server::handleInput(char *buffer, Client *user)
 {
     if (!buffer)
         return (1);
@@ -212,15 +201,16 @@ void	Server::receiveData(int fd)
 	tmpClient = it->second;
 
 	// load the message into a buffer
-	size_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
-	if (bytesRead <= 0)
-	{
+	ssize_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
+	if (bytesRead == 0){
 		handleDisconnection(fd);
+	} else if (bytesRead < 0) {
+        std::cerr << "recv() error: " << strerror(errno) << std::endl;
 	}
 	else
 	{
 		// handle receiving message
-		buffer[bytesRead - 1] = '\0';
+		buffer[bytesRead] = '\0';
 		if (handleInput(buffer, tmpClient) == -1)
 			handleDisconnection(tmpClient->getFd());
 	}

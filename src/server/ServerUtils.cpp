@@ -26,6 +26,11 @@ int		Server::getSockfd() const
 	return (_sockfd);
 }
 
+void	Server::handleWriteEvent(int fd)
+{
+	(void)fd;
+	return ;
+}
 
 
 void Server::closeServer()

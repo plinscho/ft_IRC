@@ -23,9 +23,6 @@ void	Server::initChannels(void)
 
 void	Server::createChannel(int id, const std::string channelName)
 {
-	(void) id;
-	(void) (channelName);
-	
 	Channel *newChannel;
 	try
 	{

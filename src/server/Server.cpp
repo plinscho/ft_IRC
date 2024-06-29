@@ -72,9 +72,9 @@ int Server::grabConnection()
 	socklen_t	clientAddrLen = sizeof(clientAddr);
 
 	// check if listening fd has found a new connection
-	int checker = poll(&_vectorPoll[0], 1, 1000);
-	if (!checker)
-		return (0);
+//	int checker = poll(&_vectorPoll[0], 1, 1000);
+//	if (!checker)
+//		return (0);
 	int newClientFd = accept(_sockfd, (struct sockaddr *)&clientAddr, &clientAddrLen);
 	if (newClientFd < 0)
 	{
@@ -124,6 +124,7 @@ int Server::run()
 	static int i = 0;
 	int ret;
 
+	
 	// call poll() one time and update the _vectorPoll vector.
 	ret = poll(_vectorPoll.data(), _vectorPoll.size(), POLL_TIMEOUT);
 	if (ret < 0)
@@ -154,9 +155,14 @@ int Server::run()
 			if (_vectorPoll[i].revents & POLLIN)
 			{
 				if (_vectorPoll[i].fd == _sockfd)
+				{
 					grabConnection();
+				}
 				else
+				{
 					receiveData(_vectorPoll[i].fd);
+
+				}
 			}
 
 			// clear the poll() revents field
@@ -177,7 +183,7 @@ int Server::handleInput (char *buffer, Client *user)
     if (cmd.empty())
         return (0);
     cmdType type = getCommandType(cmd[0]);
-	std::cout << "Command: " << cmd[0] << std::endl;
+	std::cout << buffer << std::endl;
     switch (type)
     {
         case (CMD_LOGIN):
@@ -202,8 +208,6 @@ int Server::handleInput (char *buffer, Client *user)
 
 void	Server::receiveData(int fd)
 {
-	// Vector to save the split cmd
-	std::vector<std::string> cmd;
 	std::map<int, Client *>::iterator it;
 
 	char buffer[512] = {0};
@@ -213,7 +217,7 @@ void	Server::receiveData(int fd)
 	it = _fdToClientMap.find(fd);
 	tmpClient = it->second;
 
-	// load the message into a buffer
+	// load the message into a buffer Investigate how Hexchat /r/n works.
 	size_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
 	if (bytesRead <= 0)
 	{
@@ -223,6 +227,10 @@ void	Server::receiveData(int fd)
 	{
 		// handle receiving message
 		buffer[bytesRead - 1] = '\0';
+		/*
+			Esto hay que reestructurarlo. Cada cliente solo puede mandar el mensaje a los miembros de un
+			canal. 
+		*/
 		if (handleInput(buffer, tmpClient) == -1)
 			handleDisconnection(tmpClient->getFd());
 	}

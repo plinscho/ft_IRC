@@ -81,6 +81,7 @@ int Server::cmdSetUname(std::vector<std::string> cmd, Client *user)
 	int ret;
 
 	ret = preCmdCheck(cmd, user);
+	sendMessage(user, "Hola esto es un mensaje de vuelta\n");
 	if (ret == -1)
 		return (-1);
 	else if (ret != 0)

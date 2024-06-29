@@ -17,7 +17,7 @@ std::vector<std::string> stringSplit(const char *str, const char& c)
 		{
 			if (!buff.empty())
 			{
-				split.push_back(buff);  // Add buffer to vector if it's not empty
+				split.push_back(buff.c_str());  // Add buffer to vector if it's not empty
 				buff.clear();           // Clear the buffer for the next substring
 			}
 		}
@@ -26,7 +26,7 @@ std::vector<std::string> stringSplit(const char *str, const char& c)
 	// If there is any remaining buffer, add it to the vector
 	if (!buff.empty())
 	{
-		split.push_back(buff);
+		split.push_back(buff.c_str());
 	}
 
 	return split;
@@ -37,7 +37,7 @@ cmdType getCommandType(const std::string &cmd)
 	if (cmd == "/login") return (CMD_LOGIN);
 	else if (cmd == "/join") return (CMD_JOIN);
 	else if (cmd == "/setnick") return(CMD_SETNICK);
-	else if (cmd == "/setuname") return (CMD_SETUNAME);
+	else if (cmd == "SETUNAME") return (CMD_SETUNAME);
 	else if (cmd == "/send") return (CMD_SEND);
 	else if (cmd == "/channels") return (CMD_CHNNL);
 	else if (cmd == "/help") return (CMD_HELP);

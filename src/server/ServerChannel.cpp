@@ -58,5 +58,5 @@ void	Server::addClientToChannel(Client *user, Channel *channel)
 	if (channel->activeUsers >= MAX_CHANNEL_USERS)
 		return ;
 	channel->addUser(user->getFd(), user);
-
+	
 }

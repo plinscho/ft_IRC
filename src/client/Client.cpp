@@ -54,6 +54,11 @@ void	Client::setNickname(std::string newNick)
 	this->_nickName = newNick;
 }
 
+void	Client::setUserName(std::string newUser)
+{
+	this->_userName = newUser;
+}
+
 void	Client::addLoginTry(void)
 {
 	_loginAtempts += 1;

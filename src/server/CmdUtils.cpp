@@ -34,14 +34,13 @@ std::vector<std::string> stringSplit(const char *str, const char& c)
 
 cmdType getCommandType(const std::string &cmd)
 {
-	if (cmd == "/login") return (CMD_LOGIN);
-	else if (cmd == "/join") return (CMD_JOIN);
-	else if (cmd == "/setnick") return(CMD_SETNICK);
-	else if (cmd == "SETUNAME") return (CMD_SETUNAME);
-	else if (cmd == "/send") return (CMD_SEND);
-	else if (cmd == "/channels") return (CMD_CHNNL);
-	else if (cmd == "/help") return (CMD_HELP);
-	else return (SEND_MSG);    
+    if (cmd == "CAP") return (CMD_LOGIN);
+    else if (cmd == "JOIN") return (CMD_JOIN);
+    else if (cmd == "/setnick") return(CMD_SETNICK);
+    else if (cmd == "/setuname") return (CMD_SETUNAME);
+    else if (cmd == "/send") return (CMD_SEND);
+    else if (cmd == "/help") return (CMD_HELP);
+    else return (SEND_MSG);      
 }
 
 int	preCmdCheck(std::vector<std::string> cmd, Client *user)

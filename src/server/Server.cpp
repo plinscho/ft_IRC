@@ -72,9 +72,6 @@ int Server::grabConnection()
 	socklen_t	clientAddrLen = sizeof(clientAddr);
 
 	// check if listening fd has found a new connection
-//	int checker = poll(&_vectorPoll[0], 1, 1000);
-//	if (!checker)
-//		return (0);
 	int newClientFd = accept(_sockfd, (struct sockaddr *)&clientAddr, &clientAddrLen);
 	if (newClientFd < 0)
 	{
@@ -107,9 +104,6 @@ int Server::grabConnection()
 
 	// save client in map, associated with the fd
 	_fdToClientMap[newClientFd] = newClient;
-	if (sendWelcome(newClientFd) != 0)
-		handleDisconnection(newClientFd);
-
 	conectedClients++;
 	return (0);
 }
@@ -122,36 +116,32 @@ int Server::grabConnection()
 int Server::run()
 {
 	static int i = 0;
-	int ret;
+	updatePoll();
 
-	
-	// call poll() one time and update the _vectorPoll vector.
-	ret = poll(_vectorPoll.data(), _vectorPoll.size(), POLL_TIMEOUT);
-	if (ret < 0)
-	{
-		if (errno == EINTR)
-			return 0;
-		else
-			return (quickError("Error.\nPoll() function failed.", EXIT_FAILURE));
-	}
-	else if (ret == 0)
-		return (quickError("Server timed out.\n", EXIT_FAILURE));
-	else
-	{
-		// loop through the poll vector to check events:
-		for (size_t i = 0 ; i < _vectorPoll.size() ; ++i)
-		{
-			if (_vectorPoll[i].fd < 0)
-				continue ;
 
+	// loop through the poll vector to check events:
+	for (size_t i = 0 ; i < _vectorPoll.size() ; ++i)
+	{
+		if (_vectorPoll[i].fd < 0)
+			continue ;
 			// check the disconnection events
-			else if (_vectorPoll[i].revents & (POLLHUP | POLLERR))
-			{
-				handleDisconnection(i);
-				continue;
-			}
-
+		else if (_vectorPoll[i].revents & (POLLHUP | POLLERR))
+		{
+			handleDisconnection(i);
+			continue;
+		}
 			// check the write events:
+
+		if (_vectorPoll[i].revents & POLLIN)
+		{
+			if (_vectorPoll[i].fd == _sockfd) // return enum USER_NEW
+				grabConnection();
+			else
+				receiveData(_vectorPoll[i].fd); // return 
+		}
+		if (_vectorPoll[i].revents & POLLOUT)
+		{
+			handleWriteEvent(_vectorPoll[i].fd);
 			if (_vectorPoll[i].revents & POLLIN)
 			{
 				if (_vectorPoll[i].fd == _sockfd)
@@ -167,43 +157,51 @@ int Server::run()
 
 			// clear the poll() revents field
 			_vectorPoll[i].revents = 0;
-		}
-	}
-	std::cout << "loops: " << ++i << std::endl;
+		}	
+	std::cout << "<Poll Events updated: " << ++i << std::endl;
 	return (0);
 }
 
-int Server::handleInput (char *buffer, Client *user)
+int Server::handleInput(char *buffer, Client *user)
 {
-    if (!buffer)
-        return (1);
-    
-    std::vector<std::string> cmd;
-    cmd = stringSplit(buffer, ' ');
-    if (cmd.empty())
-        return (0);
-    cmdType type = getCommandType(cmd[0]);
-	std::cout << buffer << std::endl;
-    switch (type)
-    {
-        case (CMD_LOGIN):
-            return cmdLogin(cmd, user);
-        case (CMD_JOIN):
-            return (cmdJoin(cmd, user));
-        case (CMD_SETNICK):
-            return (cmdSetNick(cmd, user));
-        case (CMD_SETUNAME):
-            return (cmdSetUname(cmd, user));
-        case (CMD_SEND):
-            return (cmdSend(cmd, user));
-        case (CMD_HELP):
-            return (cmdHelp(cmd, user));
-		case (CMD_CHNNL):
-			return (cmdChannel(cmd, user));
-        case (SEND_MSG):
-            return type;
-    }
-    return (0);
+	if (!buffer)
+		return (1);
+	
+	std::vector<std::string> lines;
+	lines = stringSplit(buffer, '\n');
+	if (lines.empty())
+		return (0);
+	
+	std::cout << "CLIENT:\n" << buffer << std::endl;
+
+	std::vector<std::string>::iterator it;
+	for (it = lines.begin() ; it != lines.end() ; ++it)
+	{
+		std::vector<std::string> cmd;
+		cmd = stringSplit(it->c_str(), ' ');
+		if (cmd.empty())
+			continue;
+
+		cmdType type = getCommandType(cmd[0]);
+		switch (type)
+		{
+			case (CMD_LOGIN):
+				return cmdLogin(lines, user);
+			case (CMD_JOIN):
+				return (cmdJoin(cmd, user));
+			case (CMD_SETNICK):
+				return (cmdSetNick(cmd, user));
+			case (CMD_SETUNAME):
+				return (cmdSetUname(cmd, user));
+			case (CMD_SEND):
+				return (cmdSend(cmd, user));
+			case (CMD_HELP):
+				return (cmdHelp(cmd, user));
+			case (SEND_MSG):
+				return type;
+		}
+	}
+	return (0);
 }
 
 void	Server::receiveData(int fd)
@@ -216,17 +214,17 @@ void	Server::receiveData(int fd)
 	// find the client object correspondant from fd
 	it = _fdToClientMap.find(fd);
 	tmpClient = it->second;
-
-	// load the message into a buffer Investigate how Hexchat /r/n works.
-	size_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
-	if (bytesRead <= 0)
-	{
+	// load the message into a buffer
+	ssize_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
+	if (bytesRead == 0){
 		handleDisconnection(fd);
+	} else if (bytesRead < 0) {
+		std::cerr << "recv() error: " << strerror(errno) << std::endl;
 	}
 	else
 	{
 		// handle receiving message
-		buffer[bytesRead - 1] = '\0';
+		buffer[bytesRead] = '\0';
 		/*
 			Esto hay que reestructurarlo. Cada cliente solo puede mandar el mensaje a los miembros de un
 			canal. 

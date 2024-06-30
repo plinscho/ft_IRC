@@ -62,16 +62,28 @@ int Server::cmdLogin(std::vector<std::string> lines, Client *user)
 
 int Server::cmdJoin(std::vector<std::string> cmd, Client *user)
 {
-	int ret;
+	Channel *tmpChannel;
+	std::map<int, Channel *>::iterator channelIt;
+	std::string channelName = trim(cmd[1]);
 
-	ret = preCmdCheck(cmd, user);
-	if (ret == -1)
-		return (-1);
-	else if (ret != 0)
-		return (1);
-	
+//	std::cout << "cmd[0]: " << cmd[0] << std::endl;
+//	std::cout << "cmd[1]: " << cmd[1] << std::endl;
 
-	return (0);
+	if (cmd.size() != 2)
+		return (sendMessage(user, "Usage: /join <channel name>\n"));
+	for (channelIt = _channels.begin() ; channelIt != _channels.end() ; ++channelIt)
+	{
+		std::cout << channelIt->second->getChannelName() << std::endl;
+		if (channelIt->second->getChannelName() == channelName)
+		{
+			sendMessage(user, "channel found.\n");
+			tmpChannel = channelIt->second;
+			addClientToChannel(user, tmpChannel);
+			return (0);
+		}
+	}
+	sendMessage(user, "channel not found.\n");
+	return (1);
 }
 
 int Server::cmdSetNick(std::vector<std::string> cmd, Client *user)

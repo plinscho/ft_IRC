@@ -55,8 +55,11 @@ void	Server::deleteChannel(int id)
 
 void	Server::addClientToChannel(Client *user, Channel *channel)
 {
+	std::string msg;
+
 	if (channel->activeUsers >= MAX_CHANNEL_USERS)
 		return ;
 	channel->addUser(user->getFd(), user);
-	
+	msg = user->getNickname() + " joined " + channel->getChannelName() + " channel.\n";
+	sendMessage(user, msg);	
 }

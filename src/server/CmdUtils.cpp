@@ -32,6 +32,15 @@ std::vector<std::string> stringSplit(const char *str, const char& c)
 	return split;
 }
 
+std::string trim(const std::string& str) {
+    size_t first = str.find_first_not_of('\n');
+    if (std::string::npos == first) {
+        return str;
+    }
+    size_t last = str.find_last_not_of('\n');
+    return str.substr(first, (last - first + 1));
+}
+
 cmdType getCommandType(const std::string &cmd)
 {
     if (cmd == "CAP") return (CMD_LOGIN);

@@ -82,7 +82,6 @@ enum cmdType
 	CMD_SETUNAME,
 	CMD_SEND,
 	CMD_HELP,
-	CMD_CHNNL,
 	SEND_MSG
 };
 

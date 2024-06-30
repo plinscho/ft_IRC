@@ -158,9 +158,10 @@ int Server::run()
 			// clear the poll() revents field
 			_vectorPoll[i].revents = 0;
 		}	
+	}
 	std::cout << "<Poll Events updated: " << ++i << std::endl;
 	return (0);
-}
+}	
 
 int Server::handleInput(char *buffer, Client *user)
 {

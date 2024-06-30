@@ -112,10 +112,9 @@ int	sendMessage(Client *user, const std::string &msg)
 {
 	if (!user || msg.empty())
 		return (-1);
-//	std::cout << "sendmsg: " << msg << std::endl;
 	if (send(user->getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT) == -1)
 		return (-1);
-	return (0);
+	return (1);
 }
 
 int	quickError(std::string msg, int errcode)
@@ -134,6 +133,7 @@ int sendWelcome(int fd)
 	\n/setnick\t<new nick>\t(max 8 characters)\
 	\n/setuname\t<new username>\t(max 8 characters)\
 	\n/send\t\t<ip addr> | <nickname>\t(send a private msg)\
+	\n/channels\t(show available channels for /join) \
 	\n/help\t\t(print this message again)\n\
 	\n";
 

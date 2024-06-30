@@ -4,32 +4,32 @@
 
 std::vector<std::string> stringSplit(const char *str, const char& c)
 {
-    std::string buff = "";           // Buffer to build each substring
-    std::vector<std::string> split;  // Vector to hold the resulting substrings
+	std::string buff = "";           // Buffer to build each substring
+	std::vector<std::string> split;  // Vector to hold the resulting substrings
 
-    for (int i = 0; str[i] != '\0'; ++i)
-    {
-        if (str[i] != c)
-        {
-            buff += str[i];  // Append character to buffer if not the delimiter
-        }
-        else
-        {
-            if (!buff.empty())
-            {
-                split.push_back(buff);  // Add buffer to vector if it's not empty
-                buff.clear();           // Clear the buffer for the next substring
-            }
-        }
-    }
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		if (str[i] != c)
+		{
+			buff += str[i];  // Append character to buffer if not the delimiter
+		}
+		else
+		{
+			if (!buff.empty())
+			{
+				split.push_back(buff.c_str());  // Add buffer to vector if it's not empty
+				buff.clear();           // Clear the buffer for the next substring
+			}
+		}
+	}
 
-    // If there is any remaining buffer, add it to the vector
-    if (!buff.empty())
-    {
-        split.push_back(buff);
-    }
+	// If there is any remaining buffer, add it to the vector
+	if (!buff.empty())
+	{
+		split.push_back(buff.c_str());
+	}
 
-    return split;
+	return split;
 }
 
 cmdType getCommandType(const std::string &cmd)
@@ -40,7 +40,21 @@ cmdType getCommandType(const std::string &cmd)
     else if (cmd == "/setuname") return (CMD_SETUNAME);
     else if (cmd == "/send") return (CMD_SEND);
     else if (cmd == "/help") return (CMD_HELP);
-    else return (SEND_MSG);    
+    else return (SEND_MSG);      
+}
+
+int	preCmdCheck(std::vector<std::string> cmd, Client *user)
+{
+	if (cmd.empty() || !user)
+		return (-1);
+	else if ((user->getLogin()) == false)
+	{
+		if (sendMessage(user, "Error: You need to be logged in before!\n") == -1)
+			return (-1);
+		else
+			return (1);
+	}
+	return (0);
 }
 
 int	checkNick(std::string newNick)

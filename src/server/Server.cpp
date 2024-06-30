@@ -118,6 +118,7 @@ int Server::run()
 	static int i = 0;
 	updatePoll();
 
+
 	// loop through the poll vector to check events:
 	for (size_t i = 0 ; i < _vectorPoll.size() ; ++i)
 	{
@@ -130,6 +131,7 @@ int Server::run()
 			continue;
 		}
 			// check the write events:
+
 		if (_vectorPoll[i].revents & POLLIN)
 		{
 			if (_vectorPoll[i].fd == _sockfd) // return enum USER_NEW
@@ -140,12 +142,22 @@ int Server::run()
 		if (_vectorPoll[i].revents & POLLOUT)
 		{
 			handleWriteEvent(_vectorPoll[i].fd);
-		}
+			if (_vectorPoll[i].revents & POLLIN)
+			{
+				if (_vectorPoll[i].fd == _sockfd)
+				{
+					grabConnection();
+				}
+				else
+				{
+					receiveData(_vectorPoll[i].fd);
 
-		// clear the poll() revents field
-		_vectorPoll[i].revents = 0;
-	}
-	
+				}
+			}
+
+			// clear the poll() revents field
+			_vectorPoll[i].revents = 0;
+		}	
 	std::cout << "<Poll Events updated: " << ++i << std::endl;
 	return (0);
 }
@@ -194,8 +206,6 @@ int Server::handleInput(char *buffer, Client *user)
 
 void	Server::receiveData(int fd)
 {
-	// Vector to save the split cmd
-	std::vector<std::string> cmd;
 	std::map<int, Client *>::iterator it;
 
 	char buffer[512] = {0};
@@ -204,7 +214,6 @@ void	Server::receiveData(int fd)
 	// find the client object correspondant from fd
 	it = _fdToClientMap.find(fd);
 	tmpClient = it->second;
-
 	// load the message into a buffer
 	ssize_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
 	if (bytesRead == 0){
@@ -216,6 +225,10 @@ void	Server::receiveData(int fd)
 	{
 		// handle receiving message
 		buffer[bytesRead] = '\0';
+		/*
+			Esto hay que reestructurarlo. Cada cliente solo puede mandar el mensaje a los miembros de un
+			canal. 
+		*/
 		if (handleInput(buffer, tmpClient) == -1)
 			handleDisconnection(tmpClient->getFd());
 	}

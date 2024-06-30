@@ -68,6 +68,7 @@ class Server
 	int 							cmdSetNick(std::vector<std::string> cmd, Client *user);
 	int 							cmdSetUname(std::vector<std::string> cmd, Client *user);
 	int 							cmdSend(std::vector<std::string> cmd, Client *user);
+	int								cmdChannel(std::vector<std::string> cmd, Client *user);
 	int 							cmdHelp(std::vector<std::string> cmd, Client *user);
 };
 
@@ -81,6 +82,7 @@ enum cmdType
 	CMD_SETUNAME,
 	CMD_SEND,
 	CMD_HELP,
+	CMD_CHNNL,
 	SEND_MSG
 };
 
@@ -96,7 +98,7 @@ MSG_MORE: 		This flag indicates that more data is coming. The data will be bundl
 MSG_NOSIGNAL: 	This flag requests not to send the SIGPIPE signal if an attempt to send is made on a stream socket that is no longer connected.
 MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
 */
-
+int							preCmdCheck(std::vector<std::string> cmd, Client *user);
 int							sendMessage(Client *user, const std::string &msg);
 int							quickError(std::string msg, int errcode);
 int							checkNick(std::string newNick);

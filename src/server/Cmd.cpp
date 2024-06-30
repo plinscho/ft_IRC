@@ -10,37 +10,55 @@
 	proceed to disconnect the client form the server.
 */
 
-int Server::cmdLogin(std::vector<std::string> cmd, Client *user)
+int Server::cmdLogin(std::vector<std::string> lines, Client *user)
 {
-    if (cmd.empty() || !user || user->_loginAtempts >= 3) 
-		return (sendMessage(user, "Logging failed.\nDisconnecting user...\n"));
-	else if (user->getLogin() == true)
-		return (sendMessage(user, "User already logged in!\n"));
+	sendMessage(user, "Logging in ...\nChecking password.\n");
 
-	int attempts = 3 - user->_loginAtempts; 
-	std::stringstream ss;
-	ss << "Incorrect password.\n" << attempts << " attemps left.\n";
-	std::string errpsw = ss.str();
-	
-	if (cmd.size() != 3 || cmd[1].empty() || cmd[2].empty())
-		return (sendMessage(user, "Usage: /login <password> <nickname>\n"));
-	if (cmd[1] != _password)
-	{
-		user->_loginAtempts++;
-		return (sendMessage(user, errpsw));
-	}
+	std::string msg = "";
+	std::vector<std::string>::iterator it;
+	std::vector<std::string> cmd;
+	bool passwordOk = false, nickSet = false, userSet = false;
 
-	int type = checkNick(cmd[2]);
-	if (setNick(type, user, cmd[2]) == -1)
+	int i = 0;
+	for (it = lines.begin() ; it != lines.end() ; ++it, ++i)
 	{
-		handleDisconnection(user->getFd());
-		return (0);
+		std::stringstream ss;
+		std::cout << "line: " << i << " = " << *it << std::endl;
+		cmd = stringSplit(it->c_str(), ' ');
+		if (cmd[0] == "PASS"){
+			if (cmd.size() < 2 || cmd[1] != _password){
+				passwordOk = true;
+			} else {
+				sendMessage(user, "Incorrect password.\nDisconnecting.\n");
+				return (-1);
+			}
+		}
+		else if (cmd[0] == "NICK"){
+			user->setNickname(cmd[1]);
+			nickSet = true;
+			ss << "Setting nickname to: " << cmd[1] << std::endl;
+		}
+		else if (cmd[0] == "USER"){
+			user->setUserName(cmd[1]);
+			ss << "Setting username to: " << cmd[1] << std::endl;
+			userSet = true;
+		}
+		std::string msg = ss.str();
+		sendMessage(user, msg);
+		msg.clear();
+		cmd.clear();
 	}
-	user->setLogin(true);
-	std::stringstream ss2;
-	ss2 << "User " << user->getNickname() << " logged in .\n";
-	std::string logedIn = ss2.str();
-	return (sendMessage(user, logedIn));
+	if (passwordOk && nickSet && userSet)
+    {
+        user->setLogin(true);
+        std::string loggedIn = "User logged in.\n";
+        return sendMessage(user, loggedIn);
+    }
+    else
+    {
+        sendMessage(user, "Login failed. Missing information.\n");
+        return (-1);
+    }
 }
 
 int Server::cmdJoin(std::vector<std::string> cmd, Client *user)

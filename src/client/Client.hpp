@@ -36,6 +36,7 @@ class Client {
 
 
 	void			setNickname(std::string newNick);
+	void			setUserName(std::string newUsername);
 	void			addLoginTry(void);
 	int				sendData(int serverFd);
 	int				receiveData(int serverFd);

@@ -34,8 +34,8 @@ std::vector<std::string> stringSplit(const char *str, const char& c)
 
 cmdType getCommandType(const std::string &cmd)
 {
-    if (cmd == "/login") return (CMD_LOGIN);
-    else if (cmd == "/join") return (CMD_JOIN);
+    if (cmd == "CAP") return (CMD_LOGIN);
+    else if (cmd == "JOIN") return (CMD_JOIN);
     else if (cmd == "/setnick") return(CMD_SETNICK);
     else if (cmd == "/setuname") return (CMD_SETUNAME);
     else if (cmd == "/send") return (CMD_SEND);

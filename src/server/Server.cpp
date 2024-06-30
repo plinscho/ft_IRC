@@ -72,9 +72,6 @@ int Server::grabConnection()
 	socklen_t	clientAddrLen = sizeof(clientAddr);
 
 	// check if listening fd has found a new connection
-	int checker = poll(&_vectorPoll[0], 1, 1000);
-	if (!checker)
-		return (0);
 	int newClientFd = accept(_sockfd, (struct sockaddr *)&clientAddr, &clientAddrLen);
 	if (newClientFd < 0)
 	{
@@ -107,9 +104,6 @@ int Server::grabConnection()
 
 	// save client in map, associated with the fd
 	_fdToClientMap[newClientFd] = newClient;
-	if (sendWelcome(newClientFd) != 0)
-		handleDisconnection(newClientFd);
-
 	conectedClients++;
 	return (0);
 }
@@ -144,9 +138,9 @@ int Server::run()
 				receiveData(_vectorPoll[i].fd); // return 
 		}
 		if (_vectorPoll[i].revents & POLLOUT)
-        {
-            handleWriteEvent(_vectorPoll[i].fd);
-        }
+		{
+			handleWriteEvent(_vectorPoll[i].fd);
+		}
 
 		// clear the poll() revents field
 		_vectorPoll[i].revents = 0;
@@ -158,33 +152,44 @@ int Server::run()
 
 int Server::handleInput(char *buffer, Client *user)
 {
-    if (!buffer)
-        return (1);
-    
-    std::vector<std::string> cmd;
-    cmd = stringSplit(buffer, ' ');
-    if (cmd.empty())
-        return (0);
-    cmdType type = getCommandType(cmd[0]);
-	std::cout << "Command: " << cmd[0] << std::endl;
-    switch (type)
-    {
-        case (CMD_LOGIN):
-            return cmdLogin(cmd, user);
-        case (CMD_JOIN):
-            return (cmdJoin(cmd, user));
-        case (CMD_SETNICK):
-            return (cmdSetNick(cmd, user));
-        case (CMD_SETUNAME):
-            return (cmdSetUname(cmd, user));
-        case (CMD_SEND):
-            return (cmdSend(cmd, user));
-        case (CMD_HELP):
-            return (cmdHelp(cmd, user));
-        case (SEND_MSG):
-            return type;
-    }
-    return (0);
+	if (!buffer)
+		return (1);
+	
+	std::vector<std::string> lines;
+	lines = stringSplit(buffer, '\n');
+	if (lines.empty())
+		return (0);
+	
+	std::cout << "CLIENT:\n" << buffer << std::endl;
+
+	std::vector<std::string>::iterator it;
+	for (it = lines.begin() ; it != lines.end() ; ++it)
+	{
+		std::vector<std::string> cmd;
+		cmd = stringSplit(it->c_str(), ' ');
+		if (cmd.empty())
+			continue;
+
+		cmdType type = getCommandType(cmd[0]);
+		switch (type)
+		{
+			case (CMD_LOGIN):
+				return cmdLogin(lines, user);
+			case (CMD_JOIN):
+				return (cmdJoin(cmd, user));
+			case (CMD_SETNICK):
+				return (cmdSetNick(cmd, user));
+			case (CMD_SETUNAME):
+				return (cmdSetUname(cmd, user));
+			case (CMD_SEND):
+				return (cmdSend(cmd, user));
+			case (CMD_HELP):
+				return (cmdHelp(cmd, user));
+			case (SEND_MSG):
+				return type;
+		}
+	}
+	return (0);
 }
 
 void	Server::receiveData(int fd)
@@ -205,7 +210,7 @@ void	Server::receiveData(int fd)
 	if (bytesRead == 0){
 		handleDisconnection(fd);
 	} else if (bytesRead < 0) {
-        std::cerr << "recv() error: " << strerror(errno) << std::endl;
+		std::cerr << "recv() error: " << strerror(errno) << std::endl;
 	}
 	else
 	{

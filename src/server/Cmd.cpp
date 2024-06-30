@@ -69,6 +69,7 @@ int Server::cmdJoin(std::vector<std::string> cmd, Client *user)
 //	std::cout << "cmd[0]: " << cmd[0] << std::endl;
 //	std::cout << "cmd[1]: " << cmd[1] << std::endl;
 
+	std::cout << "Channel selected: " << channelName << std::endl;
 	if (cmd.size() != 2)
 		return (sendMessage(user, "Usage: /join <channel name>\n"));
 	for (channelIt = _channels.begin() ; channelIt != _channels.end() ; ++channelIt)
@@ -76,7 +77,7 @@ int Server::cmdJoin(std::vector<std::string> cmd, Client *user)
 		std::cout << channelIt->second->getChannelName() << std::endl;
 		if (channelIt->second->getChannelName() == channelName)
 		{
-			sendMessage(user, "channel found.\n");
+			sendMessage(user, "Channel found.\n");
 			tmpChannel = channelIt->second;
 			addClientToChannel(user, tmpChannel);
 			return (0);

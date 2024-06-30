@@ -151,7 +151,6 @@ int Server::run()
 				else
 				{
 					receiveData(_vectorPoll[i].fd);
-
 				}
 			}
 

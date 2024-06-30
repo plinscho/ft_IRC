@@ -7,11 +7,11 @@ void	Server::initChannels(void)
 	std::vector<std::string>::iterator it;
 	std::vector<std::string> channelNames;
 
-	channelNames.push_back("General");
-	channelNames.push_back("Music");
-	channelNames.push_back("Random");
-	channelNames.push_back("Gaming");
-	channelNames.push_back("Cotilleo");
+	channelNames.push_back("#General");
+	channelNames.push_back("#Music");
+	channelNames.push_back("#Random");
+	channelNames.push_back("#Gaming");
+	channelNames.push_back("#Cotilleo");
 	int i = 1;
 
 	for (it = channelNames.begin() ; it != channelNames.end() ; ++it)
@@ -55,7 +55,7 @@ void	Server::deleteChannel(int id)
 
 void	Server::addClientToChannel(Client *user, Channel *channel)
 {
-	std::string msg;
+	std::string msg = "";
 
 	if (channel->activeUsers >= MAX_CHANNEL_USERS)
 		return ;

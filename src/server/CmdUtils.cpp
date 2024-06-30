@@ -32,12 +32,14 @@ std::vector<std::string> stringSplit(const char *str, const char& c)
 	return split;
 }
 
-std::string trim(const std::string& str) {
-    size_t first = str.find_first_not_of('\n');
+std::string trim(const std::string& str) 
+{
+
+    size_t first = str.find_first_not_of('\r');
     if (std::string::npos == first) {
         return str;
     }
-    size_t last = str.find_last_not_of('\n');
+    size_t last = str.find_last_not_of('\r');
     return str.substr(first, (last - first + 1));
 }
 

@@ -12,6 +12,7 @@ Channel::Channel(int id, const std::string channelName)
 {
 	this->_channelId = id;
 	this->_channelName = channelName;
+	this->activeUsers = 0;
 }
 
 Channel::~Channel()
@@ -32,4 +33,5 @@ int			Channel::getChannelId(void)
 void	Channel::addUser(int fd, Client *newUser)
 {
 	_fdUsersMap[fd] = newUser;
+	activeUsers++;
 }

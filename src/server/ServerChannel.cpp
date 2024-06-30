@@ -2,6 +2,10 @@
 #include <iostream>
 #include <string>
 
+// Investigate why this is needed for protocol IRC
+#define RPL_NAMREPLY 353
+#define RPL_ENDOFNAMES 366
+
 void	Server::initChannels(void)
 {
 	std::vector<std::string>::iterator it;
@@ -60,6 +64,6 @@ void	Server::addClientToChannel(Client *user, Channel *channel)
 	if (channel->activeUsers >= MAX_CHANNEL_USERS)
 		return ;
 	channel->addUser(user->getFd(), user);
-	msg = user->getNickname() + " joined " + channel->getChannelName() + " channel.\n";
+	msg = "JOIN " + channel->getChannelName() + "\r\n";
 	sendMessage(user, msg);	
 }

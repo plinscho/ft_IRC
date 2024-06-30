@@ -77,9 +77,9 @@ int Server::cmdJoin(std::vector<std::string> cmd, Client *user)
 		std::cout << channelIt->second->getChannelName() << std::endl;
 		if (channelIt->second->getChannelName() == channelName)
 		{
-			sendMessage(user, "Channel found.\n");
 			tmpChannel = channelIt->second;
 			addClientToChannel(user, tmpChannel);
+			sendMessage(user, "Channel found.\n");
 			return (0);
 		}
 	}

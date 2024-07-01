@@ -16,7 +16,7 @@ int Server::cmdLogin(std::vector<std::string> lines, Client *user)
 	std::string msg = "";
 	std::vector<std::string>::iterator it;
 	std::vector<std::string> cmd;
-	bool passwordOk = false, nickSet = false, userSet = false;
+	static bool passwordOk = false, nickSet = false, userSet = false;
 
 	int i = 0;
 	for (it = lines.begin() ; it != lines.end() ; ++it, ++i)
@@ -66,7 +66,7 @@ int Server::cmdJoin(std::vector<std::string> cmd, Client *user)
 	std::map<int, Channel *>::iterator channelIt;
 	std::string channelName = trim(cmd[1]);
 
-//	std::cout << "cmd[0]: " << cmd[0] << std::endl;
+	std::cout << "join mandado\n"<< std::endl;
 //	std::cout << "cmd[1]: " << cmd[1] << std::endl;
 
 	std::cout << "Channel selected: " << channelName << std::endl;
@@ -79,7 +79,7 @@ int Server::cmdJoin(std::vector<std::string> cmd, Client *user)
 		{
 			tmpChannel = channelIt->second;
 			addClientToChannel(user, tmpChannel);
-			sendMessage(user, "Channel found.\n");
+			sendMessage(user, "PRIVMSG #General\r\n");
 			return (0);
 		}
 	}

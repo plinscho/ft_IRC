@@ -6,7 +6,6 @@ Client::Client()
 	_nickName = "RandomUser";
 	_userName = "RandomUser";
 	_clientSocketFd = -1;
-	_loginAtempts = 0;
 	_clientIp = "0";
 	_logged = false;
 }
@@ -15,7 +14,6 @@ Client::Client(int fd, std::string address)
 {
 	_clientSocketFd = fd;
 	_clientIp = address;
-	_loginAtempts = 0;
 	_nickName = "RandomUser";
 	_userName = "RandomUser";
 	_logged = false;
@@ -46,7 +44,7 @@ int Client::getFd() const
 
 std::string	Client::getRecvBuffer() const 
 {
-	return (std::string(_recvBuffer));
+	return (clientBuffer);
 }
 
 void	Client::setNickname(std::string newNick)
@@ -59,11 +57,6 @@ void	Client::setUserName(std::string newUser)
 	this->_userName = newUser;
 }
 
-void	Client::addLoginTry(void)
-{
-	_loginAtempts += 1;
-}
-
 void	Client::setLogin(bool option)
 {
 	this->_logged = option;
@@ -73,33 +66,3 @@ bool	Client::getLogin(void) const
 {
 	return (this->_logged);
 }
-
-int Client::receiveData(int serverFd)
-{
-	memset(_recvBuffer, 0, sizeof(_recvBuffer));
-	int bytesReceived = recv(serverFd, _recvBuffer, sizeof(_recvBuffer), 0);
-	if (bytesReceived < 0)
-	{
-		std::cerr << "Error receiving data" << std::endl;
-		return (-1);
-	}
-	else if (bytesReceived == 0)
-    {
-        std::cerr << "Connection closed by server" << std::endl;
-        return (-1);
-    }
-	return (bytesReceived);
-}
-
-int Client::sendData(int serverFd)
-{
-	memset(_sendBuffer, 0, sizeof(_sendBuffer));
-	int bytesSend = send(serverFd, _sendBuffer, sizeof(_sendBuffer), 0);
-    if (bytesSend < 0)
-    {
-        std::cerr << "Error sending data" << std::endl;
-        return -1;
-    }
-    return bytesSend;
-}
-

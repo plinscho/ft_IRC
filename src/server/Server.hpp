@@ -60,7 +60,7 @@ class Server
 	int								getPort() const;
 	int								getSockfd() const;
 	std::vector<pollfd>::iterator	findPollFd(int fd);
-	int								handleInput(char *buffer, Client *user);
+	int								handleInput(Client *user);
 
 	// COMMANDS
 	int 							cmdLogin(std::vector<std::string> cmd, Client *user);

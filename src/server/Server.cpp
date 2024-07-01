@@ -115,70 +115,120 @@ int Server::grabConnection()
 // this is the logic I have found the best.
 int Server::run()
 {
-	static int i = 0;
+	static int events = 0;
 	updatePoll();
 
-
 	// loop through the poll vector to check events:
-	for (size_t i = 0 ; i < _vectorPoll.size() ; ++i)
+	for (size_t i = 0; i < _vectorPoll.size(); ++i)
 	{
 		if (_vectorPoll[i].fd < 0)
-			continue ;
-			// check the disconnection events
-		else if (_vectorPoll[i].revents & (POLLHUP | POLLERR))
-		{
-			handleDisconnection(i);
 			continue;
-		}
-			// check the write events:
 
-		if (_vectorPoll[i].revents & POLLIN)
+		switch (_vectorPoll[i].revents)
 		{
-			if (_vectorPoll[i].fd == _sockfd) // return enum USER_NEW
-				grabConnection();
-			else
-				receiveData(_vectorPoll[i].fd); // return 
-		}
-		if (_vectorPoll[i].revents & POLLOUT)
-		{
-			handleWriteEvent(_vectorPoll[i].fd);
-			if (_vectorPoll[i].revents & POLLIN)
-			{
+			case 0:
+				break; // No event
+
+			case POLLIN:
 				if (_vectorPoll[i].fd == _sockfd)
-				{
 					grabConnection();
-				}
 				else
-				{
 					receiveData(_vectorPoll[i].fd);
+				break;
+
+			case POLLOUT:
+				handleWriteEvent(_vectorPoll[i].fd);
+				break;
+
+			default:
+				if (_vectorPoll[i].revents & (POLLHUP | POLLERR))
+				{
+					handleDisconnection(i);
+				}
+				break;
+		}
+		// clear the poll() revents field
+		_vectorPoll[i].revents = 0;
+	}
+	std::cout << "<Poll Events updated: " << ++events << std::endl;
+	return (0);
+}
+
+
+// funcion para comparar la password, si el nick ya existe etc.
+static void handshake(Client *user)
+{
+	std::vector<std::string>::iterator it;
+
+	std::cout << "Esto viene de handshake.\n" << std::endl;
+	for (it = user->uwu.begin() ; it != user->uwu.end() ; ++it)
+	{
+		std::cout << "hs: "<< *it << std::endl;
+	}
+}
+
+void	Server::receiveData(int fd)
+{
+	std::map<int, Client *>::iterator it;
+
+	char buffer[512] = {0};
+	Client *tmpClient = NULL;
+
+	// find the client object correspondant from fd
+	it = _fdToClientMap.find(fd);
+	tmpClient = it->second;
+
+	// load the message into a buffer
+	ssize_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
+
+	if (bytesRead == 0){
+		handleDisconnection(fd);
+	} else if (bytesRead < 0) {
+		std::cerr << "recv() error: " << strerror(errno) << std::endl;
+	}
+	else
+	{
+		// handle receiving message
+		buffer[bytesRead] = '\0';
+		std::cout << "CLIENT:\n" << buffer << std::endl;
+
+		// checkear si viene handshake
+		if (tmpClient->getLogin() == false)	{
+			std::string tmp = buffer;
+			size_t pos = 0;
+			while ((pos = tmp.find("\r\n")) != std::string::npos) 
+			{
+				std::string substr = tmp.substr(0, pos); // Obtiene el substring hasta "\r\n"
+				std::cout << "hola: " << substr << std::endl;
+				substr.push_back('\0'); // Añade el carácter nulo al final
+				tmpClient->uwu.push_back(substr); // Realiza el push_back del resultado
+				tmp.erase(0, pos + 2); // Elimina la parte procesada del buffer, incluyendo "\r\n"
+				if (tmpClient->uwu.size() == 4) {
+					handshake(tmpClient);
+					break; // Sal del bucle si se ha completado el handshake
 				}
 			}
-
-			// clear the poll() revents field
-			_vectorPoll[i].revents = 0;
-		}	
+		}
+		else
+		{
+			tmpClient->clientBuffer = buffer;
+			handleInput(tmpClient);
+			// mas funciones
+			tmpClient->clientBuffer.empty();
+		}
 	}
-	std::cout << "<Poll Events updated: " << ++i << std::endl;
-	return (0);
-}	
+}
 
-int Server::handleInput(char *buffer, Client *user)
+int Server::handleInput(Client *user)
 {
-	if (!buffer)
-		return (1);
-	
-	std::vector<std::string> lines;
-	lines = stringSplit(buffer, '\n');
-	if (lines.empty())
+	std::vector<std::string> cmd;
+	cmd = stringSplit(user->clientBuffer.c_str(), ' ');
+	if (cmd.empty())
 		return (0);
 	
-	std::cout << "CLIENT:\n" << buffer << std::endl;
-
 	std::vector<std::string>::iterator it;
-	for (it = lines.begin() ; it != lines.end() ; ++it)
+	for (it = cmd.begin() ; it != cmd.end() ; ++it)
 	{
-		std::vector<std::string> cmd;
-		cmd = stringSplit(it->c_str(), ' ');
 		if (cmd.empty())
 			continue;
 
@@ -186,7 +236,7 @@ int Server::handleInput(char *buffer, Client *user)
 		switch (type)
 		{
 			case (CMD_LOGIN):
-				return cmdLogin(lines, user);
+				return cmdLogin(cmd, user);
 			case (CMD_JOIN):
 				return (cmdJoin(cmd, user));
 			case (CMD_SETNICK):
@@ -204,34 +254,5 @@ int Server::handleInput(char *buffer, Client *user)
 	return (0);
 }
 
-void	Server::receiveData(int fd)
-{
-	std::map<int, Client *>::iterator it;
-
-	char buffer[512] = {0};
-	Client *tmpClient = NULL;
-
-	// find the client object correspondant from fd
-	it = _fdToClientMap.find(fd);
-	tmpClient = it->second;
-	// load the message into a buffer
-	ssize_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
-	if (bytesRead == 0){
-		handleDisconnection(fd);
-	} else if (bytesRead < 0) {
-		std::cerr << "recv() error: " << strerror(errno) << std::endl;
-	}
-	else
-	{
-		// handle receiving message
-		buffer[bytesRead] = '\0';
-		/*
-			Esto hay que reestructurarlo. Cada cliente solo puede mandar el mensaje a los miembros de un
-			canal. 
-		*/
-		if (handleInput(buffer, tmpClient) == -1)
-			handleDisconnection(tmpClient->getFd());
-	}
-}
 
 

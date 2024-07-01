@@ -1,5 +1,6 @@
 #pragma once
 #include <string.h>
+#include <vector>
 #include <cerrno>
 #include <cstdlib>      // For exit() and EXIT_FAILURE
 #include <poll.h>
@@ -13,8 +14,7 @@
 
 class Client {
   private:
-	char				_recvBuffer[MAX_MSG_SIZE];
-	char				_sendBuffer[MAX_MSG_SIZE];
+
 	int 				_clientSocketFd;
 	std::string			_clientIp;
 	std::string			_nickName;
@@ -23,7 +23,8 @@ class Client {
 
 
   public:
-	int					_loginAtempts;
+	std::vector<std::string>	uwu;
+	std::string					clientBuffer;
 	
 	Client();
     Client(int fd, std::string ip);
@@ -37,9 +38,6 @@ class Client {
 
 	void			setNickname(std::string newNick);
 	void			setUserName(std::string newUsername);
-	void			addLoginTry(void);
-	int				sendData(int serverFd);
-	int				receiveData(int serverFd);
 	void			setLogin(bool option);
 };
 

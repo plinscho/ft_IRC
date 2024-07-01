@@ -43,6 +43,8 @@ class Server
 	int								conectedClients;
 	char							buffer[MAX_MSG_SIZE];
 
+	void handshake(Client *user);
+
 //	CHANNEL MANAGING
 	void							initChannels();
 	void							createChannel(int id, const std::string channelName);
@@ -58,6 +60,7 @@ class Server
 	void							initPoll();
 	void							handleDisconnection(int index);
 	int								getPort() const;
+	std::string						getPassword() const;
 	int								getSockfd() const;
 	std::vector<pollfd>::iterator	findPollFd(int fd);
 	int								handleInput(Client *user);

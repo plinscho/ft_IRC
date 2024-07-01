@@ -9,12 +9,13 @@ OBJECTS = src/irc.cpp \
 			src/server/CmdUtils.cpp \
 			src/server/ServerChannel.cpp \
 			src/server/Channel.cpp \
-			src/server/ServerAA.cpp 
-#			src/
+			src/server/ServerAA.cpp \
+			src/messages/Messages.cpp
 
 
 HEADERS = src/server/Server.hpp \
-			src/client/Client.hpp
+			src/client/Client.hpp \
+			src/messages/Messages.hpp
 
 all: $(NAME)
 

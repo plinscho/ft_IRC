@@ -20,10 +20,11 @@ class Client {
 	std::string			_nickName;
 	std::string			_userName;
 	bool				_logged;
+	int					_clientCount;
 
 
   public:
-	std::vector<std::string>	uwu;
+	std::vector<std::string>	handshakeVector;
 	std::string					clientBuffer;
 	
 	Client();
@@ -34,6 +35,7 @@ class Client {
 	std::string		getRecvBuffer() const ;
 	int				getFd() const ;
 	bool			getLogin(void) const;
+	int				getClientCount(void) const;
 
 
 	void			setNickname(std::string newNick);

@@ -154,16 +154,30 @@ int Server::run()
 	return (0);
 }
 
-
 // funcion para comparar la password, si el nick ya existe etc.
-static void handshake(Client *user)
+void Server::handshake(Client *user)
 {
 	std::vector<std::string>::iterator it;
 
+
 	std::cout << "Esto viene de handshake.\n" << std::endl;
-	for (it = user->uwu.begin() ; it != user->uwu.end() ; ++it)
+	for (it = user->handshakeVector.begin() ; it != user->handshakeVector.end() ; ++it)
 	{
-		std::cout << "hs: "<< *it << std::endl;
+		if (it->find("PASS") != std::string::npos)
+		{
+			std::string tmp = *it;
+			tmp.erase(0, 5);
+			if (tmp == _password)
+			{
+				std::cout << "Password correcta.\n" << std::endl;
+				user->setLogin(true);
+			}
+			else
+			{
+				std::cout << "Password incorrecta.\n" << std::endl;
+				user->setLogin(false);
+			}
+		}
 	}
 }
 
@@ -201,9 +215,9 @@ void	Server::receiveData(int fd)
 				std::string substr = tmp.substr(0, pos); // Obtiene el substring hasta "\r\n"
 				std::cout << "hola: " << substr << std::endl;
 				substr.push_back('\0'); // Añade el carácter nulo al final
-				tmpClient->uwu.push_back(substr); // Realiza el push_back del resultado
+				tmpClient->handshakeVector.push_back(substr); // Realiza el push_back del resultado
 				tmp.erase(0, pos + 2); // Elimina la parte procesada del buffer, incluyendo "\r\n"
-				if (tmpClient->uwu.size() == 4) {
+				if (tmpClient->handshakeVector.size() == 4) {
 					handshake(tmpClient);
 					break; // Sal del bucle si se ha completado el handshake
 				}

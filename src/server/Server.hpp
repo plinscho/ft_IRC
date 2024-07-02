@@ -1,5 +1,6 @@
 #pragma once
 #include "../client/Client.hpp"
+#include "../messages/Messages.hpp"
 #include "Channel.hpp"
 
 #include <cerrno>
@@ -15,6 +16,7 @@
 #include <cstring>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <algorithm> 
 
 extern bool power;
 
@@ -39,7 +41,7 @@ class Server
 
 	Server(int, char *);
 	~Server();
-	
+	Messages message;
 	int								conectedClients;
 	char							buffer[MAX_MSG_SIZE];
 

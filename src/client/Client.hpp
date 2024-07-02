@@ -21,6 +21,7 @@ class Client {
 	std::string			_userName;
 	bool				_logged;
 	int					_clientCount;
+	std::vector<std::string>	_usedNicks;
 
 
   public:
@@ -37,7 +38,7 @@ class Client {
 	bool			getLogin(void) const;
 	int				getClientCount(void) const;
 
-
+	bool 			lookNickAlreadyExist(std::string nick);
 	void			setNickname(std::string newNick);
 	void			setUserName(std::string newUsername);
 	void			setLogin(bool option);

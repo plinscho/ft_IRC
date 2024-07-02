@@ -159,26 +159,36 @@ void Server::handshake(Client *user)
 {
 	std::vector<std::string>::iterator it;
 
+	for (it = user->handshakeVector.begin(); it != user->handshakeVector.end(); ++it) {
+		std::cout << "hs: "<< *it << std::endl;
 
-	std::cout << "Esto viene de handshake.\n" << std::endl;
-	for (it = user->handshakeVector.begin() ; it != user->handshakeVector.end() ; ++it)
-	{
-		if (it->find("PASS") != std::string::npos)
-		{
+		if (it->find("PASS") != std::string::npos) {
+			std::string tmp = *it;
+        	tmp.erase(0, 5);
+			tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
+        	tmp = trim(tmp); 
+        	if (tmp.compare(_password) != 0) {
+				std::cout << "Contraseña incorrecta user: [" << tmp << "] server: [" << _password << "]" << std::endl;
+				std::cout << "Longitudes - user: " << tmp.length() << ", server: " << _password.length() << std::endl;
+            //close(user->getFd());
+            //return;
+        	}		
+		} else if (it->find("NICK") != std::string::npos) {
 			std::string tmp = *it;
 			tmp.erase(0, 5);
-			if (tmp == _password)
-			{
-				std::cout << "Password correcta.\n" << std::endl;
-				user->setLogin(true);
+			tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
+			trim(tmp);
+			if (user->lookNickAlreadyExist(tmp)) {
+		     std::string msg = message.getMessages(433, *user);
+			    sendMessage(user, msg);
 			}
-			else
-			{
-				std::cout << "Password incorrecta.\n" << std::endl;
-				user->setLogin(false);
-			}
+		user->setNickname(tmp);
 		}
 	}
+	user->setLogin(true);
+	std::string msg = message.getMessages(1, *user);
+	std::cout << "msg: " << msg << std::endl;
+	sendMessage(user, msg);
 }
 
 void	Server::receiveData(int fd)
@@ -204,16 +214,15 @@ void	Server::receiveData(int fd)
 	{
 		// handle receiving message
 		buffer[bytesRead] = '\0';
-		std::cout << "CLIENT:\n" << buffer << std::endl;
 
 		// checkear si viene handshake
 		if (tmpClient->getLogin() == false)	{
 			std::string tmp = buffer;
 			size_t pos = 0;
-			while ((pos = tmp.find("\r\n")) != std::string::npos) 
+			int iterations = 0; // Contador para evitar bucle infinito
+			while ((pos = tmp.find("\r\n")) != std::string::npos && iterations < 10) // Limita las iteraciones para evitar bucle infinito
 			{
 				std::string substr = tmp.substr(0, pos); // Obtiene el substring hasta "\r\n"
-				std::cout << "hola: " << substr << std::endl;
 				substr.push_back('\0'); // Añade el carácter nulo al final
 				tmpClient->handshakeVector.push_back(substr); // Realiza el push_back del resultado
 				tmp.erase(0, pos + 2); // Elimina la parte procesada del buffer, incluyendo "\r\n"
@@ -221,7 +230,8 @@ void	Server::receiveData(int fd)
 					handshake(tmpClient);
 					break; // Sal del bucle si se ha completado el handshake
 				}
-			}
+				iterations++; // Incrementa el contador de iteraciones
+		}
 		}
 		else
 		{
@@ -239,7 +249,7 @@ int Server::handleInput(Client *user)
 	cmd = stringSplit(user->clientBuffer.c_str(), ' ');
 	if (cmd.empty())
 		return (0);
-	
+	std::cout << "cmd[0]: " << cmd[0] << std::endl;
 	std::vector<std::string>::iterator it;
 	for (it = cmd.begin() ; it != cmd.end() ; ++it)
 	{

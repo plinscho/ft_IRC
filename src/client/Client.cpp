@@ -53,7 +53,15 @@ std::string	Client::getRecvBuffer() const
 
 void	Client::setNickname(std::string newNick)
 {
+
+	for (std::vector<std::string>::iterator it = _usedNicks.begin(); it != _usedNicks.end(); ++it) {
+		if (*it == newNick) {
+				std::cout << "Nick already exist" << std::endl;
+				return ;
+			}
+		}
 	this->_nickName = newNick;
+	_usedNicks.push_back(_nickName);
 }
 
 void	Client::setUserName(std::string newUser)
@@ -74,5 +82,18 @@ bool	Client::getLogin(void) const
 int	Client::getClientCount(void) const
 {
 	return (this->_clientCount);
+}
+
+bool Client::lookNickAlreadyExist(std::string nick)
+{
+	for (std::vector<std::string>::iterator it = _usedNicks.begin(); it != _usedNicks.end(); ++it)
+	{
+		if (*it == nick)
+		{
+			std::cout << "Nick already exist" << std::endl;
+			return true;
+		}
+	}
+	return false;
 }
 

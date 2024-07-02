@@ -168,21 +168,28 @@ void Server::handshake(Client *user)
 			tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
         	tmp = trim(tmp); 
         	if (tmp.compare(_password) != 0) {
-				std::cout << "Contraseña incorrecta user: [" << tmp << "] server: [" << _password << "]" << std::endl;
-				std::cout << "Longitudes - user: " << tmp.length() << ", server: " << _password.length() << std::endl;
-            //close(user->getFd());
-            //return;
+				std::string incorrectPassMsg = message.getMessages(464, *user);
+				sendMessage(user, incorrectPassMsg);
+				// si cierro el fd con close aqui entra en bucle infinito 
+				// buscar otra forma de matar la conexion con el cliente
         	}		
 		} else if (it->find("NICK") != std::string::npos) {
 			std::string tmp = *it;
 			tmp.erase(0, 5);
 			tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
 			trim(tmp);
-			if (user->lookNickAlreadyExist(tmp)) {
+			/*if (user->lookNickAlreadyExist(tmp)) {
 		     std::string msg = message.getMessages(433, *user);
 			    sendMessage(user, msg);
-			}
+			}*/ // esto hay que manejar el lookNickAlreadyExist en el server
 		user->setNickname(tmp);
+		} else if (it->find("USER") != std::string::npos) {
+			std::string tmp = *it;
+			tmp.erase(0, 5);
+			tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
+			trim(tmp);
+			std::cout << "user: " << tmp << std::endl;
+			user->setUsername(tmp);
 		}
 	}
 	user->setLogin(true);
@@ -219,8 +226,7 @@ void	Server::receiveData(int fd)
 		if (tmpClient->getLogin() == false)	{
 			std::string tmp = buffer;
 			size_t pos = 0;
-			int iterations = 0; // Contador para evitar bucle infinito
-			while ((pos = tmp.find("\r\n")) != std::string::npos && iterations < 10) // Limita las iteraciones para evitar bucle infinito
+			while ((pos = tmp.find("\r\n")) != std::string::npos) // Limita las iteraciones para evitar bucle infinito
 			{
 				std::string substr = tmp.substr(0, pos); // Obtiene el substring hasta "\r\n"
 				substr.push_back('\0'); // Añade el carácter nulo al final
@@ -230,7 +236,6 @@ void	Server::receiveData(int fd)
 					handshake(tmpClient);
 					break; // Sal del bucle si se ha completado el handshake
 				}
-				iterations++; // Incrementa el contador de iteraciones
 		}
 		}
 		else

@@ -36,6 +36,11 @@ std::string Client::getNickname() const
 	return (_nickName);
 }
 
+std::string Client::getUsername() const
+{
+	return (_userName);
+}
+
 std::string Client::getAddress() const
 {
 	return (_clientIp);
@@ -53,18 +58,10 @@ std::string	Client::getRecvBuffer() const
 
 void	Client::setNickname(std::string newNick)
 {
-
-	for (std::vector<std::string>::iterator it = _usedNicks.begin(); it != _usedNicks.end(); ++it) {
-		if (*it == newNick) {
-				std::cout << "Nick already exist" << std::endl;
-				return ;
-			}
-		}
 	this->_nickName = newNick;
-	_usedNicks.push_back(_nickName);
 }
 
-void	Client::setUserName(std::string newUser)
+void	Client::setUsername(std::string newUser)
 {
 	this->_userName = newUser;
 }

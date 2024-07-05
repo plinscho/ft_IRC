@@ -170,6 +170,8 @@ void Server::handshake(Client *user)
         	if (tmp.compare(_password) != 0) {
 				std::string incorrectPassMsg = message.getMessages(464, *user);
 				sendMessage(user, incorrectPassMsg);
+				handleDisconnection(user->getFd());
+				return ;
 				// si cierro el fd con close aqui entra en bucle infinito 
 				// buscar otra forma de matar la conexion con el cliente
         	}		

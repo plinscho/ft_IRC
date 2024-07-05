@@ -176,16 +176,26 @@ void Server::handshake(Client *user)
 				// buscar otra forma de matar la conexion con el cliente
         	}		
 		} else if (it->find("NICK") != std::string::npos) {
+			// Comprueba si el nick existe
+			// Si existe enviar 3 veces el message.getMessages(433, *user);
+			// si no las 3 opciones son incorrectas handleDisconnection(user->getFd());
+			// si no existe, setear el nick
+			// Implementar las 3 funciones de abajo
+			//	bool isNicknameInUse(const std::string &nickname) const;
+    		//	void registerNickname(const std::string &nickname);
+    		//	void unregisterNickname(const std::string &nickname);
+			/*if (user->lookNickAlreadyExist(tmp)) { < -- esta picada en client.cpp
+		     std::string msg = message.getMessages(433, *user);
+			    sendMessage(user, msg);
+			}*/ // esto hay que manejar el lookNickAlreadyExist en el server
+
+			
 			std::string tmp = *it;
 			tmp.erase(0, 5);
 			tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
 			trim(tmp);
-			/*if (user->lookNickAlreadyExist(tmp)) {
-		     std::string msg = message.getMessages(433, *user);
-			    sendMessage(user, msg);
-			}*/ // esto hay que manejar el lookNickAlreadyExist en el server
-		user->setNickname(tmp);
-		} else if (it->find("USER") != std::string::npos) {
+			user->setNickname(tmp);
+		} else if (it->find("USER") != std::string::npos) { // << ESTO ESTA MALISIMAMENTE PARSEADO!!!
 			std::string tmp = *it;
 			tmp.erase(0, 5);
 			tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());

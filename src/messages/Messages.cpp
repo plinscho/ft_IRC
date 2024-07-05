@@ -25,7 +25,7 @@ std::string Messages::getMessages(int code, const Client &client) {
             case 254:
                 return ":" + serverName + " 254 " + nickname + " :<integer> channels formed\r\n";
             case 255:
-                return ":" + serverName + " 255 " + nickname + " :I have <integer> clients and <integer> servers\r\n";
+                return ":" + serverName + " 255 " + nickname + " :I have <integer> clients and 1> servers\r\n";
             case 332:
                 return ":" + serverName + " 332 " + nickname + " <channel> :<topic>\r\n";
             case 353:

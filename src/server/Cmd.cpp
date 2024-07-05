@@ -38,7 +38,7 @@ int Server::cmdLogin(std::vector<std::string> lines, Client *user)
 			ss << "Setting nickname to: " << cmd[1] << std::endl;
 		}
 		else if (cmd[0] == "USER"){
-			user->setUserName(cmd[1]);
+			user->setUsername(cmd[1]);
 			ss << "Setting username to: " << cmd[1] << std::endl;
 			userSet = true;
 		}

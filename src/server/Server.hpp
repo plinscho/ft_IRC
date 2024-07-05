@@ -1,5 +1,6 @@
 #pragma once
 #include "../client/Client.hpp"
+#include "../messages/Messages.hpp"
 #include "Channel.hpp"
 
 #include <cerrno>
@@ -15,6 +16,7 @@
 #include <cstring>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <algorithm> 
 
 extern bool power;
 
@@ -33,15 +35,18 @@ class Server
 	sockaddr_in 					_sockaddr;	// Server address
 	std::vector <struct pollfd> 	_vectorPoll;
     std::map<int, Client*> 			_fdToClientMap; // Map file descriptors to Client pointers
+	std::map<std::string, Client*> 	_nicknameMap; // Here we will store the nicknames
 	std::map<int, Channel*>			_channels;
 
   public:
 
 	Server(int, char *);
 	~Server();
-	
+	Messages message;
 	int								conectedClients;
 	char							buffer[MAX_MSG_SIZE];
+
+	void handshake(Client *user);
 
 //	CHANNEL MANAGING
 	void							initChannels();
@@ -58,6 +63,7 @@ class Server
 	void							initPoll();
 	void							handleDisconnection(int index);
 	int								getPort() const;
+	std::string						getPassword() const;
 	int								getSockfd() const;
 	std::vector<pollfd>::iterator	findPollFd(int fd);
 	int								handleInput(Client *user);
@@ -70,6 +76,12 @@ class Server
 	int 							cmdSend(std::vector<std::string> cmd, Client *user);
 	int								cmdChannel(std::vector<std::string> cmd, Client *user);
 	int 							cmdHelp(std::vector<std::string> cmd, Client *user);
+
+
+	// NICK functions
+	bool isNicknameInUse(const std::string &nickname) const;
+    void registerNickname(const std::string &nickname);
+    void unregisterNickname(const std::string &nickname);
 };
 
 // COMMANDS

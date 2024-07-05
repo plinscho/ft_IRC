@@ -20,24 +20,28 @@ class Client {
 	std::string			_nickName;
 	std::string			_userName;
 	bool				_logged;
+	int					_clientCount;
+	std::vector<std::string>	_usedNicks;
 
 
   public:
-	std::vector<std::string>	uwu;
+	std::vector<std::string>	handshakeVector;
 	std::string					clientBuffer;
 	
 	Client();
     Client(int fd, std::string ip);
     ~Client();
-	std::string		getNickname() const ;
-	std::string		getAddress() const ;
-	std::string		getRecvBuffer() const ;
-	int				getFd() const ;
+	std::string		getNickname() const;
+	std::string		getUsername() const;
+	std::string		getAddress() const;
+	std::string		getRecvBuffer() const;
+	int				getFd() const;
 	bool			getLogin(void) const;
+	int				getClientCount(void) const;
 
-
+	bool 			lookNickAlreadyExist(std::string nick);
 	void			setNickname(std::string newNick);
-	void			setUserName(std::string newUsername);
+	void			setUsername(std::string newUsername);
 	void			setLogin(bool option);
 };
 

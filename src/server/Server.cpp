@@ -154,17 +154,60 @@ int Server::run()
 	return (0);
 }
 
-
 // funcion para comparar la password, si el nick ya existe etc.
-static void handshake(Client *user)
+void Server::handshake(Client *user)
 {
 	std::vector<std::string>::iterator it;
 
-	std::cout << "Esto viene de handshake.\n" << std::endl;
-	for (it = user->uwu.begin() ; it != user->uwu.end() ; ++it)
-	{
+	for (it = user->handshakeVector.begin(); it != user->handshakeVector.end(); ++it) {
 		std::cout << "hs: "<< *it << std::endl;
+
+		if (it->find("PASS") != std::string::npos) {
+			std::string tmp = *it;
+        	tmp.erase(0, 5);
+			tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
+        	tmp = trim(tmp); 
+        	if (tmp.compare(_password) != 0) {
+				std::string incorrectPassMsg = message.getMessages(464, *user);
+				sendMessage(user, incorrectPassMsg);
+				handleDisconnection(user->getFd());
+				return ;
+				// si cierro el fd con close aqui entra en bucle infinito 
+				// buscar otra forma de matar la conexion con el cliente
+        	}		
+		} else if (it->find("NICK") != std::string::npos) {
+			// Comprueba si el nick existe
+			// Si existe enviar 3 veces el message.getMessages(433, *user);
+			// si no las 3 opciones son incorrectas handleDisconnection(user->getFd());
+			// si no existe, setear el nick
+			// Implementar las 3 funciones de abajo
+			//	bool isNicknameInUse(const std::string &nickname) const;
+    		//	void registerNickname(const std::string &nickname);
+    		//	void unregisterNickname(const std::string &nickname);
+			/*if (user->lookNickAlreadyExist(tmp)) { < -- esta picada en client.cpp
+		     std::string msg = message.getMessages(433, *user);
+			    sendMessage(user, msg);
+			}*/ // esto hay que manejar el lookNickAlreadyExist en el server
+
+			
+			std::string tmp = *it;
+			tmp.erase(0, 5);
+			tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
+			trim(tmp);
+			user->setNickname(tmp);
+		} else if (it->find("USER") != std::string::npos) { // << ESTO ESTA MALISIMAMENTE PARSEADO!!!
+			std::string tmp = *it;
+			tmp.erase(0, 5);
+			tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
+			trim(tmp);
+			std::cout << "user: " << tmp << std::endl;
+			user->setUsername(tmp);
+		}
 	}
+	user->setLogin(true);
+	std::string msg = message.getMessages(1, *user);
+	std::cout << "msg: " << msg << std::endl;
+	sendMessage(user, msg);
 }
 
 void	Server::receiveData(int fd)
@@ -190,24 +233,22 @@ void	Server::receiveData(int fd)
 	{
 		// handle receiving message
 		buffer[bytesRead] = '\0';
-		std::cout << "CLIENT:\n" << buffer << std::endl;
 
 		// checkear si viene handshake
 		if (tmpClient->getLogin() == false)	{
 			std::string tmp = buffer;
 			size_t pos = 0;
-			while ((pos = tmp.find("\r\n")) != std::string::npos) 
+			while ((pos = tmp.find("\r\n")) != std::string::npos) // Limita las iteraciones para evitar bucle infinito
 			{
 				std::string substr = tmp.substr(0, pos); // Obtiene el substring hasta "\r\n"
-				std::cout << "hola: " << substr << std::endl;
 				substr.push_back('\0'); // Añade el carácter nulo al final
-				tmpClient->uwu.push_back(substr); // Realiza el push_back del resultado
+				tmpClient->handshakeVector.push_back(substr); // Realiza el push_back del resultado
 				tmp.erase(0, pos + 2); // Elimina la parte procesada del buffer, incluyendo "\r\n"
-				if (tmpClient->uwu.size() == 4) {
+				if (tmpClient->handshakeVector.size() == 4) {
 					handshake(tmpClient);
 					break; // Sal del bucle si se ha completado el handshake
 				}
-			}
+		}
 		}
 		else
 		{
@@ -225,7 +266,7 @@ int Server::handleInput(Client *user)
 	cmd = stringSplit(user->clientBuffer.c_str(), ' ');
 	if (cmd.empty())
 		return (0);
-	
+	std::cout << "cmd[0]: " << cmd[0] << std::endl;
 	std::vector<std::string>::iterator it;
 	for (it = cmd.begin() ; it != cmd.end() ; ++it)
 	{

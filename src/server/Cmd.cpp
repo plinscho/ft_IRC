@@ -60,6 +60,45 @@ int Server::cmdLogin(std::vector<std::string> lines, Client *user)
     }
 }
 
+/*
+
+4.1.1 Mensaje de Password
+
+
+      Comando: PASS
+   Parámetros: <password>
+
+   El comando PASS se usa para establecer una "clave de conexión". La
+   clave puede y debe establecerse antes de cualquier intento de
+   realizar la conexión. Esto requiere que los clientes envíen el
+   comando PASS antes de la combinación NICK/USUARIO, y los servidores
+   *deben* enviar el comando PASS antes de cualquier comando SERVER. La
+   clave debe coincidir con una de las líneas C/N (para servidores) o
+   las I (para clientes). Es posible enviar múltiples comandos PASS
+   antes del registro pero sólo la última que se envía se verifica y no
+   puede cambiarse una vez hecho el registro. Respuestas numéricas:
+
+           ERR_NEEDMOREPARAMS              ERR_ALREADYREGISTRED
+*/
+int	Server::checkPass(Client *user, std::string command, std::string pass)
+{
+
+
+	if (command.empty() || pass.empty())
+	{
+	// Construir el mensaje de vuelta
+		message.getMessages(461, *user);
+		return (1);
+	}
+		std::cout << getPassword().length() << pass.length() << std::endl;
+	if (getPassword() == pass)
+	{
+		std::cout << "PAss validado ok" << std::endl;
+		return (0);
+	}
+	return (1);
+}
+
 int Server::cmdJoin(std::vector<std::string> cmd, Client *user)
 {
 	Channel *tmpChannel;
@@ -87,6 +126,7 @@ int Server::cmdJoin(std::vector<std::string> cmd, Client *user)
 	return (1);
 }
 
+/*
 int Server::cmdSetNick(std::vector<std::string> cmd, Client *user)
 {
 	int type;
@@ -104,6 +144,7 @@ int Server::cmdSetNick(std::vector<std::string> cmd, Client *user)
 		return (-1);
 	return (0);
 }
+*/
 
 int Server::cmdSetUname(std::vector<std::string> cmd, Client *user)
 {

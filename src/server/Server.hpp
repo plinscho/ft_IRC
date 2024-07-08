@@ -54,11 +54,12 @@ class Server
 	void							deleteChannel(int id);
 	void							addClientToChannel(Client *user, Channel *channel);
 
+	bool				 			lookNickAlreadyExist(std::string nick);
 	int								updatePoll();
-	void							handleWriteEvent(int fd);
+	void							sendData(pollfd &pollfdStruct);
 	int								grabConnection();
 	int								run();
-	void							receiveData(int fd);
+	void							receiveData(pollfd &pollfdStruct);
 	void							closeServer();
 	void							initPoll();
 	void							handleDisconnection(int index);
@@ -66,9 +67,10 @@ class Server
 	std::string						getPassword() const;
 	int								getSockfd() const;
 	std::vector<pollfd>::iterator	findPollFd(int fd);
-	int								handleInput(Client *user);
+	int								handleInput(std::string cmd, int fd);
 
 	// COMMANDS
+	int								checkPass(Client *user, std::string command, std::string pass);
 	int 							cmdLogin(std::vector<std::string> cmd, Client *user);
 	int 							cmdJoin(std::vector<std::string> cmd, Client *user);
 	int 							cmdSetNick(std::vector<std::string> cmd, Client *user);
@@ -88,7 +90,9 @@ class Server
 
 enum cmdType
 {
-	CMD_LOGIN = 0,
+	CMD_CAP = 0,
+	CMD_QUIT,
+	CMD_PASS,
 	CMD_JOIN,
 	CMD_SETNICK,
 	CMD_SETUNAME,
@@ -110,6 +114,8 @@ MSG_NOSIGNAL: 	This flag requests not to send the SIGPIPE signal if an attempt t
 MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
 */
 
+std::string 				stringToHex(const std::string& str);
+bool						toggleBool(bool state);
 std::string 				trim(const std::string& str);
 int							preCmdCheck(std::vector<std::string> cmd, Client *user);
 int							sendMessage(Client *user, const std::string &msg);
@@ -118,7 +124,8 @@ int							checkNick(std::string newNick);
 int							setNick(int type, Client *user, std::string newNick);
 int 						sendWelcome(int fd);
 cmdType 					getCommandType(const std::string &cmd);
-std::vector<std::string> 	stringSplit(const char *str, const char& c);
+std::vector<std::string> 	stringSplit(std::string str, char c);
+std::vector<std::string>	stringSplit(std::string str, std::string delimiter);
 
 
 

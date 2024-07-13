@@ -5,7 +5,8 @@
 #include <sstream>
 
 class Client;
+
 struct Messages {
 
-    std::string getMessages(int, const Client &);
+    std::string getMessages(int, const Client &, std::string command = "");
 };

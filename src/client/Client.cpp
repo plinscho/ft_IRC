@@ -7,7 +7,6 @@ Client::Client()
 	_userName = "RandomUser";
 	_clientSocketFd = -1;
 	_clientIp = "0";
-	_clientCount = 0;
 	_logged = false;
 }
 
@@ -15,12 +14,10 @@ Client::Client(int fd, std::string address)
 {
 	_clientSocketFd = fd;
 	_clientIp = address;
-	_nickName = "RandomUser";
-	_userName = "RandomUser";
-	_clientCount = 0;
+	_nickName = "";
+	_userName = "";
 	_logged = false;
 	std::cout << "New connection established with ip: " + _clientIp << std::endl;
-	_clientCount++;
 
 }
 
@@ -28,7 +25,6 @@ Client::~Client()
 {
 	std::cout << "Client " + getAddress() + " has disconnected" << std::endl;
 	close(_clientSocketFd);
-	_clientCount--;
 }
 
 std::string Client::getNickname() const
@@ -53,7 +49,13 @@ int Client::getFd() const
 
 std::string	Client::getRecvBuffer() const 
 {
-	return (clientBuffer);
+	return (_clientBuffer);
+}
+
+
+bool	Client::getLogin(void) const
+{
+	return (this->_logged);
 }
 
 void	Client::setNickname(std::string newNick)
@@ -71,26 +73,9 @@ void	Client::setLogin(bool option)
 	this->_logged = option;
 }
 
-bool	Client::getLogin(void) const
+void	Client::setBuffer(std::string newBuffer)
 {
-	return (this->_logged);
-}
-
-int	Client::getClientCount(void) const
-{
-	return (this->_clientCount);
-}
-
-bool Client::lookNickAlreadyExist(std::string nick)
-{
-	for (std::vector<std::string>::iterator it = _usedNicks.begin(); it != _usedNicks.end(); ++it)
-	{
-		if (*it == nick)
-		{
-			std::cout << "Nick already exist" << std::endl;
-			return true;
-		}
-	}
-	return false;
+	if (!newBuffer.empty())
+		this->_clientBuffer = newBuffer;
 }
 

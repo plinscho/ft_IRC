@@ -1,6 +1,6 @@
 #include "Messages.hpp"
 
-std::string Messages::getMessages(int code, const Client &client) {
+std::string Messages::getMessages(int code, const Client &client, std::string command) {
         std::string nickname = client.getNickname();
         std::string username = client.getUsername(); // Supongamos que se obtiene el username
         std::string serverName = "irc.middleman.net"; // Nombre del servidor
@@ -48,8 +48,14 @@ std::string Messages::getMessages(int code, const Client &client) {
                 return ":" + serverName + " 422 " + nickname + " :MOTD File is missing\r\n";
             case 433:
                 return ":" + serverName + " 433 " + username + " " + nickname + " :Nickname is already in use\r\n";
+            case 461:
+                return ":" + serverName + " 461 " + command + " :Not enough parameters\r\n";
             case 464:
                 return ":" + serverName + " 464 " + nickname + " :Password required or incorrect\r\n";
+
+// ########################### CODIGOS PROPIOS DE NUESTRO SERVIDOR - NO NUMERICO
+            case 1001:
+                return ":" + command + " " + nickname + " " + command + " ";
             default:
                 return "Unknown code\r\n";
         }

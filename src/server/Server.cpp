@@ -138,7 +138,7 @@ int Server::run()
 			handleDisconnection(i);
 		}
 	}
-	std::cout << "<Poll Events updated: " << ++events << std::endl;
+	std::cout << "\n<Poll Events updated: " << ++events << std::endl;
 	return (0);
 }
 
@@ -168,14 +168,16 @@ void	Server::receiveData(pollfd &pollStruct)
 	if (it != _fdToClientMap.end())	
 	{
 		buffer[bytesRead] = '\0';
+		std::cout << "ReceiveData CMD recived:\n" << buffer << "##server: end of buffer.##" << std::endl;
 		std::string tmp = buffer;
-		std::cout << "HEX 1: "<< stringToHex(tmp) << std::endl;
 		tmpClient = it->second;
+//		std::cout << "HEX 1: "<< stringToHex(tmp) << std::endl;
 		tmpClient->setBuffer(tmpClient->getRecvBuffer().append(tmp));
 		std::vector<std::string> cmd;
 		std::string line = tmpClient->getRecvBuffer();
 		cmd = stringSplit(line, "\r\n");
-		std::cout << "HEX 2: "<< stringToHex(cmd[1]) << std::endl;
+//		std::cout << "HEX 2: "<< stringToHex(cmd[1]) << std::endl;
+
 		// Si encuentra un comando hay que dar una respuesta al cliente
 		if (!cmd.empty() && cmd.size() > 1)
 			pollStruct.revents = POLLOUT;
@@ -194,7 +196,9 @@ void	Server::sendData(pollfd &pollStruct)
 	// Client found in map
 	if (it != _fdToClientMap.end())
 	{
-		std::cout << "CMD recived: " << it->second->getRecvBuffer() << std::endl;
+		// debg info:
+		std::cout << "SendData, CMD recived:\n" << it->second->getRecvBuffer() << "**End of CLientbuffer.**" << std::endl;
+
 		std::vector<std::string> cmd;
 		std::string line = it->second->getRecvBuffer();
 		cmd = stringSplit(line, "\r\n");
@@ -203,7 +207,7 @@ void	Server::sendData(pollfd &pollStruct)
 			//  Return 1 in handle input if something is wrong or disconnection is needed.
 			if (handleInput(cmd[i], fd) != 0) {
 				std::cerr <<  __LINE__ << std::endl;
-				handleDisconnection(fd);
+				return (handleDisconnection(fd));
 			}
 		}
 		if (cmd.back() == "\r\n")
@@ -232,12 +236,12 @@ int Server::handleInput(std::string cmd, int fd)
 				return (1);
 			case (CMD_PASS):
 				return (checkPass(it->second, cmdSplitted[0], cmdSplitted[1]));
+			case (CMD_SETNICK):
+				return (checkNick(it->second, cmdSplitted[0], cmdSplitted[1]));
 			case (CMD_JOIN):
 				return (0);
-			case (CMD_SETNICK):
-				return (0);
 			case (CMD_SETUNAME):
-				return (0);
+				return (checkUser(it->second, cmdSplitted[0], cmdSplitted[1]));
 			case (CMD_SEND):
 				return (0);
 			case (CMD_HELP):

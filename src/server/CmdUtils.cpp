@@ -118,8 +118,8 @@ cmdType getCommandType(const std::string &cmd)
     if (cmd == "CAP") return (CMD_CAP);
 	else if (cmd == "PASS") return (CMD_PASS);
     else if (cmd == "JOIN") return (CMD_JOIN);
-    else if (cmd == "/setnick") return(CMD_SETNICK);
-    else if (cmd == "/setuname") return (CMD_SETUNAME);
+    else if (cmd == "NICK") return(CMD_SETNICK);
+    else if (cmd == "USER") return (CMD_SETUNAME);
     else if (cmd == "/send") return (CMD_SEND);
     else if (cmd == "/help") return (CMD_HELP);
     else return (SEND_MSG);      

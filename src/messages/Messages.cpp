@@ -52,6 +52,10 @@ std::string Messages::getMessages(int code, const Client &client, std::string co
                 return ":" + serverName + " 461 " + command + " :Not enough parameters\r\n";
             case 464:
                 return ":" + serverName + " 464 " + nickname + " :Password required or incorrect\r\n";
+
+// ########################### CODIGOS PROPIOS DE NUESTRO SERVIDOR - NO NUMERICO
+            case 1001:
+                return ":" + command + " " + nickname + " " + command + " ";
             default:
                 return "Unknown code\r\n";
         }

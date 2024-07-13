@@ -34,7 +34,7 @@ class Server
 	std::string 					_password;
 	sockaddr_in 					_sockaddr;	// Server address
 	std::vector <struct pollfd> 	_vectorPoll;
-    std::map<int, Client*> 			_fdToClientMap; // Map file descriptors to Client pointers
+	std::map<int, Client*> 			_fdToClientMap; // Map file descriptors to Client pointers
 	std::map<std::string, Client*> 	_nicknameMap; // Here we will store the nicknames
 	std::map<int, Channel*>			_channels;
 
@@ -54,7 +54,6 @@ class Server
 	void							deleteChannel(int id);
 	void							addClientToChannel(Client *user, Channel *channel);
 
-	bool				 			lookNickAlreadyExist(std::string nick);
 	int								updatePoll();
 	void							sendData(pollfd &pollfdStruct);
 	int								grabConnection();
@@ -71,6 +70,8 @@ class Server
 
 	// COMMANDS
 	int								checkPass(Client *user, std::string command, std::string pass);
+	int								checkNick(Client *user, std::string command, std::string nick);
+	int								checkUser(Client *user, std::string command, std::string newUser);
 	int 							cmdLogin(std::vector<std::string> cmd, Client *user);
 	int 							cmdJoin(std::vector<std::string> cmd, Client *user);
 	int 							cmdSetNick(std::vector<std::string> cmd, Client *user);
@@ -81,9 +82,9 @@ class Server
 
 
 	// NICK functions
-	bool isNicknameInUse(const std::string &nickname) const;
-    void registerNickname(const std::string &nickname);
-    void unregisterNickname(const std::string &nickname);
+	bool 							isNicknameInUse(const std::string &nickname) const;
+	void 							registerNickname(const std::string &nickname, Client* newUser);
+	void 							unregisterNickname(const std::string &nickname);
 };
 
 // COMMANDS

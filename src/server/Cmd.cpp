@@ -82,21 +82,80 @@ int Server::cmdLogin(std::vector<std::string> lines, Client *user)
 */
 int	Server::checkPass(Client *user, std::string command, std::string pass)
 {
-
+	std::string response;
 
 	if (command.empty() || pass.empty())
 	{
 	// Construir el mensaje de vuelta
-		message.getMessages(461, *user);
+		response = message.getMessages(461, *user);
+		sendMessage(user, response);
 		return (1);
 	}
-		std::cout << getPassword().length() << pass.length() << std::endl;
+
+//		std::cout << getPassword().length() << pass.length() << std::endl;
 	if (getPassword() == pass)
 	{
-		std::cout << "PAss validado ok" << std::endl;
+		user->setHasPass(true);
 		return (0);
 	}
 	return (1);
+}
+
+int	Server::checkNick(Client *user, std::string command, std::string nick)
+{
+	std::string response;
+	if (command.empty() || nick.empty())
+	{
+	// Construir el mensaje de vuelta
+		response = message.getMessages(461, *user);
+		sendMessage(user, response);
+		return (0);
+	}
+	// If else struct for client handshake
+	if (!user->getLogin() && !isNicknameInUse(nick))
+	{
+		registerNickname(nick, user);
+		user->setHasNick(true);
+	}
+	else
+	{
+		response = message.getMessages(433, *user);
+		sendMessage(user, response);
+		// returning to disconnect (handleDisconnection after switch case if 1 is returned)
+		return (1);
+	}
+	if (user->getLogin())
+	{
+	 	if(isNicknameInUse(nick))
+		{
+			response = message.getMessages(433, *user);
+			sendMessage(user, response);
+			return (0);
+		}
+		response = message.getMessages(1001, *user);
+		response += nick + "\r\n";
+		unregisterNickname(user->getNickname());
+		registerNickname(nick, user);
+		sendMessage(user, response);
+		return (0);
+	}
+
+	return (0);
+}
+
+int	Server::checkUser(Client *user, std::string command, std::string newUser)
+{
+	std::string response;
+	if (command.empty() || newUser.empty())
+	{
+	// Construir el mensaje de vuelta
+		response = message.getMessages(461, *user);
+		sendMessage(user, response);
+		return (0);
+	}
+	user->setUsername(newUser);
+	user->setHasUser(true);
+	return (0);
 }
 
 int Server::cmdJoin(std::vector<std::string> cmd, Client *user)
@@ -156,7 +215,6 @@ int Server::cmdSetUname(std::vector<std::string> cmd, Client *user)
 		return (-1);
 	else if (ret != 0)
 		return (1);
-	
 
 	return (0);
 }
@@ -202,6 +260,5 @@ int Server::cmdHelp(std::vector<std::string> cmd, Client *user)
 		return (-1);
 	else if (ret != 0)
 		return (1);
-	
-	return (sendWelcome(user->getFd()));
+	return (0);
 }

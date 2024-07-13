@@ -83,13 +83,14 @@ void Server::handleDisconnection(int fd)
 		<< tmpClient->getAddress() << " disconnected from server." << std::endl;
 		close(fd);
 
+		unregisterNickname(tmpClient->getNickname());
 		// free memory 
 		delete tmpClient;
 		tmpClient = NULL;
 
 	//	Erasing vectorPoll & Client map with fd	
 		_fdToClientMap.erase(clientIterator);
-		_vectorPoll.erase(pollIterator);	
+		_vectorPoll.erase(pollIterator);
 		conectedClients--;
 	}
 }
@@ -121,21 +122,31 @@ int	quickError(std::string msg, int errcode)
 	return (errcode);
 }
 
-int sendWelcome(int fd)
+bool	Server::isNicknameInUse(const std::string &nickname) const
 {
-	char buffer[] = "___________________________________________\
-	\n\tMIDDLEMAN IRC SERVER\n___________________________________________\
-	\nCOMMANDS:\
-	\n/login\t\t<password> <nickname>\
-	\n/join\t\t<channel>\
-	\n/setnick\t<new nick>\t(max 8 characters)\
-	\n/setuname\t<new username>\t(max 8 characters)\
-	\n/send\t\t<ip addr> | <nickname>\t(send a private msg)\
-	\n/channels\t(show available channels for /join) \
-	\n/help\t\t(print this message again)\n\
-	\n";
+	std::map<std::string, Client*>::const_iterator it;
 
-	if (fd < 0 || send(fd, buffer, sizeof(buffer), MSG_DONTWAIT) == -1)
-		return (quickError("Error.\nWecolme message could not be send!", EXIT_FAILURE));
-	return (0);
+	for (it = _nicknameMap.begin() ; it != _nicknameMap.end() ; ++it)
+	{
+		if (it->first == nickname)
+			return (true);
+	}
+	return (false);
+}
+
+void	Server::registerNickname(const std::string &nickname, Client *newUser)
+{
+	newUser->setNickname(nickname);
+	_nicknameMap[nickname] = newUser;
+}
+
+void	Server::unregisterNickname(const std::string &nickname)
+{
+    std::map<std::string, Client*>::iterator it = _nicknameMap.find(nickname);
+    if (it != _nicknameMap.end()) {
+        _nicknameMap.erase(it);
+        std::cout << "Nickname removed: " << nickname << std::endl;
+    } else {
+        std::cout << "Nickname not found: " << nickname << std::endl;
+    }
 }

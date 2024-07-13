@@ -21,6 +21,9 @@ class Client {
 	std::string			_userName;
 	std::string			_clientBuffer;
 	bool				_logged;
+	bool				_hasNick;
+	bool				_hasPass;
+	bool				_hasUser;
 
   public:
 	std::vector<std::string>	handshakeVector;
@@ -39,6 +42,13 @@ class Client {
 	void			setNickname(std::string newNick);
 	void			setUsername(std::string newUsername);
 	void			setLogin(bool option);
+	void			setHasPass(bool option) {this->_hasPass = option;}
+	void			setHasNick(bool option) {this->_hasNick = option;}
+	void			setHasUser(bool option) {this->_hasUser = option;}
+
+	bool			getHasPas(){return (_hasPass);}
+	bool			getHasUser(){return (_hasUser);}
+	bool			getHasNick(){return (_hasNick);}
 };
 
 enum nickReturn

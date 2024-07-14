@@ -42,52 +42,48 @@ class Server
 
 	Server(int, char *);
 	~Server();
-	Messages message;
+	Messages 						message;
 	int								conectedClients;
 	char							buffer[MAX_MSG_SIZE];
 
-	void handshake(Client *user);
-
+	int								run();
+	void							closeServer();
+	
 //	CHANNEL MANAGING
 	void							initChannels();
 	void							createChannel(int id, const std::string channelName);
 	void							deleteChannel(int id);
 	void							addClientToChannel(Client *user, Channel *channel);
 
-	int								updatePoll();
-	void							sendData(pollfd &pollfdStruct);
-	int								grabConnection();
-	int								run();
-	void							receiveData(pollfd &pollfdStruct);
-	void							closeServer();
+//	CONNECTIVITY
 	void							initPoll();
+	int								updatePoll();
+	int								grabConnection();
 	void							handleDisconnection(int index);
-	int								getPort() const;
-	std::string						getPassword() const;
-	int								getSockfd() const;
-	std::vector<pollfd>::iterator	findPollFd(int fd);
+	void							sendWelcome(Client *user);
+
+//	DATA
 	int								handleInput(std::string cmd, int fd);
+	void							sendData(pollfd &pollfdStruct);
+	void							receiveData(pollfd &pollfdStruct);
 
-	// COMMANDS
-	int								checkPass(Client *user, std::string command, std::string pass);
-	int								checkNick(Client *user, std::string command, std::string nick);
-	int								checkUser(Client *user, std::string command, std::string newUser);
-	int 							cmdLogin(std::vector<std::string> cmd, Client *user);
-	int 							cmdJoin(std::vector<std::string> cmd, Client *user);
-	int 							cmdSetNick(std::vector<std::string> cmd, Client *user);
-	int 							cmdSetUname(std::vector<std::string> cmd, Client *user);
-	int 							cmdSend(std::vector<std::string> cmd, Client *user);
-	int								cmdChannel(std::vector<std::string> cmd, Client *user);
-	int 							cmdHelp(std::vector<std::string> cmd, Client *user);
+//	GETERS & FINDERS
+	int								getPort() const;
+	int								getSockfd() const;
+	std::string						getPassword() const;
+	std::vector<pollfd>::iterator	findPollFd(int fd);
 
+//	COMMANDS
+	int								setPass(Client *user, std::string command, std::string pass);
+	int								setNick(Client *user, std::string command, std::string nick);
+	bool 							cmdNick(Client* user, std::string newNick);
+	int								setUser(Client *user, std::string command, std::string newUser);
 
-	// NICK functions
+//	NICK functions
 	bool 							isNicknameInUse(const std::string &nickname) const;
 	void 							registerNickname(const std::string &nickname, Client* newUser);
 	void 							unregisterNickname(const std::string &nickname);
 };
-
-// COMMANDS
 
 enum cmdType
 {
@@ -114,19 +110,18 @@ MSG_MORE: 		This flag indicates that more data is coming. The data will be bundl
 MSG_NOSIGNAL: 	This flag requests not to send the SIGPIPE signal if an attempt to send is made on a stream socket that is no longer connected.
 MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
 */
-
+bool						getLogStat(Client *user);
 std::string 				stringToHex(const std::string& str);
 bool						toggleBool(bool state);
-std::string 				trim(const std::string& str);
-int							preCmdCheck(std::vector<std::string> cmd, Client *user);
 int							sendMessage(Client *user, const std::string &msg);
 int							quickError(std::string msg, int errcode);
-int							checkNick(std::string newNick);
-int							setNick(int type, Client *user, std::string newNick);
-int 						sendWelcome(int fd);
+nickReturn					checkNick(std::string newNick);
+int							switchNick(int type, Client *user, std::string newNick);
 cmdType 					getCommandType(const std::string &cmd);
 std::vector<std::string> 	stringSplit(std::string str, char c);
 std::vector<std::string>	stringSplit(std::string str, std::string delimiter);
+std::vector<std::string>	stringTrimSplit(std::string str, std::string delimiter);
+
 
 
 

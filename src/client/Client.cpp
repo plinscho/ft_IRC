@@ -8,6 +8,9 @@ Client::Client()
 	_clientSocketFd = -1;
 	_clientIp = "0";
 	_logged = false;
+	_hasNick = false;
+	_hasPass = false;
+	_hasUser = false;
 }
 
 Client::Client(int fd, std::string address)
@@ -16,9 +19,11 @@ Client::Client(int fd, std::string address)
 	_clientIp = address;
 	_nickName = "";
 	_userName = "";
+	_hasNick = false;
+	_hasPass = false;
+	_hasUser = false;
 	_logged = false;
 	std::cout << "New connection established with ip: " + _clientIp << std::endl;
-
 }
 
 Client::~Client() 
@@ -51,7 +56,6 @@ std::string	Client::getRecvBuffer() const
 {
 	return (_clientBuffer);
 }
-
 
 bool	Client::getLogin(void) const
 {

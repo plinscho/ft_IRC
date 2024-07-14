@@ -71,7 +71,7 @@ int Server::grabConnection()
 	sockaddr_in clientAddr;
 	socklen_t	clientAddrLen = sizeof(clientAddr);
 
-	// check if listening fd has found a new connection
+	// set if listening fd has found a new connection
 	int newClientFd = accept(_sockfd, (struct sockaddr *)&clientAddr, &clientAddrLen);
 	if (newClientFd < 0)
 	{
@@ -117,7 +117,7 @@ int Server::run()
 	static int events = 0;
 	updatePoll();
 
-	// loop through the poll vector to check events:
+	// loop through the poll vector to set events:
 	for (size_t i = 0; i < _vectorPoll.size(); ++i)
 	{
 		if (_vectorPoll[i].fd < 0)
@@ -179,8 +179,11 @@ void	Server::receiveData(pollfd &pollStruct)
 //		std::cout << "HEX 2: "<< stringToHex(cmd[1]) << std::endl;
 
 		// Si encuentra un comando hay que dar una respuesta al cliente
-		if (!cmd.empty() && cmd.size() > 1)
+		if (!cmd.empty() && cmd.size() > 0)
+		{
+			std::cout << "UPDATING REVENTS TO POLLOUT! " << std::endl;
 			pollStruct.revents = POLLOUT;
+		}
 	}
 	else
 	{
@@ -210,10 +213,16 @@ void	Server::sendData(pollfd &pollStruct)
 				return (handleDisconnection(fd));
 			}
 		}
-		if (cmd.back() == "\r\n")
+		if (cmd.back() == "\r\n"){
 			it->second->setBuffer("");
-		else
+		}
+		else {
 			it->second->setBuffer(cmd.back());
+		}
+		if (getLogStat(it->second)){
+			it->second->setLogin(true);
+			sendWelcome(it->second);
+		}
 		pollStruct.revents = POLLIN;
 	}
 }
@@ -226,6 +235,7 @@ int Server::handleInput(std::string cmd, int fd)
 	it = _fdToClientMap.find(fd);
 	cmdSplitted = stringSplit(cmd, ' ');
 	cmdType type = getCommandType(cmdSplitted[0]);
+//	std::cout << stringToHex(cmd) << " from handle input" << std::endl;
 	if (it != _fdToClientMap.end())
 	{
 		switch (type)
@@ -235,13 +245,13 @@ int Server::handleInput(std::string cmd, int fd)
 			case (CMD_QUIT):
 				return (1);
 			case (CMD_PASS):
-				return (checkPass(it->second, cmdSplitted[0], cmdSplitted[1]));
+				return (setPass(it->second, cmdSplitted[0], cmdSplitted[1]));
 			case (CMD_SETNICK):
-				return (checkNick(it->second, cmdSplitted[0], cmdSplitted[1]));
+				return (cmdNick(it->second, cmdSplitted[1]));
 			case (CMD_JOIN):
 				return (0);
 			case (CMD_SETUNAME):
-				return (checkUser(it->second, cmdSplitted[0], cmdSplitted[1]));
+				return (setUser(it->second, cmdSplitted[0], cmdSplitted[1]));
 			case (CMD_SEND):
 				return (0);
 			case (CMD_HELP):
@@ -251,6 +261,13 @@ int Server::handleInput(std::string cmd, int fd)
 		}
 	}
 	return (0);
+}
+
+void	Server::sendWelcome(Client *user)
+{
+	std::string response;
+	response = message.getMessages(1, *user);
+	sendMessage(user, response);
 }
 
 // funcion para comparar la password, si el nick ya existe etc.

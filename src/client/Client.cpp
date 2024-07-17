@@ -11,6 +11,7 @@ Client::Client()
 	_hasNick = false;
 	_hasPass = false;
 	_hasUser = false;
+	changeRevent = false;
 }
 
 Client::Client(int fd, std::string address)
@@ -23,6 +24,7 @@ Client::Client(int fd, std::string address)
 	_hasPass = false;
 	_hasUser = false;
 	_logged = false;
+	changeRevent = false;
 	std::cout << "New connection established with ip: " + _clientIp << std::endl;
 }
 

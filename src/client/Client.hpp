@@ -27,6 +27,7 @@ class Client {
 
   public:
 	std::vector<std::string>	handshakeVector;
+	bool						changeRevent;
 	
 	Client();
     Client(int fd, std::string ip);
@@ -38,6 +39,7 @@ class Client {
 	int				getFd() const;
 	bool			getLogin(void) const;
 
+	void			clearBuffer(void) {this->_clientBuffer.clear();}
 	void			setBuffer(std::string newBuffer);
 	void			setNickname(std::string newNick);
 	void			setUsername(std::string newUsername);

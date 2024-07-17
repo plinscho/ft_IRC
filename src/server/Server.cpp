@@ -179,10 +179,11 @@ void	Server::receiveData(pollfd &pollStruct)
 //		std::cout << "HEX 2: "<< stringToHex(cmd[1]) << std::endl;
 
 		// Si encuentra un comando hay que dar una respuesta al cliente
-		if (!cmd.empty() && cmd.size() > 0)
+		if (!cmd.empty())
 		{
 			std::cout << "UPDATING REVENTS TO POLLOUT! " << std::endl;
 			pollStruct.revents = POLLOUT;
+			tmpClient->changeRevent = true;
 		}
 	}
 	else
@@ -213,10 +214,10 @@ void	Server::sendData(pollfd &pollStruct)
 				return (handleDisconnection(fd));
 			}
 		}
-		if (cmd.back() == "\r\n"){
-			it->second->setBuffer("");
-		}
-		else {
+		if (it->second->changeRevent == true){
+			it->second->clearBuffer();
+			it->second->changeRevent = false;
+		} else {
 			it->second->setBuffer(cmd.back());
 		}
 		if (getLogStat(it->second)){
@@ -234,6 +235,13 @@ int Server::handleInput(std::string cmd, int fd)
 
 	it = _fdToClientMap.find(fd);
 	cmdSplitted = stringSplit(cmd, ' ');
+/*
+	std::cout << "\nstringToHex(*it)" << std::endl;
+	for (std::vector<std::string>::iterator it = cmdSplitted.begin() ; it != cmdSplitted.end() ; ++it)
+	{
+		std::cout << *it << std::endl;
+	}
+*/
 	cmdType type = getCommandType(cmdSplitted[0]);
 //	std::cout << stringToHex(cmd) << " from handle input" << std::endl;
 	if (it != _fdToClientMap.end())
@@ -247,20 +255,20 @@ int Server::handleInput(std::string cmd, int fd)
 			case (CMD_PASS):
 				return (setPass(it->second, cmdSplitted[0], cmdSplitted[1]));
 			case (CMD_SETNICK):
-				return (cmdNick(it->second, cmdSplitted[1]));
+				cmdNick(it->second, cmdSplitted[1]);
+				return (0); // always returns 0, nick can always be changed.
 			case (CMD_JOIN):
 				return (0);
 			case (CMD_SETUNAME):
 				return (setUser(it->second, cmdSplitted[0], cmdSplitted[1]));
 			case (CMD_SEND):
 				return (0);
-			case (CMD_HELP):
-				return (0);
 			case (SEND_MSG):
 				return (0);
 		}
 	}
-	return (0);
+	std::cout << "Command not found, disconnecting." << std::endl;
+	return (1);
 }
 
 void	Server::sendWelcome(Client *user)
@@ -283,17 +291,17 @@ void Server::handshake(Client *user)
 
 		if (it->find("PASS") != std::string::npos) {
 			std::string tmp = *it;
-        	tmp.erase(0, 5);
+			tmp.erase(0, 5);
 			//tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
-        	tmp = trim(tmp); 
-        	if (tmp.compare(_password) != 0) {
+			tmp = trim(tmp); 
+			if (tmp.compare(_password) != 0) {
 				std::string incorrectPassMsg = message.getMessages(464, *user);
 				sendMessage(user, incorrectPassMsg);
 				handleDisconnection(user->getFd());
 				return ;
 				// si cierro el fd con close aqui entra en bucle infinito 
 				// buscar otra forma de matar la conexion con el cliente
-        	}		
+			}		
 		} else if (it->find("NICK") != std::string::npos) {
 			// Comprueba si el nick existe
 			// Si existe enviar 3 veces el message.getMessages(433, *user);
@@ -301,11 +309,11 @@ void Server::handshake(Client *user)
 			// si no existe, setear el nick
 			// Implementar las 3 funciones de abajo
 			//	bool isNicknameInUse(const std::string &nickname) const;
-    		//	void registerNickname(const std::string &nickname);
-    		//	void unregisterNickname(const std::string &nickname);
+			//	void registerNickname(const std::string &nickname);
+			//	void unregisterNickname(const std::string &nickname);
 			if (user->lookNickAlreadyExist(tmp)) { < -- esta picada en client.cpp
-		     std::string msg = message.getMessages(433, *user);
-			    sendMessage(user, msg);
+			 std::string msg = message.getMessages(433, *user);
+				sendMessage(user, msg);
 			} // esto hay que manejar el lookNickAlreadyExist en el server
 
 			

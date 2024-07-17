@@ -41,7 +41,7 @@ int	Server::setUser(Client *user, std::string command, std::string newUser)
 	// Construir el mensaje de vuelta
 		response = message.getMessages(461, *user);
 		sendMessage(user, response);
-		return (0);
+		return (1);
 	}
 	user->setUsername(newUser);
 	user->setHasUser(true);
@@ -66,7 +66,7 @@ int	Server::setPass(Client *user, std::string command, std::string pass)
 //		std::cout << getPassword().length() << pass.length() << std::endl;
 	if (getPassword() == pass)
 	{
-		response = "Password accepted.";
+		response = "Password accepted.\r\n";
 		sendMessage(user, response);
 		user->setHasPass(true);
 		return (0);
@@ -74,24 +74,7 @@ int	Server::setPass(Client *user, std::string command, std::string pass)
 	return (1);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-nickReturn	checkNick(std::string newNick)
+nickReturn	checkNick(std::string& newNick)
 {
 	if (newNick.empty()) return EMPTY_NICK;
 	if (newNick.size() > 8) return SIZE_EXCEED;
@@ -106,44 +89,44 @@ nickReturn	checkNick(std::string newNick)
 }
 
 // Handles the result of nickname validation and sets the nickname if valid
-bool Server::cmdNick(Client* user, std::string newNick)
+int Server::cmdNick(Client* user, std::string& newNick)
 {
-    nickReturn validationResult = checkNick(newNick);
-    switch (validationResult) 
+	nickReturn validationResult = checkNick(newNick);
+	switch (validationResult) 
 	{
-        case NICK_OK:
-            if (!user->getLogin() && !isNicknameInUse(newNick)) 
+		case NICK_OK:
+			if (!user->getLogin() && !isNicknameInUse(newNick)) 
 			{
-                registerNickname(newNick, user);
-                user->setNickname(newNick);
-                user->setHasNick(true);
-                sendMessage(user, "Nickname set to " + newNick + "\r\n");
-                return true;
-            } 
+				registerNickname(newNick, user);
+				user->setNickname(newNick);
+				user->setHasNick(true);
+				sendMessage(user, "Nickname set to " + newNick + "\r\n");
+				return NICK_OK;
+			} 
 			else if (isNicknameInUse(newNick)) {
-                sendMessage(user, "Error. Nickname is already in use.\n");
-            } 
+				sendMessage(user, " Error. " + newNick + " is already in use.\r\n");
+			} 
 			else 
 			{
-                unregisterNickname(user->getNickname());
-                registerNickname(newNick, user);
-                sendMessage(user, "Nickname changed to " + newNick + "\r\n");
-                return true;
-            }
-            break;
-        case EMPTY_NICK:
-            sendMessage(user, "Error. Empty nick is not allowed.\r\n");
-            break;
-        case SIZE_EXCEED:
-            sendMessage(user, "Error. Nick is more than 8 chars.\r\n");
-            break;
-        case HAS_SPACE:
-            sendMessage(user, "Error. Space chars in nick are not allowed.\r\n");
-            break;
-        case IS_NOT_ALNUM:
-            sendMessage(user, "Error. Non alnum chars in nick detected.\r\n");
-            break;
-    }
-    sendMessage(user, "Try another nickname with /nick\r\n");
-    return false;
+				unregisterNickname(user->getNickname());
+				registerNickname(newNick, user);
+				sendMessage(user, "Nickname changed to " + newNick + "\r\n");
+				return NICK_OK;
+			}
+			break;
+		case EMPTY_NICK:
+			sendMessage(user, "Error. Empty nick is not allowed.\r\n");
+			break;
+		case SIZE_EXCEED:
+			sendMessage(user, "Error. Nick is more than 8 chars.\r\n");
+			break;
+		case HAS_SPACE:
+			sendMessage(user, "Error. Space chars in nick are not allowed.\r\n");
+			break;
+		case IS_NOT_ALNUM:
+			sendMessage(user, "Error. Non alnum chars in nick detected.\r\n");
+			break;
+	}
+	sendMessage(user, "Try another nickname with /nick\r\n");
+	return (validationResult);
 }

@@ -75,8 +75,7 @@ class Server
 
 //	COMMANDS
 	int								setPass(Client *user, std::string command, std::string pass);
-	int								setNick(Client *user, std::string command, std::string nick);
-	bool 							cmdNick(Client* user, std::string newNick);
+	int 							cmdNick(Client* user, std::string& newNick);
 	int								setUser(Client *user, std::string command, std::string newUser);
 
 //	NICK functions
@@ -94,7 +93,6 @@ enum cmdType
 	CMD_SETNICK,
 	CMD_SETUNAME,
 	CMD_SEND,
-	CMD_HELP,
 	SEND_MSG
 };
 
@@ -115,8 +113,8 @@ std::string 				stringToHex(const std::string& str);
 bool						toggleBool(bool state);
 int							sendMessage(Client *user, const std::string &msg);
 int							quickError(std::string msg, int errcode);
-nickReturn					checkNick(std::string newNick);
-int							switchNick(int type, Client *user, std::string newNick);
+nickReturn					checkNick(std::string& newNick);
+int							switchNick(int type, Client *user, std::string& newNick);
 cmdType 					getCommandType(const std::string &cmd);
 std::vector<std::string> 	stringSplit(std::string str, char c);
 std::vector<std::string>	stringSplit(std::string str, std::string delimiter);

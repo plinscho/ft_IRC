@@ -43,6 +43,15 @@ std::vector<std::string> stringSplit(std::string str, std::string delimiter)
     substr = str.substr(start);
     if (!substr.empty())
         split.push_back(substr);
+
+/*
+	std::cout << "\nstringToHex(*it)" << std::endl;
+	for (std::vector<std::string>::iterator it = split.begin() ; it != split.end() ; ++it)
+	{
+		std::cout << *it << std::endl;
+	}
+*/
+
     return split;
 }
 
@@ -89,18 +98,18 @@ bool	toggleBool(bool state)
 cmdType getCommandType(const std::string &cmd)
 {
     if (cmd == "CAP") return (CMD_CAP);
+	else if (cmd == "QUIT") return (CMD_QUIT);
 	else if (cmd == "PASS") return (CMD_PASS);
     else if (cmd == "JOIN") return (CMD_JOIN);
     else if (cmd == "NICK") return(CMD_SETNICK);
     else if (cmd == "USER") return (CMD_SETUNAME);
-    else if (cmd == "/send") return (CMD_SEND);
-    else if (cmd == "/help") return (CMD_HELP);
+    else if (cmd == "SEND") return (CMD_SEND);
     else return (SEND_MSG);      
 }
 
 bool	getLogStat(Client *user)
 {
-	if (user->getHasNick() && user->getHasPas() && user->getHasUser())
+	if (user->getHasNick() && user->getHasPas() && user->getHasUser() && user->getLogin() == false)
 		return (true);
 	else
 		return (false);

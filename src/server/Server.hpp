@@ -77,6 +77,8 @@ class Server
 	int								setPass(Client *user, std::string command, std::string pass);
 	int 							cmdNick(Client* user, std::string& newNick);
 	int								setUser(Client *user, std::string command, std::string newUser);
+	void 							sendChannelNames(Channel &channel, Client *user);
+	int 							cmdJoin(Client *user, std::string &channelName);
 
 //	NICK functions
 	bool 							isNicknameInUse(const std::string &nickname) const;

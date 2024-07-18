@@ -51,6 +51,7 @@ class Client {
 	bool			getHasPas(){return (_hasPass);}
 	bool			getHasUser(){return (_hasUser);}
 	bool			getHasNick(){return (_hasNick);}
+	std::string 	getPrefix() const;
 };
 
 enum nickReturn

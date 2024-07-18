@@ -130,3 +130,82 @@ int Server::cmdNick(Client* user, std::string& newNick)
 	sendMessage(user, "Try another nickname with /nick\r\n");
 	return (validationResult);
 }
+
+void Server::sendChannelNames(Channel &channel, Client *user)
+{
+    std::string response;
+    std::vector<std::string> channels = channel.getChannelsNicks();
+    std::vector<std::string>::iterator it;
+
+    // Formato del mensaje RPL_NAMREPLY
+    response = ":irc.middleman.org 353 " + user->getNickname() + " = " + channel.getChannelName() + " :";
+    for (it = channels.begin(); it != channels.end(); ++it)
+    {
+        response += *it + " ";
+    }
+    response += "\r\n";
+    sendMessage(user, response);
+
+    // Enviar RPL_ENDOFNAMES
+    response = ":irc.middleman.org 366 " + user->getNickname() + " " + channel.getChannelName() + " :End of NAMES list\r\n";
+    sendMessage(user, response);
+}
+
+int Server::cmdJoin(Client *user, std::string &channelName)
+{
+    std::string response;
+    std::map<int, Channel *>::iterator it;
+
+    if (channelName.empty())
+    {
+        response = message.getMessages(461, *user);
+        sendMessage(user, response);
+        return (0);
+    }
+
+    it = _channels.begin();
+    while (it != _channels.end())
+    {
+        if (it->second->getChannelName() == channelName)
+        {
+            it->second->addUser(user->getFd(), user);
+
+            // Notificar a todos en el canal sobre el nuevo usuario
+            response = ":" + user->getPrefix() + " JOIN " + channelName + "\r\n";
+            it->second->broadcastMessage(response);
+
+            // Enviar el tema del canal si tiene uno
+            std::string topic = it->second->getTopic();
+            if (!topic.empty())
+            {
+                response = ":irc.middleman.org 332 " + user->getNickname() + " " + channelName + " :" + topic + "\r\n";
+                sendMessage(user, response);
+            }
+
+            sendChannelNames(*it->second, user);
+            return (0);
+        }
+        ++it;
+    }
+
+    if (channelName[0] != '#')
+    {
+        response = "Error. Channel name must start with #\r\n";
+        sendMessage(user, response);
+        return (0);
+    }
+
+    Channel *newChannel = new Channel(1, channelName);
+    _channels[user->getFd()] = newChannel;
+    newChannel->addUser(user->getFd(), user);
+
+    // Notificar a todos en el canal sobre el nuevo usuario
+    response = ":" + user->getPrefix() + " JOIN " + channelName + "\r\n";
+    newChannel->broadcastMessage(response);
+
+    sendChannelNames(*newChannel, user);
+    return (0);
+}
+
+
+

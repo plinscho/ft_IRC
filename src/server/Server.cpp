@@ -258,7 +258,7 @@ int Server::handleInput(std::string cmd, int fd)
 				cmdNick(it->second, cmdSplitted[1]);
 				return (0); // always returns 0, nick can always be changed.
 			case (CMD_JOIN):
-				return (0);
+				return (cmdJoin(it->second, cmdSplitted[1]));
 			case (CMD_SETUNAME):
 				return (setUser(it->second, cmdSplitted[0], cmdSplitted[1]));
 			case (CMD_SEND):

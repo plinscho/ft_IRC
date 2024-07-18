@@ -85,3 +85,7 @@ void	Client::setBuffer(std::string newBuffer)
 		this->_clientBuffer = newBuffer;
 }
 
+std::string Client::getPrefix() const
+{
+    return getNickname() + "!" + getUsername() + "@" + getAddress();
+}

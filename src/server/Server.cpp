@@ -192,85 +192,31 @@ void	Server::sendData(pollfd &pollStruct)
 	int fd = pollStruct.fd;
 	std::map<int, Client*>::iterator it = _fdToClientMap.find(fd);
 
+
 	// Client found in map
-	if (it != _fdToClientMap.end())
+	if (it == _fdToClientMap.end())
 	{
-		// debg info:
-		std::cout << "SendData, CMD recived:\n" << it->second->getRecvBuffer() << "**End of CLientbuffer.**" << std::endl;
-
-		std::vector<std::string> cmd;
-		std::string line = it->second->getRecvBuffer();
-		cmd = strTool.stringSplit(line, "\r\n");
-		for (size_t i = 0 ; i < cmd.size() ; ++i)
-		{
-			handleInput(cmd[i], fd);
-		}
-		if (it->second->changeRevent == true){
-			it->second->clearBuffer();
-			it->second->changeRevent = false;
-		} else {
-			it->second->setBuffer(cmd.back());
-		}
-		if (it->second->getLogStat()){
-			it->second->setLogin(true);
-			sendWelcome(it->second);
-		}
-		pollStruct.revents = POLLIN;
+		std::cerr << "Client not found!" << std::endl; 
+		return ;
 	}
-}
 
-// se cambia todo
-int Server::handleInput(std::string cmd, int fd)
-{
-	std::vector<std::string> cmdSplitted;
-	std::map<int, Client *>::iterator it;
+	// debg info:
+	std::cout << "SendData, CMD recived:\n" << it->second->getRecvBuffer() << "**End of CLientbuffer.**" << std::endl;
 
-	it = _fdToClientMap.find(fd);
-	cmdSplitted = strTool.stringSplit(cmd, ' ');
-	cmdType type = getCommandType(cmdSplitted[0]);
-	if (it != _fdToClientMap.end())
-	{
-		switch (type)
-		{
-			case (CMD_CAP):
-				return (0);
-			case (CMD_QUIT):
-				return (1);
-			case (CMD_PASS):
-				return (setPass(it->second, cmdSplitted[0], cmdSplitted[1]));
-			case (CMD_SETNICK):
-				cmdNick(it->second, cmdSplitted[1]);
-				return (0); // always returns 0, nick can always be changed.
-			case (CMD_JOIN):
-				return (cmdJoin(it->second, cmdSplitted[1]));
-			case (CMD_SETUNAME):
-				return (setUser(it->second, cmdSplitted[0], cmdSplitted[1]));
-			case (CMD_SEND):
-				return (0);
-			case (SEND_MSG):
-				return (0);
-		}
+	// command class business:
+	command.getFromClientBuffer(*(it->second));
+	command.execute(*(it->second), *this);
+
+	if (it->second->changeRevent == true){
+		it->second->clearBuffer();
+		it->second->changeRevent = false;
 	}
-	std::cout << "Command not found, disconnecting." << std::endl;
-	return (1);
-}
+	if (it->second->getLogStat()){
+		it->second->setLogin(true);
+		message.sendWelcome(*it->second);
+	}
+	pollStruct.revents = POLLIN;
 
-void	Server::sendWelcome(Client *user)
-{
-	std::string response;
-	response = message.getMessages(1, *user);
-	message.sendMessage(user, response);
-}
+	// Channel management
 
-cmdType getCommandType(const std::string &cmd)
-{
-    if (cmd == "CAP") return (CMD_CAP);
-	else if (cmd == "QUIT") return (CMD_QUIT);
-	else if (cmd == "PASS") return (CMD_PASS);
-    else if (cmd == "JOIN") return (CMD_JOIN);
-    else if (cmd == "NICK") return(CMD_SETNICK);
-    else if (cmd == "USER") return (CMD_SETUNAME);
-    else if (cmd == "SEND") return (CMD_SEND);
-    else return (SEND_MSG);      
 }
-

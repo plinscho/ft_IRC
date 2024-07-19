@@ -35,13 +35,13 @@ void	Server::deleteChannel(int id)
 	}
 }
 
-void	Server::addClientToChannel(Client *user, Channel *channel)
+void	Server::addClientToChannel(Client &user, Channel &channel)
 {
 	std::string msg = "";
 
-	if (channel->activeUsers >= MAX_CHANNEL_USERS)
+	if (channel.activeUsers >= MAX_CHANNEL_USERS)
 		return ;
-	channel->addUser(user->getFd(), user);
-	msg = "JOIN " + channel->getChannelName() + "\r\n";
+	channel.addUser(user.getFd(), user);
+	msg = "JOIN " + channel.getChannelName() + "\r\n";
 	message.sendMessage(user, msg);	
 }

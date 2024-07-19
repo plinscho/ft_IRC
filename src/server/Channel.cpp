@@ -66,7 +66,7 @@ void Channel::broadcastMessage(const std::string &msg)
 {
 	std::map<int, Client *>::iterator it;
     for (it = _fdUsersMap.begin(); it != _fdUsersMap.end(); ++it) {
-        message.sendMessage(it->second, msg);
+        message.sendMessage(*it->second, msg);
     }
 }
 
@@ -76,8 +76,8 @@ int Channel::setNewId()
 	return id++;
 }
 
-void	Channel::addUser(int fd, Client *newUser)
+void	Channel::addUser(int fd, Client &newUser)
 {
-	_fdUsersMap[fd] = newUser;
+	_fdUsersMap[fd] = &newUser;
 	activeUsers++;
 }

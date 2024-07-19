@@ -1,12 +1,40 @@
 #include "Messages.hpp"
+#include "../server/Channel.hpp"
 
-int	Messages::sendMessage(Client *user, const std::string &msg)
+int	Messages::sendMessage(const Client &user, const std::string &msg)
 {
-	if (!user || msg.empty())
+	if (msg.empty())
 		return (-1);
-	if (send(user->getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT) == -1)
+	if (send(user.getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT) == -1)
 		return (-1);
 	return (1);
+}
+
+void	Messages::sendWelcome(Client &user)
+{
+	std::string response;
+	response = getMessages(1, user);
+	sendMessage(user, response);
+}
+
+void Messages::sendChannelNames(Channel &channel, Client &user)
+{
+    std::string response;
+    std::vector<std::string> channels = channel.getChannelsNicks();
+    std::vector<std::string>::iterator it;
+
+    // Formato del mensaje RPL_NAMREPLY
+    response = ":irc.middleman.org 353 " + user.getNickname() + " = " + channel.getChannelName() + " :";
+    for (it = channels.begin(); it != channels.end(); ++it)
+    {
+        response += *it + " ";
+    }
+    response += "\r\n";
+    sendMessage(user, response);
+
+    // Enviar RPL_ENDOFNAMES
+    response = ":irc.middleman.org 366 " + user.getNickname() + " " + channel.getChannelName() + " :End of NAMES list\r\n";
+    sendMessage(user, response);
 }
 
 std::string Messages::getMessages(int code, const Client &client, std::string command)

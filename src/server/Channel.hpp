@@ -35,12 +35,10 @@ class Channel
 		std::vector<std::string>				getChannelsNicks();
 		std::string								getTopic(void);
 		void									setTopic(std::string &topic);
-		void									addUser(int fd, Client *newUser);
+		void									addUser(int fd, Client &newUser);
 		void 									broadcastMessage(const std::string &message);
 
 };
-
-int							sendMessage(Client *user, const std::string &msg);
 
 
 #endif

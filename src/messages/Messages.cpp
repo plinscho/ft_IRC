@@ -1,6 +1,16 @@
 #include "Messages.hpp"
 
-std::string Messages::getMessages(int code, const Client &client, std::string command) {
+int	Messages::sendMessage(Client *user, const std::string &msg)
+{
+	if (!user || msg.empty())
+		return (-1);
+	if (send(user->getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT) == -1)
+		return (-1);
+	return (1);
+}
+
+std::string Messages::getMessages(int code, const Client &client, std::string command)
+{
         std::string nickname = client.getNickname();
         std::string username = client.getUsername(); // Supongamos que se obtiene el username
         std::string serverName = "irc.middleman.net"; // Nombre del servidor

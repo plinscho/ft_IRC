@@ -38,6 +38,7 @@ class Client {
 	std::string		getRecvBuffer() const;
 	int				getFd() const;
 	bool			getLogin(void) const;
+	bool			getLogStat();
 
 	void			clearBuffer(void) {this->_clientBuffer.clear();}
 	void			setBuffer(std::string newBuffer);

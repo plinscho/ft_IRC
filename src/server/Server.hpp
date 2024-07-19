@@ -1,6 +1,7 @@
 #pragma once
 #include "../client/Client.hpp"
 #include "../messages/Messages.hpp"
+#include "StringHandler.hpp"
 #include "Channel.hpp"
 
 #include <cerrno>
@@ -43,6 +44,7 @@ class Server
 	Server(int, char *);
 	~Server();
 	Messages 						message;
+	StringHandler					strTool;
 	int								conectedClients;
 	char							buffer[MAX_MSG_SIZE];
 
@@ -50,7 +52,6 @@ class Server
 	void							closeServer();
 	
 //	CHANNEL MANAGING
-	void							initChannels();
 	void							createChannel(int id, const std::string channelName);
 	void							deleteChannel(int id);
 	void							addClientToChannel(Client *user, Channel *channel);
@@ -66,6 +67,7 @@ class Server
 	int								handleInput(std::string cmd, int fd);
 	void							sendData(pollfd &pollfdStruct);
 	void							receiveData(pollfd &pollfdStruct);
+	void 							checkBytesRead(int bytesRead, int fd);
 
 //	GETERS & FINDERS
 	int								getPort() const;
@@ -110,18 +112,7 @@ MSG_MORE: 		This flag indicates that more data is coming. The data will be bundl
 MSG_NOSIGNAL: 	This flag requests not to send the SIGPIPE signal if an attempt to send is made on a stream socket that is no longer connected.
 MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
 */
-bool						getLogStat(Client *user);
-std::string 				stringToHex(const std::string& str);
-bool						toggleBool(bool state);
-int							sendMessage(Client *user, const std::string &msg);
 int							quickError(std::string msg, int errcode);
 nickReturn					checkNick(std::string& newNick);
-int							switchNick(int type, Client *user, std::string& newNick);
 cmdType 					getCommandType(const std::string &cmd);
-std::vector<std::string> 	stringSplit(std::string str, char c);
-std::vector<std::string>	stringSplit(std::string str, std::string delimiter);
-std::vector<std::string>	stringTrimSplit(std::string str, std::string delimiter);
-
-
-
 

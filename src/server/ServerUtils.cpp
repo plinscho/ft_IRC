@@ -52,7 +52,7 @@ void Server::closeServer()
 		}
 	}
 	
-	for (channelIt = _channels.begin(); channelIt != _channels.end()  ; ++channelIt)
+	for (channelIt = _channels.begin() ; channelIt != _channels.end()  ; ++channelIt)
 	{
 		delete channelIt->second;
 	}
@@ -107,14 +107,7 @@ std::vector<pollfd>::iterator Server::findPollFd(int fdToMatch)
 	return (_vectorPoll.end());
 }
 
-int	sendMessage(Client *user, const std::string &msg)
-{
-	if (!user || msg.empty())
-		return (-1);
-	if (send(user->getFd(), msg.c_str(), msg.length(), MSG_DONTWAIT) == -1)
-		return (-1);
-	return (1);
-}
+
 
 int	quickError(std::string msg, int errcode)
 {

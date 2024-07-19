@@ -40,13 +40,13 @@ int	Server::setUser(Client *user, std::string command, std::string newUser)
 	{
 	// Construir el mensaje de vuelta
 		response = message.getMessages(461, *user);
-		sendMessage(user, response);
+		message.sendMessage(user, response);
 		return (1);
 	}
 	user->setUsername(newUser);
 	user->setHasUser(true);
 	response = "Username set to " + newUser + "\r\n";
-	sendMessage(user, response);
+	message.sendMessage(user, response);
 	return (0);
 }
 
@@ -59,7 +59,7 @@ int	Server::setPass(Client *user, std::string command, std::string pass)
 	{
 	// Construir el mensaje de vuelta
 		response = message.getMessages(461, *user);
-		sendMessage(user, response);
+		message.sendMessage(user, response);
 		return (1);
 	}
 
@@ -67,7 +67,7 @@ int	Server::setPass(Client *user, std::string command, std::string pass)
 	if (getPassword() == pass)
 	{
 		response = "Password accepted.\r\n";
-		sendMessage(user, response);
+		message.sendMessage(user, response);
 		user->setHasPass(true);
 		return (0);
 	}
@@ -100,34 +100,34 @@ int Server::cmdNick(Client* user, std::string& newNick)
 				registerNickname(newNick, user);
 				user->setNickname(newNick);
 				user->setHasNick(true);
-				sendMessage(user, "Nickname set to " + newNick + "\r\n");
+				message.sendMessage(user, "Nickname set to " + newNick + "\r\n");
 				return NICK_OK;
 			} 
 			else if (isNicknameInUse(newNick)) {
-				sendMessage(user, " Error. " + newNick + " is already in use.\r\n");
+				message.sendMessage(user, " Error. " + newNick + " is already in use.\r\n");
 			} 
 			else 
 			{
 				unregisterNickname(user->getNickname());
 				registerNickname(newNick, user);
-				sendMessage(user, "Nickname changed to " + newNick + "\r\n");
+				message.sendMessage(user, "Nickname changed to " + newNick + "\r\n");
 				return NICK_OK;
 			}
 			break;
 		case EMPTY_NICK:
-			sendMessage(user, "Error. Empty nick is not allowed.\r\n");
+			message.sendMessage(user, "Error. Empty nick is not allowed.\r\n");
 			break;
 		case SIZE_EXCEED:
-			sendMessage(user, "Error. Nick is more than 8 chars.\r\n");
+			message.sendMessage(user, "Error. Nick is more than 8 chars.\r\n");
 			break;
 		case HAS_SPACE:
-			sendMessage(user, "Error. Space chars in nick are not allowed.\r\n");
+			message.sendMessage(user, "Error. Space chars in nick are not allowed.\r\n");
 			break;
 		case IS_NOT_ALNUM:
-			sendMessage(user, "Error. Non alnum chars in nick detected.\r\n");
+			message.sendMessage(user, "Error. Non alnum chars in nick detected.\r\n");
 			break;
 	}
-	sendMessage(user, "Try another nickname with /nick\r\n");
+	message.sendMessage(user, "Try another nickname with /nick\r\n");
 	return (validationResult);
 }
 
@@ -144,11 +144,11 @@ void Server::sendChannelNames(Channel &channel, Client *user)
         response += *it + " ";
     }
     response += "\r\n";
-    sendMessage(user, response);
+    message.sendMessage(user, response);
 
     // Enviar RPL_ENDOFNAMES
     response = ":irc.middleman.org 366 " + user->getNickname() + " " + channel.getChannelName() + " :End of NAMES list\r\n";
-    sendMessage(user, response);
+    message.sendMessage(user, response);
 }
 
 int Server::cmdJoin(Client *user, std::string &channelName)
@@ -159,7 +159,7 @@ int Server::cmdJoin(Client *user, std::string &channelName)
     if (channelName.empty())
     {
         response = message.getMessages(461, *user);
-        sendMessage(user, response);
+        message.sendMessage(user, response);
         return (0);
     }
 
@@ -179,7 +179,7 @@ int Server::cmdJoin(Client *user, std::string &channelName)
             if (!topic.empty())
             {
                 response = ":irc.middleman.org 332 " + user->getNickname() + " " + channelName + " :" + topic + "\r\n";
-                sendMessage(user, response);
+                message.sendMessage(user, response);
             }
 
             sendChannelNames(*it->second, user);
@@ -191,7 +191,7 @@ int Server::cmdJoin(Client *user, std::string &channelName)
     if (channelName[0] != '#')
     {
         response = "Error. Channel name must start with #\r\n";
-        sendMessage(user, response);
+        message.sendMessage(user, response);
         return (0);
     }
 

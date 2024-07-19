@@ -1,6 +1,7 @@
 #ifndef CHANNEL_H
 #define CHANNEL_H
 
+#include "../messages/Messages.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -23,6 +24,7 @@ class Channel
 
 	public:
 		int										activeUsers;
+		Messages								message;
 		Channel();
 
 		Channel(int id, const std::string channelName);

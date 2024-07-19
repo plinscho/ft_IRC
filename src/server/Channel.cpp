@@ -62,11 +62,11 @@ void	Channel::setTopic(std::string &topic)
 	this->_topic = topic;
 }
 
-void Channel::broadcastMessage(const std::string &message) 
+void Channel::broadcastMessage(const std::string &msg) 
 {
 	std::map<int, Client *>::iterator it;
     for (it = _fdUsersMap.begin(); it != _fdUsersMap.end(); ++it) {
-        sendMessage(it->second, message);
+        message.sendMessage(it->second, msg);
     }
 }
 

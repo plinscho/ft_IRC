@@ -85,6 +85,14 @@ void	Client::setBuffer(std::string newBuffer)
 		this->_clientBuffer = newBuffer;
 }
 
+bool	Client::getLogStat()
+{
+	if (getHasNick() && getHasPas() && getHasUser() && getLogin() == false)
+		return (true);
+	else
+		return (false);
+}
+
 std::string Client::getPrefix() const
 {
     return getNickname() + "!" + getUsername() + "@" + getAddress();

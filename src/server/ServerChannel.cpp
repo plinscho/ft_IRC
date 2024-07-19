@@ -3,25 +3,6 @@
 #include <string>
 
 
-void	Server::initChannels(void)
-{
-	std::vector<std::string>::iterator it;
-	std::vector<std::string> channelNames;
-
-	channelNames.push_back("#General");
-	channelNames.push_back("#Music");
-	channelNames.push_back("#Random");
-	channelNames.push_back("#Gaming");
-	channelNames.push_back("#Cotilleo");
-	int i = 1;
-
-	for (it = channelNames.begin() ; it != channelNames.end() ; ++it)
-	{
-		createChannel(i, it->c_str());
-		i++;
-	}
-}
-
 void	Server::createChannel(int id, const std::string channelName)
 {
 	Channel *newChannel;
@@ -62,5 +43,5 @@ void	Server::addClientToChannel(Client *user, Channel *channel)
 		return ;
 	channel->addUser(user->getFd(), user);
 	msg = "JOIN " + channel->getChannelName() + "\r\n";
-	sendMessage(user, msg);	
+	message.sendMessage(user, msg);	
 }

@@ -20,10 +20,6 @@ Server::Server(int port, char *password) {
 	_sockaddr.sin_addr.s_addr = INADDR_ANY;	// Accept connections from any IP address
 	_sockaddr.sin_port = htons(_port);		// Port to listen on
 
-
-//	Crear los canales principales
-	initChannels();
-
 //	configurar el socket para que reutilice la dirección y el puerto cuando se cierre.
 	int opt = 1;
 	if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
@@ -142,18 +138,8 @@ int Server::run()
 	return (0);
 }
 
-
-void	Server::receiveData(pollfd &pollStruct)
+void Server::checkBytesRead(int bytesRead, int fd)
 {
-	int	fd = pollStruct.fd;
-	std::map<int, Client *>::iterator it;
-	char buffer[1024] = {0};
-	Client *tmpClient = NULL;
-
-
-	// load the message into a buffer
-	ssize_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
-
 	if (bytesRead == 0){
 		std::cerr <<  __LINE__ << std::endl;
 		return (handleDisconnection(fd));
@@ -162,34 +148,43 @@ void	Server::receiveData(pollfd &pollStruct)
 		std::cerr <<  __LINE__ << std::endl;
 		return (handleDisconnection(fd));
 	}
+}
+
+void	Server::receiveData(pollfd &pollStruct)
+{
+	int	fd = pollStruct.fd;
+	char buffer[1024] = {0};
+
+	// load the message into a buffer
+	ssize_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
+	checkBytesRead(bytesRead, fd);
+	buffer[bytesRead] = '\0';
 
 	// find the client object correspondant from fd
-	it = _fdToClientMap.find(fd);
-	if (it != _fdToClientMap.end())	
-	{
-		buffer[bytesRead] = '\0';
-		std::cout << "ReceiveData CMD recived:\n" << buffer << "##server: end of buffer.##" << std::endl;
-		std::string tmp = buffer;
-		tmpClient = it->second;
-//		std::cout << "HEX 1: "<< stringToHex(tmp) << std::endl;
-		tmpClient->setBuffer(tmpClient->getRecvBuffer().append(tmp));
-		std::vector<std::string> cmd;
-		std::string line = tmpClient->getRecvBuffer();
-		cmd = stringSplit(line, "\r\n");
-//		std::cout << "HEX 2: "<< stringToHex(cmd[1]) << std::endl;
-
-		// Si encuentra un comando hay que dar una respuesta al cliente
-		if (!cmd.empty())
-		{
-			std::cout << "UPDATING REVENTS TO POLLOUT! " << std::endl;
-			pollStruct.revents = POLLOUT;
-			tmpClient->changeRevent = true;
-		}
-	}
-	else
-	{
+	std::map<int, Client *>::iterator it = _fdToClientMap.find(fd);
+	if (it == _fdToClientMap.end())	{
 		std::cout << "Client with fd: " << fd << " not found!" << std::endl;
 	}
+
+	//  DEBUGGING PURPOSES - ERASE
+	strTool.printBuffer(buffer);
+
+	// Load client buffer
+	std::string tmp = buffer;
+	Client *tmpClient = it->second;
+	tmpClient->setBuffer(tmpClient->getRecvBuffer().append(tmp));
+
+	// Check if a command is completed
+	std::vector<std::string> cmd;
+	std::string line = tmpClient->getRecvBuffer();
+	cmd = strTool.stringSplit(line, "\r\n");
+	if (!cmd.empty())
+	{
+		std::cout << "UPDATING REVENTS TO POLLOUT! " << std::endl;
+		pollStruct.revents = POLLOUT;
+		tmpClient->changeRevent = true;
+	}
+
 }
 
 void	Server::sendData(pollfd &pollStruct)
@@ -205,14 +200,10 @@ void	Server::sendData(pollfd &pollStruct)
 
 		std::vector<std::string> cmd;
 		std::string line = it->second->getRecvBuffer();
-		cmd = stringSplit(line, "\r\n");
+		cmd = strTool.stringSplit(line, "\r\n");
 		for (size_t i = 0 ; i < cmd.size() ; ++i)
 		{
-			//  Return 1 in handle input if something is wrong or disconnection is needed.
-			if (handleInput(cmd[i], fd) != 0) {
-				std::cerr <<  __LINE__ << std::endl;
-				return (handleDisconnection(fd));
-			}
+			handleInput(cmd[i], fd);
 		}
 		if (it->second->changeRevent == true){
 			it->second->clearBuffer();
@@ -220,7 +211,7 @@ void	Server::sendData(pollfd &pollStruct)
 		} else {
 			it->second->setBuffer(cmd.back());
 		}
-		if (getLogStat(it->second)){
+		if (it->second->getLogStat()){
 			it->second->setLogin(true);
 			sendWelcome(it->second);
 		}
@@ -228,22 +219,15 @@ void	Server::sendData(pollfd &pollStruct)
 	}
 }
 
+// se cambia todo
 int Server::handleInput(std::string cmd, int fd)
 {
 	std::vector<std::string> cmdSplitted;
 	std::map<int, Client *>::iterator it;
 
 	it = _fdToClientMap.find(fd);
-	cmdSplitted = stringSplit(cmd, ' ');
-/*
-	std::cout << "\nstringToHex(*it)" << std::endl;
-	for (std::vector<std::string>::iterator it = cmdSplitted.begin() ; it != cmdSplitted.end() ; ++it)
-	{
-		std::cout << *it << std::endl;
-	}
-*/
+	cmdSplitted = strTool.stringSplit(cmd, ' ');
 	cmdType type = getCommandType(cmdSplitted[0]);
-//	std::cout << stringToHex(cmd) << " from handle input" << std::endl;
 	if (it != _fdToClientMap.end())
 	{
 		switch (type)
@@ -275,65 +259,18 @@ void	Server::sendWelcome(Client *user)
 {
 	std::string response;
 	response = message.getMessages(1, *user);
-	sendMessage(user, response);
+	message.sendMessage(user, response);
 }
 
-// funcion para comparar la password, si el nick ya existe etc.
-
-/*
-
-void Server::handshake(Client *user)
+cmdType getCommandType(const std::string &cmd)
 {
-	std::vector<std::string>::iterator it;
-
-	for (it = user->handshakeVector.begin(); it != user->handshakeVector.end(); ++it) {
-		std::cout << "hs: "<< *it << std::endl;
-
-		if (it->find("PASS") != std::string::npos) {
-			std::string tmp = *it;
-			tmp.erase(0, 5);
-			//tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
-			tmp = trim(tmp); 
-			if (tmp.compare(_password) != 0) {
-				std::string incorrectPassMsg = message.getMessages(464, *user);
-				sendMessage(user, incorrectPassMsg);
-				handleDisconnection(user->getFd());
-				return ;
-				// si cierro el fd con close aqui entra en bucle infinito 
-				// buscar otra forma de matar la conexion con el cliente
-			}		
-		} else if (it->find("NICK") != std::string::npos) {
-			// Comprueba si el nick existe
-			// Si existe enviar 3 veces el message.getMessages(433, *user);
-			// si no las 3 opciones son incorrectas handleDisconnection(user->getFd());
-			// si no existe, setear el nick
-			// Implementar las 3 funciones de abajo
-			//	bool isNicknameInUse(const std::string &nickname) const;
-			//	void registerNickname(const std::string &nickname);
-			//	void unregisterNickname(const std::string &nickname);
-			if (user->lookNickAlreadyExist(tmp)) { < -- esta picada en client.cpp
-			 std::string msg = message.getMessages(433, *user);
-				sendMessage(user, msg);
-			} // esto hay que manejar el lookNickAlreadyExist en el server
-
-			
-			std::string tmp = *it;
-			tmp.erase(0, 5);
-			tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
-			trim(tmp);
-			user->setNickname(tmp);
-		} else if (it->find("USER") != std::string::npos) { // << ESTO ESTA MALISIMAMENTE PARSEADO!!!
-			std::string tmp = *it;
-			tmp.erase(0, 5);
-			tmp.erase(std::remove(tmp.begin(), tmp.end(), '\0'), tmp.end());
-			trim(tmp);
-			std::cout << "user: " << tmp << std::endl;
-			user->setUsername(tmp);
-		}
-	}
-	user->setLogin(true);
-	std::string msg = message.getMessages(1, *user);
-	std::cout << "msg: " << msg << std::endl;
-	sendMessage(user, msg);
+    if (cmd == "CAP") return (CMD_CAP);
+	else if (cmd == "QUIT") return (CMD_QUIT);
+	else if (cmd == "PASS") return (CMD_PASS);
+    else if (cmd == "JOIN") return (CMD_JOIN);
+    else if (cmd == "NICK") return(CMD_SETNICK);
+    else if (cmd == "USER") return (CMD_SETUNAME);
+    else if (cmd == "SEND") return (CMD_SEND);
+    else return (SEND_MSG);      
 }
-*/
+

@@ -6,16 +6,19 @@ OBJECTS = src/irc.cpp \
 			src/server/Server.cpp \
 			src/server/ServerUtils.cpp \
 			src/server/Cmd.cpp \
-			src/server/CmdUtils.cpp \
 			src/server/ServerChannel.cpp \
 			src/server/Channel.cpp \
+			src/server/Command.cpp \
 			src/server/ServerAA.cpp \
-			src/messages/Messages.cpp
+			src/messages/Messages.cpp \
+			src/server/StringHandler.cpp
 
 
 HEADERS = src/server/Server.hpp \
 			src/client/Client.hpp \
-			src/messages/Messages.hpp
+			src/server/Command.hpp \
+			src/messages/Messages.hpp \
+			src/server/StringHandler.hpp
 
 all: $(NAME)
 

@@ -1,11 +1,6 @@
-#include "Server.hpp"
-#include <string>
-#include <vector>
-#include <sstream>
-#include <iomanip>
-#include <iostream>
+#include "StringHandler.hpp"
 
-std::string stringToHex(const std::string& str) {
+std::string StringHandler::stringToHex(const std::string& str) {
     std::ostringstream oss;
 
     // Iterar sobre cada carácter de la cadena
@@ -26,7 +21,7 @@ std::string stringToHex(const std::string& str) {
     return oss.str();
 }
 
-std::vector<std::string> stringSplit(std::string str, std::string delimiter)
+std::vector<std::string> StringHandler::stringSplit(std::string str, std::string delimiter)
 {
     std::vector<std::string> split;
     std::string substr;
@@ -55,7 +50,7 @@ std::vector<std::string> stringSplit(std::string str, std::string delimiter)
     return split;
 }
 
-std::vector<std::string> stringNoTrimSplit(std::string str, std::string delimiter)
+std::vector<std::string> StringHandler::stringNoTrimSplit(std::string str, std::string delimiter)
 {
     std::vector<std::string> split;
     std::string substr;
@@ -75,7 +70,7 @@ std::vector<std::string> stringNoTrimSplit(std::string str, std::string delimite
     return split;
 }
 
-std::vector<std::string> stringSplit(std::string str, char c)
+std::vector<std::string> StringHandler::stringSplit(std::string str, char c)
 {
 	std::string buff;           // Buffer to build each substring
 	std::vector<std::string> split;  // Vector to hold the resulting substrings
@@ -87,33 +82,6 @@ std::vector<std::string> stringSplit(std::string str, char c)
 	return split;
 }
 
-bool	toggleBool(bool state)
-{
-	if (state == true)
-		return (false);
-	else
-		return (true);
-}
-
-cmdType getCommandType(const std::string &cmd)
-{
-    if (cmd == "CAP") return (CMD_CAP);
-	else if (cmd == "QUIT") return (CMD_QUIT);
-	else if (cmd == "PASS") return (CMD_PASS);
-    else if (cmd == "JOIN") return (CMD_JOIN);
-    else if (cmd == "NICK") return(CMD_SETNICK);
-    else if (cmd == "USER") return (CMD_SETUNAME);
-    else if (cmd == "SEND") return (CMD_SEND);
-    else return (SEND_MSG);      
-}
-
-bool	getLogStat(Client *user)
-{
-	if (user->getHasNick() && user->getHasPas() && user->getHasUser() && user->getLogin() == false)
-		return (true);
-	else
-		return (false);
-}
 
 
 

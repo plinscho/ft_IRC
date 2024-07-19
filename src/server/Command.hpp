@@ -6,13 +6,38 @@
 #include <string>
 #include <vector>
 
+class Client;
+class Server;
+
+enum cmdType
+{
+	CMD_CAP = 0,
+	CMD_QUIT,
+	CMD_PASS,
+	CMD_JOIN,
+	CMD_SETNICK,
+	CMD_SETUNAME,
+	CMD_SEND,
+	SEND_MSG
+};
+
 struct Command 
 {
-    public:
+    std::string                 stringCommands;
     StringHandler               strTool;
     Messages                    message;
 	std::vector<std::string>    m_params;
 
+    void                        getFromClientBuffer(const Client &user);
+    cmdType                     getCommandType(const std::string &cmd);
+
+    int                         execute(Client &user, Server &server);
+    int	                        cmdUser(Client &user, std::string command);
+    int	                        cmdPass(Client &user, std::string command, std::string serverPassword);
+    int                         cmdNick(Client &user, Server &server, std::string command);
+    int                         cmdJoin(Client &user, Server &server, std::string command);
+
 };
+
 
 #endif // COMMAND_HPP

@@ -5,7 +5,6 @@ OBJECTS = src/irc.cpp \
 			src/client/Client.cpp \
 			src/server/Server.cpp \
 			src/server/ServerUtils.cpp \
-			src/server/Cmd.cpp \
 			src/server/ServerChannel.cpp \
 			src/server/Channel.cpp \
 			src/server/Command.cpp \

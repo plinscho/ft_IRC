@@ -1,6 +1,7 @@
 #pragma once
 #include "../client/Client.hpp"
 #include "../messages/Messages.hpp"
+#include "Command.hpp"
 #include "StringHandler.hpp"
 #include "Channel.hpp"
 
@@ -37,16 +38,18 @@ class Server
 	std::vector <struct pollfd> 	_vectorPoll;
 	std::map<int, Client*> 			_fdToClientMap; // Map file descriptors to Client pointers
 	std::map<std::string, Client*> 	_nicknameMap; // Here we will store the nicknames
-	std::map<int, Channel*>			_channels;
 
   public:
 
 	Server(int, char *);
 	~Server();
+
 	Messages 						message;
 	StringHandler					strTool;
+	Command							command;
+
+	std::map<int, Channel*>			_channels;
 	int								conectedClients;
-	char							buffer[MAX_MSG_SIZE];
 
 	int								run();
 	void							closeServer();
@@ -54,17 +57,15 @@ class Server
 //	CHANNEL MANAGING
 	void							createChannel(int id, const std::string channelName);
 	void							deleteChannel(int id);
-	void							addClientToChannel(Client *user, Channel *channel);
+	void							addClientToChannel(Client &user, Channel &channel);
 
 //	CONNECTIVITY
 	void							initPoll();
 	int								updatePoll();
 	int								grabConnection();
 	void							handleDisconnection(int index);
-	void							sendWelcome(Client *user);
 
 //	DATA
-	int								handleInput(std::string cmd, int fd);
 	void							sendData(pollfd &pollfdStruct);
 	void							receiveData(pollfd &pollfdStruct);
 	void 							checkBytesRead(int bytesRead, int fd);
@@ -75,29 +76,10 @@ class Server
 	std::string						getPassword() const;
 	std::vector<pollfd>::iterator	findPollFd(int fd);
 
-//	COMMANDS
-	int								setPass(Client *user, std::string command, std::string pass);
-	int 							cmdNick(Client* user, std::string& newNick);
-	int								setUser(Client *user, std::string command, std::string newUser);
-	void 							sendChannelNames(Channel &channel, Client *user);
-	int 							cmdJoin(Client *user, std::string &channelName);
-
 //	NICK functions
 	bool 							isNicknameInUse(const std::string &nickname) const;
 	void 							registerNickname(const std::string &nickname, Client* newUser);
 	void 							unregisterNickname(const std::string &nickname);
-};
-
-enum cmdType
-{
-	CMD_CAP = 0,
-	CMD_QUIT,
-	CMD_PASS,
-	CMD_JOIN,
-	CMD_SETNICK,
-	CMD_SETUNAME,
-	CMD_SEND,
-	SEND_MSG
 };
 
 /*
@@ -113,6 +95,4 @@ MSG_NOSIGNAL: 	This flag requests not to send the SIGPIPE signal if an attempt t
 MSG_OOB: 		This flag sends out-of-band data on sockets that support this notion.
 */
 int							quickError(std::string msg, int errcode);
-nickReturn					checkNick(std::string& newNick);
-cmdType 					getCommandType(const std::string &cmd);
 

@@ -5,20 +5,6 @@
 #include <iostream>
 #include <signal.h>
 
-
-
-/* ROADMAP
-
-	- Acabar handshake
-	- Implementar NAMES (50 nicks por buffer de send)
-	- Implementar JOIN
-	- Implementar PART (OPCIONAL)
-
-*/
-
-
-
-
 bool power = true;
 
 void sigHandler(int sigNum) {

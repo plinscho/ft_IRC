@@ -25,6 +25,7 @@ int Command::execute(Client &user, Server &server)
             case (CMD_CAP):
                 break ;
             case (CMD_QUIT):
+                server.handleDisconnection(user.getFd());
                 return (1);
             case (CMD_PASS):
                 cmdPass(user, *it, server.getPassword());
@@ -33,7 +34,7 @@ int Command::execute(Client &user, Server &server)
                 cmdNick(user, server, *it);
                 break ; // always returns 0, nick can always be changed.
             case (CMD_JOIN):
-                cmdJoin(user, server, cmdSplitted[1]);
+                cmdJoin(user, server, *it);
                 break ;
             case (CMD_SETUNAME):
                 cmdUser(user, *it);
@@ -174,6 +175,7 @@ int Command::cmdJoin(Client &user, Server &server, std::string cmd)
 
     std::map<int, Channel *>::iterator it;
 
+
     if (channelName.empty())
     {
         response = message.getMessages(461, user);
@@ -182,6 +184,7 @@ int Command::cmdJoin(Client &user, Server &server, std::string cmd)
     }
 
     it = server._channels.begin();
+
     while (it != server._channels.end())
     {
         if (it->second->getChannelName() == channelName)
@@ -213,7 +216,7 @@ int Command::cmdJoin(Client &user, Server &server, std::string cmd)
     }
 
     Channel *newChannel = new Channel(1, channelName);
-   server._channels[user.getFd()] = newChannel;
+    server._channels[user.getFd()] = newChannel;
     newChannel->addUser(user.getFd(), user);
 
     // Notificar a todos en el canal sobre el nuevo usuario

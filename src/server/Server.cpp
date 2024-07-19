@@ -205,7 +205,9 @@ void	Server::sendData(pollfd &pollStruct)
 
 	// command class business:
 	command.getFromClientBuffer(*(it->second));
-	command.execute(*(it->second), *this);
+
+	// return 1 if QUIT is send from client. Do not continue process.
+	if (command.execute(*(it->second), *this)) return ;
 
 	if (it->second->changeRevent == true){
 		it->second->clearBuffer();

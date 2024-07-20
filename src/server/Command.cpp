@@ -404,6 +404,8 @@ int Command::cmdTopic(Client &user, Server &server, std::string command) {
 	return (0);
 }
 
+
+// COMANDO hecho por HexChat: KICK <nombreserver> <nombreCanal> :<user>
 int Command::cmdKick(Client &user, Server &server, std::string command) {
 	std::string response;
 	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
@@ -417,12 +419,16 @@ int Command::cmdKick(Client &user, Server &server, std::string command) {
 
 	std::string channelName = cmdSplittedSpace[1];
 	std::string target = cmdSplittedSpace[2];
+
+
 	if (channelName.empty() || target.empty())
 	{
 		response = message.getMessages(461, user);
 		message.sendMessage(user, response);
 		return (0);
 	}
+	// hasta aqui el programa es safe
+//	strTool.printBuffer("PETA AQUI???\n");
 
 	std::map<int, Channel*>::iterator it = server._channels.begin();
 	while (it != server._channels.end())

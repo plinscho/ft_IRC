@@ -18,6 +18,7 @@ enum cmdType
 	CMD_SETNICK,
 	CMD_SETUNAME,
 	CMD_SEND,
+    CMD_PART,
 	SEND_MSG
 };
 

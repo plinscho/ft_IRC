@@ -42,6 +42,9 @@ int Command::execute(Client &user, Server &server)
 			case (CMD_SEND):
 				cmdPrivMsg(user, server, *it);
 				break ;
+			case (CMD_PART):
+				cmdPart(user, server, *it);
+				break ;
 			case (SEND_MSG):
 				break ;
 		}
@@ -60,6 +63,7 @@ cmdType Command::getCommandType(const std::string &cmd)
 	else if (keyWord == "NICK") return(CMD_SETNICK);
 	else if (keyWord == "USER") return (CMD_SETUNAME);
 	else if (keyWord == "PRIVMSG") return (CMD_SEND);
+	else if (keyWord == "PART") return (CMD_PART);
 	else return (SEND_MSG);      
 }
 

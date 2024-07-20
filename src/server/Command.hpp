@@ -36,6 +36,8 @@ struct Command
     int	                        cmdPass(Client &user, std::string command, std::string serverPassword);
     int                         cmdNick(Client &user, Server &server, std::string command);
     int                         cmdJoin(Client &user, Server &server, std::string command);
+    int                         cmdPrivMsg(Client &user, Server &server, std::string command);
+    int                         cmdPart(Client &user, Server &server, std::string command);
 
 };
 

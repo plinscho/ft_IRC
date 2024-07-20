@@ -81,3 +81,9 @@ void	Channel::addUser(int fd, Client &newUser)
 	_fdUsersMap[fd] = &newUser;
 	activeUsers++;
 }
+
+void    Channel::removeUser(int fd)
+{
+    _fdUsersMap.erase(fd);
+    activeUsers--;
+}

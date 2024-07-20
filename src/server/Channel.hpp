@@ -36,6 +36,7 @@ class Channel
 		std::string								getTopic(void);
 		void									setTopic(std::string &topic);
 		void									addUser(int fd, Client &newUser);
+		void									removeUser(int fd);
 		void 									broadcastMessage(const std::string &message);
 
 };

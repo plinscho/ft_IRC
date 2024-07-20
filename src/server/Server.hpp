@@ -37,7 +37,6 @@ class Server
 	sockaddr_in 					_sockaddr;	// Server address
 	std::vector <struct pollfd> 	_vectorPoll;
 	std::map<int, Client*> 			_fdToClientMap; // Map file descriptors to Client pointers
-	std::map<std::string, Client*> 	_nicknameMap; // Here we will store the nicknames
 
   public:
 
@@ -49,6 +48,7 @@ class Server
 	Command							command;
 
 	std::map<int, Channel*>			_channels;
+	std::map<std::string, Client*> 	_nicknameMap; // Here we will store the nicknames
 	int								conectedClients;
 
 	int								run();

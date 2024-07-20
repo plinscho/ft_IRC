@@ -5,18 +5,13 @@
 #include <cstdio>
 
 
-Channel::Channel()
-: _channelId(-1), _channelName("") // Initializer list
-{
-
-}
-
 Channel::Channel(int id, const std::string channelName)
 {
 	this->_channelId = id;
 	this->_channelName = channelName;
 	this->activeUsers = 0;
-	this->_topic = "";
+	this->_topic = "";   
+    this->_mode.setMode("t");
 }
 
 Channel::~Channel()
@@ -70,6 +65,18 @@ void Channel::broadcastMessage(const std::string &msg)
     }
 }
 
+void Channel::broadcastMessageExcludeSender(Client *who, const std::string &msg) 
+{
+	std::map<int, Client *>::iterator it;
+    for (it = _fdUsersMap.begin(); it != _fdUsersMap.end(); ++it) {
+        if (who->getNickname() == it->second->getNickname())
+            continue;
+        message.sendMessage(*it->second, msg);
+    }
+}
+
+
+
 int Channel::setNewId()
 {
 	static int id = 0;
@@ -80,4 +87,10 @@ void	Channel::addUser(int fd, Client &newUser)
 {
 	_fdUsersMap[fd] = &newUser;
 	activeUsers++;
+}
+
+void    Channel::removeUser(int fd)
+{
+    _fdUsersMap.erase(fd);
+    activeUsers--;
 }

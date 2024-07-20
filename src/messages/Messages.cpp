@@ -24,7 +24,10 @@ void Messages::sendChannelNames(Channel &channel, Client &user)
     std::vector<std::string>::iterator it;
 
     // Formato del mensaje RPL_NAMREPLY
-    response = ":irc.middleman.org 353 " + user.getNickname() + " = " + channel.getChannelName() + " :";
+    if (channel.nickOp == user.getNickname())
+        response = ":irc.middleman.org 353 " + user.getNickname() + " = " + channel.getChannelName() + " :";
+    else
+        response = ":irc.middleman.org 353 " + user.getNickname() + " @ " + channel.getChannelName() + " :";
     for (it = channels.begin(); it != channels.end(); ++it)
     {
         response += *it + " ";

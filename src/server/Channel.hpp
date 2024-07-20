@@ -1,5 +1,5 @@
-#ifndef CHANNEL_H
-#define CHANNEL_H
+#ifndef CHANNEL_HPP
+#define CHANNEL_HPP
 
 #include "../messages/Messages.hpp"
 #include <iostream>
@@ -16,16 +16,32 @@ class Client;
 class Channel
 {
 
+	class ChannelMode {
+	private:
+			std::string _newMode;
+			std::vector<std::string> _modes;
+	public:
+			void setMode(std::string mode) {
+					_newMode = mode;
+					_modes.push_back(mode);
+				}
+			std::vector<std::string>	getMode() const { 
+				return _modes;
+			 };
+	};
+
 	private:
 		int					 					_channelId;
 		std::string 							_channelName;
-		std::map<int, Client*>					_fdUsersMap;
 		std::string								_topic;
+		
 
 	public:
+		ChannelMode								_mode;
+		std::map<int, Client*>					_fdUsersMap;
+		std::vector<std::string>				nickOp;		// vector str de nicks que son operadores
 		int										activeUsers;
 		Messages								message;
-		Channel();
 
 		Channel(int id, const std::string channelName);
 		~Channel();
@@ -36,9 +52,12 @@ class Channel
 		std::string								getTopic(void);
 		void									setTopic(std::string &topic);
 		void									addUser(int fd, Client &newUser);
+		void									removeUser(int fd);
 		void 									broadcastMessage(const std::string &message);
+		void 									broadcastMessageExcludeSender(Client *who, const std::string &msg);
 
 };
+
 
 
 #endif

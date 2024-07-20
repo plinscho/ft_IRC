@@ -18,6 +18,10 @@ enum cmdType
 	CMD_SETNICK,
 	CMD_SETUNAME,
 	CMD_SEND,
+    CMD_PART,
+    CMD_TOPIC,
+    CMD_KICK,
+    CMD_MODE,
 	SEND_MSG
 };
 
@@ -36,6 +40,11 @@ struct Command
     int	                        cmdPass(Client &user, std::string command, std::string serverPassword);
     int                         cmdNick(Client &user, Server &server, std::string command);
     int                         cmdJoin(Client &user, Server &server, std::string command);
+    int                         cmdPrivMsg(Client &user, Server &server, std::string command);
+    int                         cmdPart(Client &user, Server &server, std::string command);
+    int                         cmdTopic(Client &user, Server &server, std::string command);
+    int                         cmdKick(Client &user, Server &server, std::string command);
+    int                         cmdMode(Client &user, Server &server, std::string command);
 
 };
 

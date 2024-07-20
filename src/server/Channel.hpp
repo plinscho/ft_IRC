@@ -13,8 +13,6 @@ class Client;
 
 #define MAX_CHANNEL_USERS 10
 
-
-
 class Channel
 {
 
@@ -41,6 +39,7 @@ class Channel
 	public:
 		ChannelMode								_mode;
 		std::map<int, Client*>					_fdUsersMap;
+		std::vector<std::string>				nickOp;		// vector str de nicks que son operadores
 		int										activeUsers;
 		Messages								message;
 
@@ -56,8 +55,6 @@ class Channel
 		void									removeUser(int fd);
 		void 									broadcastMessage(const std::string &message);
 		void 									broadcastMessageExcludeSender(Client *who, const std::string &msg);
-
-
 
 };
 

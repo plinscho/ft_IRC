@@ -51,6 +51,9 @@ int Command::execute(Client &user, Server &server)
 			case (CMD_KICK):
 				cmdKick(user, server, *it);
 				break ;
+			case (CMD_MODE):
+				cmdMode(user, server, *it);
+				break ;
 			case (SEND_MSG):
 				break ;
 		}
@@ -72,6 +75,7 @@ cmdType Command::getCommandType(const std::string &cmd)
 	else if (keyWord == "PART") return (CMD_PART);
 	else if (keyWord == "TOPIC") return (CMD_TOPIC);
 	else if (keyWord == "KICK") return (CMD_KICK);
+	else if (keyWord == "MODE") return (CMD_MODE);
 	else return (SEND_MSG);      
 }
 
@@ -231,6 +235,7 @@ int Command::cmdJoin(Client &user, Server &server, std::string cmd)
 	Channel *newChannel = new Channel(1, channelName);
 	server._channels[user.getFd()] = newChannel;
 	newChannel->addUser(user.getFd(), user);
+	newChannel->nickOp.push_back(user.getNickname());
 
 	// Notificar a todos en el canal sobre el nuevo usuario
 	response = ":" + user.getPrefix() + " JOIN " + channelName + "\r\n";
@@ -438,4 +443,32 @@ int Command::cmdKick(Client &user, Server &server, std::string command) {
 	message.sendMessage(user, response);
 	return (0);
 }
+
+int		Command::cmdMode(Client &user, Server &server, std::string command)
+{
+	(void) server;
+	std::string response;
+	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
+
+	if (command.empty())
+	{
+		response = message.getMessages(461, user);
+		message.sendMessage(user, response);
+		return (0);
+	}
+
+	std::string channelName = cmdSplittedSpace[1];
+	std::string mode = cmdSplittedSpace[2];
+	if (channelName.empty() || mode.empty())
+	{
+		response = message.getMessages(461, user);
+		message.sendMessage(user, response);
+		return (0);
+	}
+
+	
+	return (0);
+	
+}
+
 

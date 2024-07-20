@@ -405,7 +405,7 @@ int Command::cmdTopic(Client &user, Server &server, std::string command) {
 }
 
 
-// COMANDO hecho por HexChat: KICK <nombreserver> <nombreCanal> :<user>
+// COMANDO hecho por HexChat: KICK <nombreCanal> <user>
 int Command::cmdKick(Client &user, Server &server, std::string command) {
 	std::string response;
 	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
@@ -429,30 +429,22 @@ int Command::cmdKick(Client &user, Server &server, std::string command) {
 	}
 	// hasta aqui el programa es safe
 //	strTool.printBuffer("PETA AQUI???\n");
-
-	std::map<int, Channel*>::iterator it = server._channels.begin();
-	while (it != server._channels.end())
+	Channel *currentChnl = server.getChannelByName(channelName);
+	if (currentChnl->getChannelName() == channelName)
 	{
-		if (it->second->getChannelName() == channelName)
+		std::map<int, Client*>::iterator it2 = currentChnl->_fdUsersMap.begin();
+		while (it2 != currentChnl->_fdUsersMap.end())
 		{
-			std::map<int, Client*>::iterator it2 = it->second->_fdUsersMap.begin();
-			while (it2 != it->second->_fdUsersMap.end())
+			if (it2->second->getNickname() == target)
 			{
-				if (it2->second->getNickname() == target)
-				{
-					response = ":" + user.getPrefix() + " KICK " + channelName + " " + target + "\r\n";
-					it->second->broadcastMessage(response);
-					it->second->removeUser(it2->first);
-					it->second->removeOpUser(it2->second->getNickname());
-					return (0);
-				}
-				++it2;
+				response = ":" + user.getPrefix() + " KICK " + channelName + " " + target + "\r\n";
+				currentChnl->broadcastMessage(response);
+				currentChnl->removeUser(it2->first);
+				currentChnl->removeOpUser(it2->second->getNickname());
+				return (0);
 			}
-			response = "Error. " + target + " is not in the channel.\r\n";
-			message.sendMessage(user, response);
-			return (0);
+			++it2;
 		}
-		++it;
 	}
 	response = "Error. " + channelName + " is not in the channel.\r\n";
 	message.sendMessage(user, response);

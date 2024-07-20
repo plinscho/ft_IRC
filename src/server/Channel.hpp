@@ -13,19 +13,36 @@ class Client;
 
 #define MAX_CHANNEL_USERS 10
 
+
+
 class Channel
 {
+
+	class ChannelMode {
+	private:
+			std::string _newMode;
+			std::vector<std::string> _modes;
+	public:
+			void setMode(std::string mode) {
+					_newMode = mode;
+					_modes.push_back(mode);
+				}
+			std::vector<std::string>	getMode() const { 
+				return _modes;
+			 };
+	};
 
 	private:
 		int					 					_channelId;
 		std::string 							_channelName;
 		std::string								_topic;
+		
 
 	public:
+		ChannelMode								_mode;
 		std::map<int, Client*>					_fdUsersMap;
 		int										activeUsers;
 		Messages								message;
-		Channel();
 
 		Channel(int id, const std::string channelName);
 		~Channel();
@@ -40,7 +57,10 @@ class Channel
 		void 									broadcastMessage(const std::string &message);
 		void 									broadcastMessageExcludeSender(Client *who, const std::string &msg);
 
+
+
 };
+
 
 
 #endif

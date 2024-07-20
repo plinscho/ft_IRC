@@ -5,18 +5,13 @@
 #include <cstdio>
 
 
-Channel::Channel()
-: _channelId(-1), _channelName("") // Initializer list
-{
-
-}
-
 Channel::Channel(int id, const std::string channelName)
 {
 	this->_channelId = id;
 	this->_channelName = channelName;
 	this->activeUsers = 0;
-	this->_topic = "";
+	this->_topic = "";   
+    this->_mode.setMode("t");
 }
 
 Channel::~Channel()

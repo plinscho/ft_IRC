@@ -227,7 +227,7 @@ int Command::cmdJoin(Client &user, Server &server, std::string cmd)
 		message.sendMessage(user, response);
 		return (0);
 	}
-
+	
 	Channel *newChannel = new Channel(1, channelName);
 	server._channels[user.getFd()] = newChannel;
 	newChannel->addUser(user.getFd(), user);

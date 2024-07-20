@@ -1,5 +1,5 @@
-#ifndef CHANNEL_H
-#define CHANNEL_H
+#ifndef CHANNEL_HPP
+#define CHANNEL_HPP
 
 #include "../messages/Messages.hpp"
 #include <iostream>
@@ -38,6 +38,7 @@ class Channel
 		void									addUser(int fd, Client &newUser);
 		void									removeUser(int fd);
 		void 									broadcastMessage(const std::string &message);
+		void 									broadcastMessageExcludeSender(Client *who, const std::string &msg);
 
 };
 

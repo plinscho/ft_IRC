@@ -268,17 +268,35 @@ int Command::cmdPrivMsg(Client &user, Server &server, std::string command) {
 		message.sendMessage(user, response);
 		return (0);
 	}
+	if (target[0] == '#')
+	{
 
-	std::map<std::string, Client*>::iterator it = server._nicknameMap.find(target);
-	if (it != server._nicknameMap.end())
-	{
-		response = ":" + user.getPrefix() + " PRIVMSG " + target + " :" + msg + "\r\n";
-		message.sendMessage(*it->second, response);
-	}
-	else
-	{
-		response = "Error. " + target + " is not in the channel.\r\n";
-		message.sendMessage(user, response);
+		std::map<int, Channel*>::iterator it = server._channels.begin();
+		//search #channel
+		while (it != server._channels.end())
+		{
+			if (it->second->getChannelName() == target)
+			{
+				response = ":" + user.getPrefix() + " PRIVMSG " + target + " :" + msg + "\r\n";
+				it->second->broadcastMessageExcludeSender(&user, response);
+				return (0);
+			}
+			++it;
+		}	
+	} else
+	{ 
+		std::map<std::string, Client*>::iterator it = server._nicknameMap.find(target);
+		if (it != server._nicknameMap.end())
+		{
+			response = ":" + user.getPrefix() + " PRIVMSG " + target + " :" + msg + "\r\n";
+			message.sendMessage(*it->second, response);
+		}
+		else
+		{
+			response = "Error. " + target + " is not in the channel.\r\n";
+			message.sendMessage(user, response);
+		}
+	
 	}
 	return (0);
 }
@@ -307,9 +325,11 @@ int Command::cmdPart(Client &user, Server &server, std::string command) {
 	{
 		if (it->second->getChannelName() == channelName)
 		{
-			it->second->removeUser(user.getFd());
 			response = ":" + user.getPrefix() + " PART " + channelName + "\r\n";
 			it->second->broadcastMessage(response);
+			it->second->removeUser(user.getFd());
+			for (size_t i = 0; i < it->second->_fdUsersMap.size(); ++i)
+				message.sendChannelNames(*it->second, user);
 			return (0);
 		}
 		++it;
@@ -337,19 +357,28 @@ int Command::cmdTopic(Client &user, Server &server, std::string command) {
 		message.sendMessage(user, response);
 		return (0);
 	}
+	if (cmdSplittedSpace.size() == 2)
+	{
+		response = channelName + " :No topic is set.\r\n";
+		message.sendMessage(user, response);
+		return (0);
+	}
 
 	std::map<int, Channel*>::iterator it = server._channels.begin();
 	while (it != server._channels.end())
 	{
 		if (it->second->getChannelName() == channelName)
 		{
-			std::string topic = cmdSplittedSpace[2];
-			if (topic.empty())
+			if (cmdSplittedSpace.size() > 3)
 			{
-				response = "Error. Empty topic is not allowed.\r\n";
-				message.sendMessage(user, response);
-				return (0);
+				for (size_t i = 3; i < cmdSplittedSpace.size(); ++i)
+				{
+					cmdSplittedSpace[2] += " " + cmdSplittedSpace[i];
+				}
 			}
+			std::string topic = cmdSplittedSpace[2];
+			//remove the colon from the message
+			topic = topic.substr(1, topic.size());
 			it->second->setTopic(topic);
 			response = ":" + user.getPrefix() + " TOPIC " + channelName + " :" + topic + "\r\n";
 			it->second->broadcastMessage(response);

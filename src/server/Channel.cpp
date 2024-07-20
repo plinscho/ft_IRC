@@ -70,6 +70,18 @@ void Channel::broadcastMessage(const std::string &msg)
     }
 }
 
+void Channel::broadcastMessageExcludeSender(Client *who, const std::string &msg) 
+{
+	std::map<int, Client *>::iterator it;
+    for (it = _fdUsersMap.begin(); it != _fdUsersMap.end(); ++it) {
+        if (who->getNickname() == it->second->getNickname())
+            continue;
+        message.sendMessage(*it->second, msg);
+    }
+}
+
+
+
 int Channel::setNewId()
 {
 	static int id = 0;

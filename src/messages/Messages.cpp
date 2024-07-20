@@ -66,9 +66,9 @@ std::string Messages::getMessages(int code, const Client &client, std::string co
 			case 255:
 				return ":" + serverName + " 255 " + nickname + " :I have <integer> clients and 1> servers\r\n";
 			case 324:
-				return ":" + serverName + " 332 " + nickname + " <channel> :<topic>\r\n";
-			case 332:
 				return ":" + serverName + " 324 " + nickname + " ";
+			case 332:
+				return ":" + serverName + " 332 " + nickname + " <channel> :<topic>\r\n";
 			case 353:
 				return ":" + serverName + " 353 " + nickname + " = <channel> :<names>\r\n";
 			case 366:

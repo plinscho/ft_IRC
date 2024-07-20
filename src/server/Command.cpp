@@ -316,13 +316,12 @@ int Command::cmdPart(Client &user, Server &server, std::string command) {
 	std::string response;
 	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
 
-	if (command.empty())
+	if (command.empty() || command.size() == 1)
 	{
 		response = message.getMessages(461, user);
 		message.sendMessage(user, response);
 		return (0);
 	}
-
 	std::string channelName = cmdSplittedSpace[1];
 	if (channelName.empty())
 	{
@@ -339,6 +338,9 @@ int Command::cmdPart(Client &user, Server &server, std::string command) {
 			response = ":" + user.getPrefix() + " PART " + channelName + "\r\n";
 			it->second->broadcastMessage(response);
 			it->second->removeUser(user.getFd());
+			it->second->removeOpUser(user.getNickname());
+			if (it->second->activeUsers == 0)
+				server.deleteChannel(it->second->getChannelName());
 			for (size_t i = 0; i < it->second->_fdUsersMap.size(); ++i)
 				message.sendChannelNames(*it->second, user);
 			return (0);
@@ -406,7 +408,7 @@ int Command::cmdKick(Client &user, Server &server, std::string command) {
 	std::string response;
 	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
 
-	if (command.empty())
+	if (command.empty() || cmdSplittedSpace.size() != 3)
 	{
 		response = message.getMessages(461, user);
 		message.sendMessage(user, response);
@@ -435,6 +437,7 @@ int Command::cmdKick(Client &user, Server &server, std::string command) {
 					response = ":" + user.getPrefix() + " KICK " + channelName + " " + target + "\r\n";
 					it->second->broadcastMessage(response);
 					it->second->removeUser(it2->first);
+					it->second->removeOpUser(it2->second->getNickname());
 					return (0);
 				}
 				++it2;
@@ -470,7 +473,7 @@ int		Command::cmdMode(Client &user, Server &server, std::string command)
 
 	// /mode #nombredelcanal +i+t+etc.
 	std::string channelName = cmdSplittedSpace[1];
-	if (!server.channelExists(channelName))
+	if (!server.channelExists(channelName) || cmdSplittedSpace.size() == 1)
 	{
 		std::string response = message.getMessages(403, user);
 		message.sendMessage(user, response);

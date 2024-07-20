@@ -164,9 +164,6 @@ void	Server::receiveData(pollfd &pollStruct)
 		std::cout << "Client with fd: " << fd << " not found!" << std::endl;
 	}
 
-	//  DEBUGGING PURPOSES - ERASE
-	strTool.printBuffer(buffer);
-
 	// Load client buffer
 	std::string tmp = buffer;
 	Client *tmpClient = it->second;

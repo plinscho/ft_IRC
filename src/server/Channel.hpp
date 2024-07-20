@@ -60,6 +60,7 @@ class Channel
 		void									addUser(int fd, Client &newUser);
 		bool 									isUserOp(std::string nickInChannel);
 		void									removeUser(int fd);
+		void									removeOpUser(std::string userNick);
 		void 									broadcastMessage(const std::string &message);
 		void 									broadcastMessageExcludeSender(Client *who, const std::string &msg);
 

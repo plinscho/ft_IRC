@@ -19,10 +19,10 @@ class Channel
 	private:
 		int					 					_channelId;
 		std::string 							_channelName;
-		std::map<int, Client*>					_fdUsersMap;
 		std::string								_topic;
 
 	public:
+		std::map<int, Client*>					_fdUsersMap;
 		int										activeUsers;
 		Messages								message;
 		Channel();

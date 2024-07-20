@@ -45,6 +45,12 @@ int Command::execute(Client &user, Server &server)
 			case (CMD_PART):
 				cmdPart(user, server, *it);
 				break ;
+			case (CMD_TOPIC):
+				cmdTopic(user, server, *it);
+				break ;
+			case (CMD_KICK):
+				cmdKick(user, server, *it);
+				break ;
 			case (SEND_MSG):
 				break ;
 		}
@@ -64,6 +70,8 @@ cmdType Command::getCommandType(const std::string &cmd)
 	else if (keyWord == "USER") return (CMD_SETUNAME);
 	else if (keyWord == "PRIVMSG") return (CMD_SEND);
 	else if (keyWord == "PART") return (CMD_PART);
+	else if (keyWord == "TOPIC") return (CMD_TOPIC);
+	else if (keyWord == "KICK") return (CMD_KICK);
 	else return (SEND_MSG);      
 }
 
@@ -310,3 +318,95 @@ int Command::cmdPart(Client &user, Server &server, std::string command) {
 	message.sendMessage(user, response);
 	return (0);
 }
+
+int Command::cmdTopic(Client &user, Server &server, std::string command) {
+	std::string response;
+	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
+
+	if (command.empty())
+	{
+		response = message.getMessages(461, user);
+		message.sendMessage(user, response);
+		return (0);
+	}
+
+	std::string channelName = cmdSplittedSpace[1];
+	if (channelName.empty())
+	{
+		response = message.getMessages(461, user);
+		message.sendMessage(user, response);
+		return (0);
+	}
+
+	std::map<int, Channel*>::iterator it = server._channels.begin();
+	while (it != server._channels.end())
+	{
+		if (it->second->getChannelName() == channelName)
+		{
+			std::string topic = cmdSplittedSpace[2];
+			if (topic.empty())
+			{
+				response = "Error. Empty topic is not allowed.\r\n";
+				message.sendMessage(user, response);
+				return (0);
+			}
+			it->second->setTopic(topic);
+			response = ":" + user.getPrefix() + " TOPIC " + channelName + " :" + topic + "\r\n";
+			it->second->broadcastMessage(response);
+			return (0);
+		}
+		++it;
+	}
+	response = "Error. " + channelName + " is not in the channel.\r\n";
+	message.sendMessage(user, response);
+	return (0);
+}
+
+int Command::cmdKick(Client &user, Server &server, std::string command) {
+	std::string response;
+	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
+
+	if (command.empty())
+	{
+		response = message.getMessages(461, user);
+		message.sendMessage(user, response);
+		return (0);
+	}
+
+	std::string channelName = cmdSplittedSpace[1];
+	std::string target = cmdSplittedSpace[2];
+	if (channelName.empty() || target.empty())
+	{
+		response = message.getMessages(461, user);
+		message.sendMessage(user, response);
+		return (0);
+	}
+
+	std::map<int, Channel*>::iterator it = server._channels.begin();
+	while (it != server._channels.end())
+	{
+		if (it->second->getChannelName() == channelName)
+		{
+			std::map<int, Client*>::iterator it2 = it->second->_fdUsersMap.begin();
+			while (it2 != it->second->_fdUsersMap.end())
+			{
+				if (it2->second->getNickname() == target)
+				{
+					response = ":" + user.getPrefix() + " KICK " + channelName + " " + target + "\r\n";
+					it->second->broadcastMessage(response);
+					it->second->removeUser(it2->first);
+					return (0);
+				}
+				++it2;
+			}
+			response = "Error. " + target + " is not in the channel.\r\n";
+			message.sendMessage(user, response);
+			return (0);
+		}
+		++it;
+	}
+	response = "Error. " + channelName + " is not in the channel.\r\n";
+	message.sendMessage(user, response);
+	return (0);
+}
+

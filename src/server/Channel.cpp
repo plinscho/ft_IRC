@@ -1,6 +1,7 @@
 #include "Channel.hpp"
 #include "../client/Client.hpp"
 #include <iostream>
+#include <algorithm>
 #include <string>
 #include <cstdio>
 
@@ -12,6 +13,7 @@ Channel::Channel(int id, const std::string channelName)
 	this->activeUsers = 0;
 	this->_topic = "";   
     this->_mode.setMode("t");
+	this->maxUsers = __INT_MAX__;
 }
 
 Channel::~Channel()
@@ -19,20 +21,29 @@ Channel::~Channel()
 
 }
 
+// Devuleve el NAMES para el canal
 std::vector<std::string> Channel::getChannelsNicks()
 {
     Client* currentClient;
+    std::string completeNick;
     std::map<int, Client*>::iterator it;
     std::vector<std::string> nicks;
 
-    if (_fdUsersMap.empty())
-        return nicks;
-
+    // Primero, agregar todos los nicks del mapa _fdUsersMap a nicks
     for (it = _fdUsersMap.begin(); it != _fdUsersMap.end(); ++it)
     {
         currentClient = it->second;
         nicks.push_back(currentClient->getNickname());
-        printf("Nick: %s\n", currentClient->getNickname().c_str());
+    }
+
+    // Luego, comparar cada nick con los nicks en nickOp
+    for (size_t i = 0; i < nicks.size(); ++i)
+    {
+        if (std::find(nickOp.begin(), nickOp.end(), nicks[i]) != nickOp.end())
+        {
+            // Si encuentra un match, reemplazar por el mismo nick pero con un "@" delante
+            nicks[i] = "@" + nicks[i];
+        }
     }
     return nicks;
 }
@@ -75,7 +86,17 @@ void Channel::broadcastMessageExcludeSender(Client *who, const std::string &msg)
     }
 }
 
+bool Channel::isUserOp(std::string nickInChannel)
+{
+	std::vector<std::string>::iterator it;
 
+	for (it = nickOp.begin() ; it != nickOp.end() ; ++it)
+	{
+		if (*it == nickInChannel)
+			return (true);
+	}
+	return (false);
+}
 
 int Channel::setNewId()
 {
@@ -87,6 +108,18 @@ void	Channel::addUser(int fd, Client &newUser)
 {
 	_fdUsersMap[fd] = &newUser;
 	activeUsers++;
+}
+
+void	Channel::removeOpUser(std::string userNick)
+{
+	std::vector<std::string>::iterator it = nickOp.begin();
+	if (it == nickOp.end())
+		return ;
+	for (; it != nickOp.end() ; ++it)
+	{
+		if (*it == userNick)
+			nickOp.erase(it);
+	}
 }
 
 void    Channel::removeUser(int fd)

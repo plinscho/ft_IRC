@@ -82,6 +82,21 @@ std::vector<std::string> StringHandler::stringSplit(std::string str, char c)
 	return split;
 }
 
+std::string			StringHandler::strJoin(std::vector<std::string> &stringVector)
+{
+	std::string joinedVector;
+
+	std::vector<std::string>::iterator it;
+	if (stringVector.empty())
+		return ("");
+	for (it = stringVector.begin() ; it != stringVector.end() ; ++it)
+	{
+		joinedVector += *it;
+	}
+	return (joinedVector);
+}
+
+
 
 
 

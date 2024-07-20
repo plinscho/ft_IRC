@@ -105,8 +105,6 @@ int Server::grabConnection()
 }
 
 
-
-
 // Because we can only use poll() 1 time to manage all the revents
 int Server::run()
 {
@@ -166,9 +164,6 @@ void	Server::receiveData(pollfd &pollStruct)
 		std::cout << "Client with fd: " << fd << " not found!" << std::endl;
 	}
 
-	//  DEBUGGING PURPOSES - ERASE
-	strTool.printBuffer(buffer);
-
 	// Load client buffer
 	std::string tmp = buffer;
 	Client *tmpClient = it->second;
@@ -221,4 +216,28 @@ void	Server::sendData(pollfd &pollStruct)
 
 	// Channel management
 
+}
+
+Channel*	Server::getChannelByName(std::string channelName)
+{
+	std::map<int, Channel*>::iterator it;
+
+	for (it = _channels.begin() ; it != _channels.end() ; ++it)
+	{
+		if (channelName == it->second->getChannelName())
+			return (it->second);
+	}
+	return (NULL);
+}
+
+bool	Server::channelExists(std::string channelName)
+{
+	std::map<int, Channel*>::iterator it;
+
+	for (it = _channels.begin() ; it != _channels.end() ; ++it)
+	{
+		if (channelName == it->second->getChannelName())
+			return (true);
+	}
+	return (false);
 }

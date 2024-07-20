@@ -18,28 +18,27 @@ void	Server::createChannel(int id, const std::string channelName)
 	_channels[id] = newChannel;
 }
 
-void	Server::deleteChannel(int id)
+void Server::deleteChannel(std::string channelName) 
 {
-	Channel *tmpChannel;
-	std::map<int, Channel *>::iterator channelIterator;
-	channelIterator = _channels.find(id);
-	if (channelIterator != _channels.end())
-	{
-		tmpChannel = channelIterator->second;
-		std::cout << tmpChannel->getChannelName() << " deleted.\n" << std::endl;
+    std::map<int, Channel*>::iterator channelIterator;
 
-		// free memory
-		delete tmpChannel;
-		tmpChannel = NULL;
-		_channels.erase(channelIterator);
-	}
+    for (channelIterator = _channels.begin(); channelIterator != _channels.end(); ++channelIterator)
+	{
+        if (channelIterator->second->getChannelName() == channelName)
+		{
+            std::cout << channelIterator->second->getChannelName() << " deleted.\n" << std::endl;
+            delete channelIterator->second; // Liberar memoria
+            _channels.erase(channelIterator); // Eliminar el canal del mapa usando el iterador
+            return; // Salir de la función después de borrar el canal
+        }
+    }
 }
 
 void	Server::addClientToChannel(Client &user, Channel &channel)
 {
 	std::string msg = "";
 
-	if (channel.activeUsers >= MAX_CHANNEL_USERS)
+	if (channel.activeUsers >= channel.maxUsers)
 		return ;
 	channel.addUser(user.getFd(), user);
 	msg = "JOIN " + channel.getChannelName() + "\r\n";

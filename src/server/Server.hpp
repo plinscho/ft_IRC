@@ -57,6 +57,8 @@ class Server
 //	CHANNEL MANAGING
 	void							createChannel(int id, const std::string channelName);
 	void							deleteChannel(int id);
+	bool							channelExists(std::string channelName);
+	Channel*						getChannelByName(std::string ChannelName);
 	void							addClientToChannel(Client &user, Channel &channel);
 
 //	CONNECTIVITY

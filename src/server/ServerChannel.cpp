@@ -39,7 +39,7 @@ void	Server::addClientToChannel(Client &user, Channel &channel)
 {
 	std::string msg = "";
 
-	if (channel.activeUsers >= MAX_CHANNEL_USERS)
+	if (channel.activeUsers >= channel.maxUsers)
 		return ;
 	channel.addUser(user.getFd(), user);
 	msg = "JOIN " + channel.getChannelName() + "\r\n";

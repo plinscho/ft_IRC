@@ -183,7 +183,10 @@ int Command::cmdNick(Client &user, Server &server, std::string cmd)
 	return (validationResult);
 }
 
-
+/*
+	//TODO: Hay que mirar si el canal esta en modo solo invitados, provado, con contraseña, etc. antes de 
+	poder entrar. 
+*/
 int Command::cmdJoin(Client &user, Server &server, std::string cmd)
 {
 	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(cmd, ' ');
@@ -232,9 +235,12 @@ int Command::cmdJoin(Client &user, Server &server, std::string cmd)
 		return (0);
 	}
 	
+	// No existe el canal, hay que crear uno nuevo.
 	Channel *newChannel = new Channel(1, channelName);
 	server._channels[user.getFd()] = newChannel;
 	newChannel->addUser(user.getFd(), user);
+
+	// Al no tener ningun miembro, el primero es OP
 	newChannel->nickOp.push_back(user.getNickname());
 
 	// Notificar a todos en el canal sobre el nuevo usuario
@@ -444,31 +450,62 @@ int Command::cmdKick(Client &user, Server &server, std::string command) {
 	return (0);
 }
 
+/*
+	Controla que usuarios del canal son OP
+	Modifica el MODE del canal, puede ser
+	i: Set/remove Invite-only channel
+	t: Set/remove the restrictions of the TOPIC command to channel
+		operators
+	k: Set/remove the channel key (password)
+	o: Give/take channel operator privilege
+	l: Set/remove the user limit to channel
+
+	MODE tiene acceso a la informacion de los canales y sus permisos
+*/ 
 int		Command::cmdMode(Client &user, Server &server, std::string command)
 {
-	(void) server;
-	std::string response;
+	// splitear el comando
 	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
+	Channel * channelMod = server.getChannelByName(cmdSplittedSpace[1]);
 
-	if (command.empty())
-	{
-		response = message.getMessages(461, user);
-		message.sendMessage(user, response);
-		return (0);
-	}
-
+	// /mode #nombredelcanal +i+t+etc.
 	std::string channelName = cmdSplittedSpace[1];
-	std::string mode = cmdSplittedSpace[2];
-	if (channelName.empty() || mode.empty())
+	if (!server.channelExists(channelName))
 	{
-		response = message.getMessages(461, user);
+		std::string response = message.getMessages(403, user);
+		message.sendMessage(user, response);
+		return (0);
+	}
+	if (cmdSplittedSpace.size() == 2)
+	{
+		// mandar la informacion de los modos del canal
+		std::string modes = channelMod->_mode.getCurrentChannelMode();
+		std::string response = message.getMessages(324, user);
+		response += channelName + " " + modes + "\r\n";
+
+	//	if ()
+
+	//	response = ":" + user.getPrefix() + " JOIN " + channelName + "\r\n";
+		
 		message.sendMessage(user, response);
 		return (0);
 	}
 
-	
+	// Si hemos llegado aquí, es que se modifican los modos
+	std::string parsedCmd;
+	if (cmdSplittedSpace.size() > 3)
+	{
+		for (size_t i = 2 ; i < cmdSplittedSpace.size() ; i++)
+			parsedCmd += cmdSplittedSpace[i];
+	}
+
 	return (0);
-	
 }
 
-
+/*
+static int modeParser(std::string command)
+{
+	(void)command;
+	return (1);
+}
+*/

@@ -13,6 +13,7 @@ struct StringHandler
     std::vector<std::string>        stringSplit(std::string str, std::string delimiter);
     std::vector<std::string>        stringSplit(std::string str, char c);
     std::vector<std::string>        stringNoTrimSplit(std::string str, std::string delimiter);
+	std::string						strJoin(std::vector<std::string> &);
     void                            printBuffer(std::string buffer) { std::cout << "ReceiveData CMD recived:\n" << buffer << "##server: end of buffer.##" << std::endl; }
 };
 

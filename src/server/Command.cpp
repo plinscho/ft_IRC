@@ -188,7 +188,7 @@ int Command::cmdNick(Client &user, Server &server, std::string cmd)
 	//TODO: Hay que mirar si el canal esta en modo solo invitados, provado, con contraseña, etc. antes de 
 	poder entrar. 
 */
-int Command::cmdJoin(Client &user, Server &server, std::string cmd)
+/*int Command::cmdJoin(Client &user, Server &server, std::string cmd)
 {
 	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(cmd, ' ');
 	std::string channelName = cmdSplittedSpace[1]; 
@@ -250,7 +250,7 @@ int Command::cmdJoin(Client &user, Server &server, std::string cmd)
 
 	message.sendChannelNames(*newChannel, user);
 	return (0);
-}
+}*/
 
 int Command::cmdPrivMsg(Client &user, Server &server, std::string command) {
 	std::string response;

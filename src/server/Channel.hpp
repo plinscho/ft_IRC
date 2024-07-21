@@ -50,7 +50,6 @@ class Client;
 
 class Channel
 {
-
 	class ChannelMode {
 	private:
 			std::string 				_newMode;
@@ -105,7 +104,7 @@ class Channel
 		Messages								message;
 		int										maxUsers;
 		bool									hasKey;
-
+		std::vector<std::string>				invitedUsers;
 		Channel(int id, const std::string channelName);
 		~Channel();
 		int 									setNewId();
@@ -116,6 +115,8 @@ class Channel
 		std::string								getChannelKey(void); 
 		void									setChannelKey(std::string &);
 		void    								removeChannelKey(void);
+		std::string								getPassword(void);
+		bool 									isInvited(std::string nick);
 		void									setTopic(std::string &topic);
 		void									addUser(int fd, Client &newUser);
 		bool 									isUserOp(std::string nickInChannel);

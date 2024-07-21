@@ -159,3 +159,16 @@ void    Channel::removeUser(int fd)
     _fdUsersMap.erase(fd);
     activeUsers--;
 }
+
+bool Channel::isInvited(std::string nick)
+{
+    std::vector<std::string>::iterator it = std::find(invitedUsers.begin(), invitedUsers.end(), nick);
+    if (it != invitedUsers.end())
+        return true;
+    return false;
+}
+
+std::string Channel::getPassword(void)
+{
+    return _channelPass;
+}

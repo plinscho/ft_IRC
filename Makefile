@@ -8,6 +8,7 @@ OBJECTS = src/irc.cpp \
 			src/server/ServerChannel.cpp \
 			src/server/Channel.cpp \
 			src/server/Command.cpp \
+			src/server/cmdJoin.cpp \
 			src/server/ServerAA.cpp \
 			src/messages/Messages.cpp \
 			src/server/StringHandler.cpp

@@ -110,16 +110,11 @@ void	Channel::addUser(int fd, Client &newUser)
 	activeUsers++;
 }
 
-void	Channel::removeOpUser(std::string userNick)
-{
-	std::vector<std::string>::iterator it = nickOp.begin();
-	if (it == nickOp.end())
-		return ;
-	for (; it != nickOp.end() ; ++it)
-	{
-		if (*it == userNick)
-			nickOp.erase(it);
-	}
+void Channel::removeOpUser(std::string userNick) {
+    std::vector<std::string>::iterator it = std::find(nickOp.begin(), nickOp.end(), userNick);
+    if (it != nickOp.end()) {
+        nickOp.erase(it);
+    }
 }
 
 void    Channel::removeUser(int fd)

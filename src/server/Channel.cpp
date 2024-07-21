@@ -13,6 +13,7 @@ Channel::Channel(int id, const std::string channelName)
 	this->activeUsers = 0;
 	this->_topic = "";   
     this->_mode.setMode("t");
+    this->hasKey = false;
 	this->maxUsers = __INT_MAX__;
 }
 
@@ -63,6 +64,34 @@ std::string	Channel::getTopic(void)
 	return (this->_topic);
 }
 
+std::string  Channel::getChannelKey(void)
+{
+    return (this->_key);
+}
+
+void    Channel::setChannelKey(std::string &newKey)
+{
+    this->_key = newKey;
+    this->hasKey = true;
+}
+
+void    Channel::removeChannelKey(void)
+{
+    this->_key.clear();
+    this->hasKey = false;
+}
+
+void    Channel::removeUserLimit(void)
+{
+    this->maxUsers = 10000;
+}
+
+void    Channel::setUserLimit(int limit)
+{
+    if (limit > 1)
+        this->maxUsers = limit;
+}
+
 void	Channel::setTopic(std::string &topic)
 {
 	this->_topic = topic;
@@ -110,10 +139,18 @@ void	Channel::addUser(int fd, Client &newUser)
 	activeUsers++;
 }
 
-void Channel::removeOpUser(std::string userNick) {
+void    Channel::addOpUser(std::string userNick)
+{
+    if (!userNick.empty())
+        nickOp.push_back(userNick);
+}
+
+void Channel::removeOpUser(std::string userNick)
+{
     std::vector<std::string>::iterator it = std::find(nickOp.begin(), nickOp.end(), userNick);
     if (it != nickOp.end()) {
         nickOp.erase(it);
+        return ;
     }
 }
 

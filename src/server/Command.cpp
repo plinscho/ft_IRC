@@ -1,6 +1,7 @@
 #include "Command.hpp"
 #include "Server.hpp"
 #include <iostream>
+#include <cstdlib>
 
 void    Command::getFromClientBuffer(const Client &user)
 {
@@ -54,7 +55,7 @@ int Command::execute(Client &user, Server &server)
 			case (CMD_MODE):
 				cmdMode(user, server, *it);
 				break ;
-			case (SEND_MSG):
+			default:
 				break ;
 		}
 	}
@@ -475,44 +476,144 @@ int Command::cmdKick(Client &user, Server &server, std::string command) {
 	l: Set/remove the user limit to channel
 
 	MODE tiene acceso a la informacion de los canales y sus permisos
+	Ejemplo de un comando MODE:
+
+	MODE #canal +i -t +pk -pk
 */ 
 int		Command::cmdMode(Client &user, Server &server, std::string command)
 {
-	// splitear el comando
-	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
-	Channel * channelMod = server.getChannelByName(cmdSplittedSpace[1]);
+    // Split the command by space
+    std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
+    if (cmdSplittedSpace.size() < 2) {
+        // Send error message for insufficient parameters
+        std::string response = message.getMessages(461, user); // 461: ERR_NEEDMOREPARAMS
+        message.sendMessage(user, response);
+        return 0;
+    }
 
-	// /mode #nombredelcanal +i+t+etc.
-	std::string channelName = cmdSplittedSpace[1];
-	if (!server.channelExists(channelName) || cmdSplittedSpace.size() == 1)
-	{
-		std::string response = message.getMessages(403, user);
-		message.sendMessage(user, response);
-		return (0);
-	}
-	if (cmdSplittedSpace.size() == 2)
-	{
-		// mandar la informacion de los modos del canal
-		std::string modes = channelMod->_mode.getCurrentChannelMode();
-		std::string response = message.getMessages(324, user);
-		response += channelName + " " + modes + "\r\n";
+    std::string channelName = cmdSplittedSpace[1];
+    Channel *channelMod = server.getChannelByName(channelName);
 
-	//	if ()
+    if (!channelMod || !server.channelExists(channelName)) {
+        // Send error message for non-existing channel
+        std::string response = message.getMessages(403, user); // 403: ERR_NOSUCHCHANNEL
+        message.sendMessage(user, response);
+        return 0;
+    }
 
-	//	response = ":" + user.getPrefix() + " JOIN " + channelName + "\r\n";
-		
-		message.sendMessage(user, response);
-		return (0);
-	}
+    if (cmdSplittedSpace.size() == 2) {
+        // Send the current modes of the channel
+        std::string modes = channelMod->_mode.getCurrentChannelMode();
+        std::string response = message.getMessages(324, user); // 324: RPL_CHANNELMODEIS
+        response += channelName + " " + modes + "\r\n";
+        message.sendMessage(user, response);
+        return 0;
+    }
 
-	// Si hemos llegado aquí, es que se modifican los modos
-	std::string parsedCmd;
-	if (cmdSplittedSpace.size() > 3)
-	{
-		for (size_t i = 2 ; i < cmdSplittedSpace.size() ; i++)
-			parsedCmd += cmdSplittedSpace[i];
-	}
 
+    // Si hemos llegado aquí, es que se modifican los modos
+    std::string modes;
+    for (size_t i = 2; i < cmdSplittedSpace.size(); ++i) {
+        modes += cmdSplittedSpace[i];
+    }
+
+    bool addMode = true; // True if adding modes, false if removing
+    size_t paramIndex = 3; // Index of parameters following the mode string
+
+    for (size_t i = 0; i < modes.size(); ++i) {
+        char key = modes[i];
+        switch (key) {
+            case '+':
+                addMode = true;
+                break;
+            case '-':
+                addMode = false;
+                break;
+            case 'i':
+                if (addMode) {
+                    channelMod->_mode.setMode("i");
+                } else {
+                    channelMod->_mode.unsetMode("i");
+                }
+                break;
+            case 't':
+                if (addMode) {
+                    channelMod->_mode.setMode("t");
+                } else {
+                    channelMod->_mode.unsetMode("t");
+                }
+                break;
+            case 'k':
+                if (addMode) {
+                    if (paramIndex < cmdSplittedSpace.size()) {
+                        std::string key = cmdSplittedSpace[paramIndex++];
+                        channelMod->_mode.setMode("k");
+                        channelMod->setChannelKey(key);
+                    } else {
+                        // Send error message for missing parameter
+                        std::string response = message.getMessages(461, user); // 461: ERR_NEEDMOREPARAMS
+                        message.sendMessage(user, response);
+                        return 0;
+                    }
+                } else {
+                    channelMod->_mode.unsetMode("k");
+                    channelMod->removeChannelKey();
+                }
+                break;
+            case 'o':
+                if (paramIndex < cmdSplittedSpace.size()) {
+                    std::string userName = cmdSplittedSpace[paramIndex++];
+                    Client *targetUser = server.getClientByName(userName);
+                    if (targetUser) {
+                        if (addMode) {
+                            channelMod->addOpUser(userName);
+                        } else {
+                            channelMod->removeOpUser(userName);
+                        }
+                    } else {
+                        // Send error message for non-existing user
+                        std::string response = message.getMessages(401, user); // 401: ERR_NOSUCHNICK
+                        response += userName + "\r\n";
+                        message.sendMessage(user, response);
+                        return 0;
+                    }
+                } else {
+                    // Send error message for missing parameter
+                    std::string response = message.getMessages(461, user); // 461: ERR_NEEDMOREPARAMS
+                    message.sendMessage(user, response);
+                    return 0;
+                }
+                break;
+            case 'l':
+                if (addMode) {
+                    if (paramIndex < cmdSplittedSpace.size()) {
+                        int limit = std::atoi(cmdSplittedSpace[paramIndex++].c_str());
+                        channelMod->_mode.setMode("l");
+                        channelMod->setUserLimit(limit);
+                    } else {
+                        // Send error message for missing parameter
+                        std::string response = message.getMessages(461, user); // 461: ERR_NEEDMOREPARAMS
+                        message.sendMessage(user, response);
+                        return 0;
+                    }
+                } else {
+                    channelMod->_mode.unsetMode("l");
+                    channelMod->removeUserLimit();
+                }
+                break;
+            default:
+                // Send error message for unknown mode character
+                std::string response = message.getMessages(472, user); // 472: ERR_UNKNOWNMODE
+                response += key;
+                message.sendMessage(user, response);
+                return 0;
+        }
+    }
+    // Send the updated mode information to the user
+    std::string updatedModes = channelMod->_mode.getCurrentChannelMode();
+    std::string response = message.getMessages(324, user); // 324: RPL_CHANNELMODEIS
+    response += channelName + " " + updatedModes + "\r\n";
+    message.sendMessage(user, response);
 	return (0);
 }
 

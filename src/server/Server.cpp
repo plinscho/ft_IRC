@@ -218,6 +218,21 @@ void	Server::sendData(pollfd &pollStruct)
 
 }
 
+Client*		Server::getClientByName(std::string &userNick)
+{
+	std::map<std::string, Client *>::iterator it;
+
+	it = _nicknameMap.find(userNick);
+	if (!it->second)
+	{
+		std::string response;
+		response = "Nickname " + userNick + " was not found!\n";
+		quickError(response, 0);
+		return (NULL);
+	}
+	return (it->second);
+}
+
 Channel*	Server::getChannelByName(std::string channelName)
 {
 	std::map<int, Channel*>::iterator it;

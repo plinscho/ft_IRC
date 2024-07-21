@@ -55,6 +55,9 @@ int Command::execute(Client &user, Server &server)
 			case (CMD_MODE):
 				cmdMode(user, server, *it);
 				break ;
+			case (CMD_INVITE):
+				cmdInvite(user, server, *it);
+				break ;
 			default:
 				break ;
 		}
@@ -77,6 +80,7 @@ cmdType Command::getCommandType(const std::string &cmd)
 	else if (keyWord == "TOPIC") return (CMD_TOPIC);
 	else if (keyWord == "KICK") return (CMD_KICK);
 	else if (keyWord == "MODE") return (CMD_MODE);
+	else if (keyWord == "INVITE") return (CMD_INVITE);
 	else return (SEND_MSG);      
 }
 
@@ -183,74 +187,6 @@ int Command::cmdNick(Client &user, Server &server, std::string cmd)
 	message.sendMessage(user, "Try another nickname with /nick\r\n");
 	return (validationResult);
 }
-
-/*
-	//TODO: Hay que mirar si el canal esta en modo solo invitados, provado, con contraseña, etc. antes de 
-	poder entrar. 
-*/
-/*int Command::cmdJoin(Client &user, Server &server, std::string cmd)
-{
-	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(cmd, ' ');
-	std::string channelName = cmdSplittedSpace[1]; 
-	std::string response;
-
-	std::map<int, Channel *>::iterator it;
-
-
-	if (channelName.empty())
-	{
-		response = message.getMessages(461, user);
-		message.sendMessage(user, response);
-		return (0);
-	}
-
-	it = server._channels.begin();
-
-	while (it != server._channels.end())
-	{
-		if (it->second->getChannelName() == channelName)
-		{
-			it->second->addUser(user.getFd(), user);
-
-			// Notificar a todos en el canal sobre el nuevo usuario
-			response = ":" + user.getPrefix() + " JOIN " + channelName + "\r\n";
-			it->second->broadcastMessage(response);
-
-			// Enviar el tema del canal si tiene uno
-			std::string topic = it->second->getTopic();
-			if (!topic.empty())
-			{
-				response = ":irc.middleman.org 332 " + user.getNickname() + " " + channelName + " :" + topic + "\r\n";
-				message.sendMessage(user, response);
-			}
-			message.sendChannelNames(*it->second, user);
-			return (0);
-		}
-		++it;
-	}
-
-	if (channelName[0] != '#')
-	{
-		response = "Error. Channel name must start with #\r\n";
-		message.sendMessage(user, response);
-		return (0);
-	}
-	
-	// No existe el canal, hay que crear uno nuevo.
-	Channel *newChannel = new Channel(1, channelName);
-	server._channels[user.getFd()] = newChannel;
-	newChannel->addUser(user.getFd(), user);
-
-	// Al no tener ningun miembro, el primero es OP
-	newChannel->nickOp.push_back(user.getNickname());
-
-	// Notificar a todos en el canal sobre el nuevo usuario
-	response = ":" + user.getPrefix() + " JOIN " + channelName + "\r\n";
-	newChannel->broadcastMessage(response);
-
-	message.sendChannelNames(*newChannel, user);
-	return (0);
-}*/
 
 int Command::cmdPrivMsg(Client &user, Server &server, std::string command) {
 	std::string response;

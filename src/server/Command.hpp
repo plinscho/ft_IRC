@@ -22,6 +22,7 @@ enum cmdType
     CMD_TOPIC,
     CMD_KICK,
     CMD_MODE,
+    CMD_INVITE,
 	SEND_MSG
 };
 

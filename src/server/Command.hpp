@@ -45,6 +45,7 @@ struct Command
     int                         cmdTopic(Client &user, Server &server, std::string command);
     int                         cmdKick(Client &user, Server &server, std::string command);
     int                         cmdMode(Client &user, Server &server, std::string command);
+    int                         cmdInvite(Client &user, Server &server, std::string command);
 
 };
 

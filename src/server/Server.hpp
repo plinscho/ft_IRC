@@ -76,6 +76,7 @@ class Server
 	int								getPort() const;
 	int								getSockfd() const;
 	std::string						getPassword() const;
+	Client *						getClientByName(std::string &);
 	std::vector<pollfd>::iterator	findPollFd(int fd);
 
 //	NICK functions

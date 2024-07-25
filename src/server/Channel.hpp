@@ -117,6 +117,7 @@ class Channel
 		void    								removeChannelKey(void);
 		std::string								getPassword(void);
 		bool 									isInvited(std::string nick);
+		void 									addInvited(std::string nick);
 		void									setTopic(std::string &topic);
 		void									addUser(int fd, Client &newUser);
 		bool 									isUserOp(std::string nickInChannel);

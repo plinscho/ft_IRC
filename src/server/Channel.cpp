@@ -168,6 +168,16 @@ bool Channel::isInvited(std::string nick)
     return false;
 }
 
+
+void Channel::addInvited(std::string nick)
+{
+    std::vector<std::string>::iterator it = std::find(invitedUsers.begin(), invitedUsers.end(), nick);
+    if (it != invitedUsers.end())
+        return ;
+    invitedUsers.push_back(nick);
+}
+
+
 std::string Channel::getPassword(void)
 {
     return _channelPass;

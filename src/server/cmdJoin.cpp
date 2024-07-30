@@ -6,8 +6,8 @@ static void createNewChannel(Client &user, Server &server, const std::string &ch
     std::string response;
 
     // Create new channel
-    Channel *newChannel = new Channel(user.getFd(), channelName);
-    server._channels[user.getFd()] = newChannel;
+    Channel *newChannel = new Channel(channelName);
+    server._channels[channelName] = newChannel; // Using channelName as the key
     newChannel->addUser(user.getFd(), user);
 
     // The first member becomes an operator
@@ -67,23 +67,21 @@ static bool handleJoinChannel(Client &user, Server &server, const std::string &c
         return false;
     }
 
-    // Find if the channel already exists
-    std::map<int, Channel*>::iterator it = server._channels.begin();
-    while (it != server._channels.end()) {
-        if (it->second->getChannelName() == channelName) {
-            handleExistingChannel(user, server, it->second, channelName, password);
-            return true;
-        }
-        ++it;
-    }
-
-    // If channel was not found, create a new one
+    // Check if the channel name starts with '#'
     if (channelName[0] != '#') {
         std::string response = "Error. Channel name must start with #\r\n";
         server.message.sendMessage(user, response);
         return false;
     }
 
+    // Find if the channel already exists
+    std::map<std::string, Channel*>::iterator it = server._channels.find(channelName);
+    if (it != server._channels.end()) {
+        handleExistingChannel(user, server, it->second, channelName, password);
+        return true;
+    }
+
+    // If channel was not found, create a new one
     createNewChannel(user, server, channelName);
     return true;
 }
@@ -95,7 +93,7 @@ int Command::cmdJoin(Client &user, Server &server, std::string cmd) {
     if (cmdSplittedSpace.size() < 2) {
         std::string response = message.getMessages(461, user);
         message.sendMessage(user, response);
-        return (0);
+        return 0;
     }
 
     std::string channelsStr = cmdSplittedSpace[1]; 
@@ -116,5 +114,5 @@ int Command::cmdJoin(Client &user, Server &server, std::string cmd) {
             message.sendMessage(user, response);
         }
     }
-    return (0);
+    return 0;
 }

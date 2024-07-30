@@ -219,7 +219,7 @@ int Command::cmdPrivMsg(Client &user, Server &server, std::string command) {
 	if (target[0] == '#')
 	{
 
-		std::map<int, Channel*>::iterator it = server._channels.begin();
+		std::map<std::string, Channel*>::iterator it = server._channels.begin();
 		//search #channel
 		while (it != server._channels.end())
 		{
@@ -240,7 +240,7 @@ int Command::cmdPrivMsg(Client &user, Server &server, std::string command) {
 			message.sendMessage(*it->second, response);
 		}
 		else
-		{
+		{ //TODO: check also +nv  404     ERR_CANNOTSENDTOCHAN 
 			response = "Error. " + target + " is not in the channel.\r\n";
 			message.sendMessage(user, response);
 		}
@@ -267,7 +267,7 @@ int Command::cmdPart(Client &user, Server &server, std::string command) {
 		return (0);
 	}
 
-	std::map<int, Channel*>::iterator it = server._channels.begin();
+	std::map<std::string, Channel*>::iterator it = server._channels.begin();
 	while (it != server._channels.end())
 	{
 		if (it->second->getChannelName() == channelName)
@@ -314,7 +314,7 @@ int Command::cmdTopic(Client &user, Server &server, std::string command) {
 		return (0);
 	}
 
-	std::map<int, Channel*>::iterator it = server._channels.begin();
+	std::map<std::string, Channel*>::iterator it = server._channels.begin();
 	while (it != server._channels.end())
 	{
 		if (it->second->getChannelName() == channelName)

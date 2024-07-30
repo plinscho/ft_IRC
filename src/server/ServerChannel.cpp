@@ -3,24 +3,24 @@
 #include <string>
 
 
-void	Server::createChannel(int id, const std::string channelName)
+void	Server::createChannel(const std::string channelName)
 {
 	Channel *newChannel;
 	try
 	{
-		newChannel = new Channel(id, channelName);
+		newChannel = new Channel(channelName);
 	}
 	catch (const std::bad_alloc& e)
 	{
 		std::cerr << "Failed to allocate memory for new Channel: " << e.what() << '\n';
 		return ;
 	}
-	_channels[id] = newChannel;
+	_channels[channelName] = newChannel;
 }
 
 void Server::deleteChannel(std::string channelName) 
 {
-    std::map<int, Channel*>::iterator channelIterator;
+    std::map<std::string, Channel*>::iterator channelIterator;
 
     for (channelIterator = _channels.begin(); channelIterator != _channels.end(); ++channelIterator)
 	{

@@ -47,7 +47,7 @@ class Server
 	StringHandler					strTool;
 	Command							command;
 
-	std::map<int, Channel*>			_channels;
+	std::map<std::string, Channel*>			_channels;
 	std::map<std::string, Client*> 	_nicknameMap; // Here we will store the nicknames
 	int								conectedClients;
 
@@ -55,7 +55,7 @@ class Server
 	void							closeServer();
 	
 //	CHANNEL MANAGING
-	void							createChannel(int id, const std::string channelName);
+	void							createChannel(const std::string channelName);
 	void 							deleteChannel(std::string channelName);
 	bool							channelExists(std::string channelName);
 	Channel*						getChannelByName(std::string ChannelName);

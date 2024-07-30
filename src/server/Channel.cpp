@@ -6,9 +6,8 @@
 #include <cstdio>
 
 
-Channel::Channel(int id, const std::string channelName)
+Channel::Channel(const std::string channelName)
 {
-	this->_channelId = id;
 	this->_channelName = channelName;
 	this->activeUsers = 0;
 	this->_topic = "";   

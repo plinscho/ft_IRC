@@ -473,7 +473,7 @@ int		Command::cmdMode(Client &user, Server &server, std::string command)
 
     if (!channelMod || !server.channelExists(channelName)) {
         // Send error message for non-existing channel
-        std::string response = message.getMessages(403, user); // 403: ERR_NOSUCHCHANNEL
+        std::string response = message.getMessages(403, user, "", channelMod->getChannelName()); // 403: ERR_NOSUCHCHANNEL
         message.sendMessage(user, response);
         return 0;
     }

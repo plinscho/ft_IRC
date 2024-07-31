@@ -105,7 +105,7 @@ class Channel
 		int										maxUsers;
 		bool									hasKey;
 		std::vector<std::string>				invitedUsers;
-		Channel(int id, const std::string channelName);
+		Channel(const std::string channelName);
 		~Channel();
 		int 									setNewId();
 		int										getChannelId(void);

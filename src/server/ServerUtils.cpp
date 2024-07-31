@@ -34,7 +34,7 @@ int		Server::getSockfd() const
 void Server::closeServer()
 {
 	std::map<int, Client *>::iterator clientIt;
-	std::map<int, Channel *>::iterator channelIt;
+	std::map<std::string, Channel *>::iterator channelIt;
 
 	std::cout << "Closing server ...\n" << std::endl;
 

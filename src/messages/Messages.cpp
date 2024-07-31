@@ -38,7 +38,7 @@ void Messages::sendChannelNames(Channel &channel, Client &user)
 	sendMessage(user, response);
 }
 
-std::string Messages::getMessages(int code, const Client &client, std::string command)
+std::string Messages::getMessages(int code, const Client &client, std::string command, std::string channelName)
 {
 		std::string nickname = client.getNickname();
 		std::string username = client.getUsername(); // Supongamos que se obtiene el username
@@ -76,7 +76,7 @@ std::string Messages::getMessages(int code, const Client &client, std::string co
 			case 401:
 				return ":" + serverName + " 401 " + nickname + " :No such nick/channel\r\n";
 			case 403:
-				return ":" + serverName + " 403 " + nickname + " <channel> :No such channel\r\n";
+				return ":" + serverName + " 403 " + nickname + " " + channelName + " :No such channel\r\n";
 			case 404:
 				return ":" + serverName + " 404 " + nickname + " <channel> :Cannot send to channel\r\n";
 			case 411:

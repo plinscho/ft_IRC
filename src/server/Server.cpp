@@ -235,7 +235,7 @@ Client*		Server::getClientByName(std::string &userNick)
 
 Channel*	Server::getChannelByName(std::string channelName)
 {
-	std::map<int, Channel*>::iterator it;
+	std::map<std::string, Channel*>::iterator it;
 
 	for (it = _channels.begin() ; it != _channels.end() ; ++it)
 	{
@@ -247,7 +247,7 @@ Channel*	Server::getChannelByName(std::string channelName)
 
 bool	Server::channelExists(std::string channelName)
 {
-	std::map<int, Channel*>::iterator it;
+	std::map<std::string, Channel*>::iterator it;
 
 	for (it = _channels.begin() ; it != _channels.end() ; ++it)
 	{

@@ -1,6 +1,8 @@
 #include "Messages.hpp"
 #include "../server/Channel.hpp"
 
+//https://www.alien.net.au/irc/irc2numerics.html
+
 int	Messages::sendMessage(const Client &user, const std::string &msg)
 {
 	if (msg.empty())
@@ -15,6 +17,12 @@ void	Messages::sendWelcome(Client &user)
 	std::string response;
 	response = getMessages(1, user);
 	sendMessage(user, response);
+	response = getMessages(2, user);
+	sendMessage(user, response);
+	response = getMessages(3, user);
+	sendMessage(user, response);
+	response = getMessages(4, user);
+	sendMessage(user, response);
 }
 
 
@@ -25,7 +33,7 @@ void Messages::sendChannelNames(Channel &channel, Client &user)
 	std::vector<std::string>::iterator it;
 
 	// Formato del mensaje RPL_NAMREPLY
-	response = ":irc.middleman.org 353 " + user.getNickname() + " = " + channel.getChannelName() + " :";
+	response = ":Middleman 353 " + user.getNickname() + " = " + channel.getChannelName() + " :";
 	for (it = channelMembers.begin(); it != channelMembers.end(); ++it)
 	{
 		response += *it + " ";
@@ -42,19 +50,19 @@ std::string Messages::getMessages(int code, const Client &client, std::string co
 {
 		std::string nickname = client.getNickname();
 		std::string username = client.getUsername(); // Supongamos que se obtiene el username
-		std::string serverName = "irc.middleman.net"; // Nombre del servidor
+		std::string serverName = "Middleman"; // Nombre del servidor
 		std::string serverVersion = "42"; // Versión del servidor
 		std::string datetime = "01-01-2024 12:00"; // Fecha y hora de creación del servidor
 
 		switch (code) {
 			case 1:
-				return ":" + serverName + " 001 " + nickname + " :Welcome to the Internet Relay Network, " + nickname + "\r\n";
+				return ":" + serverName + " 001 " + nickname + " :Welcome to the Middleman Relay Network, " + nickname + "\r\n";
 			case 2:
 				return ":" + serverName + " 002 " + nickname + " :Your host is " + serverName + ", running version " + serverVersion + "\r\n";
 			case 3:
 				return ":" + serverName + " 003 " + nickname + " :This server was created " + datetime + "\r\n";
 			case 4:
-				return ":" + serverName + " 004 " + nickname + " " + serverName + " " + serverVersion + " <available user modes> <available channel modes>\r\n";
+				return ":" + serverName + " 004 " + nickname + " " + serverName + " " + serverVersion + "\r\n";
 			case 251:
 				return ":" + serverName + " 251 " + nickname + " :There are <integer> users and <integer> services on <integer> servers\r\n";
 			case 252:
@@ -93,6 +101,8 @@ std::string Messages::getMessages(int code, const Client &client, std::string co
 				return ":" + serverName + " 461 " + command + " :Not enough parameters\r\n";
 			case 464:
 				return ":" + serverName + " 464 " + nickname + " :Password required or incorrect\r\n";
+			case 482:
+				return ":" + serverName + " 482 " + nickname + " " + channelName + " : You're not channel operator\r\n";
 
 // ########################### CODIGOS PROPIOS DE NUESTRO SERVIDOR - NO NUMERICO
 			case 1001:

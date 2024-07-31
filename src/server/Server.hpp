@@ -33,6 +33,7 @@ class Server
 
 	int 							_port;
 	int 							_sockfd;
+	std::string						_serverName;
 	std::string 					_password;
 	sockaddr_in 					_sockaddr;	// Server address
 	std::vector <struct pollfd> 	_vectorPoll;
@@ -76,6 +77,7 @@ class Server
 	int								getPort() const;
 	int								getSockfd() const;
 	std::string						getPassword() const;
+	std::string 					getServerName(void)const ;
 	Client *						getClientByName(std::string &);
 	std::vector<pollfd>::iterator	findPollFd(int fd);
 

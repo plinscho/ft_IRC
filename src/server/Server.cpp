@@ -4,6 +4,7 @@ Server::Server(int port, char *password) {
 	
 	_port = port;
 	_password = std::string(password);
+	_serverName = "Middleman";
 
 	// Empezamos el servidor
 	_sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -207,6 +208,7 @@ void	Server::sendData(pollfd &pollStruct)
 	if (it->second->getLogStat()){
 		it->second->setLogin(true);
 		message.sendWelcome(*it->second);
+		message.sendMessage(*it->second, ":Middleman 005 " + it->second->getNickname() + " NETWORK=Middleman\r\n");
 	}
 	pollStruct.revents = POLLIN;
 
@@ -232,7 +234,9 @@ Client*		Server::getClientByName(std::string &userNick)
 Channel*	Server::getChannelByName(std::string channelName)
 {
 	std::map<std::string, Channel*>::iterator it;
-
+	
+	if (channelName.empty())
+		return (NULL);
 	for (it = _channels.begin() ; it != _channels.end() ; ++it)
 	{
 		if (channelName == it->second->getChannelName())

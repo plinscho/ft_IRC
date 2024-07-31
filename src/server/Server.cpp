@@ -71,11 +71,7 @@ int Server::grabConnection()
 	int newClientFd = accept(_sockfd, (struct sockaddr *)&clientAddr, &clientAddrLen);
 	if (newClientFd < 0)
 	{
-		// If ctrl + c is pressed, return 0 and shut down server.
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return 0;
-		else
-			return (quickError("Error.\nAccept() failed in grabConnection().", EXIT_FAILURE));
+		return (quickError("Error.\nAccept() failed in grabConnection().", EXIT_FAILURE));
 	}
 	
 	// set the client to nonblocking

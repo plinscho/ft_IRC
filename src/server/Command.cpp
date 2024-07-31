@@ -439,15 +439,20 @@ int		Command::cmdMode(Client &user, Server &server, std::string command)
 	}
 
 	std::string channelName = cmdSplittedSpace[1];
+
 	Channel *channelMod = server.getChannelByName(channelName);
 
 	// Send error message for non-existing channel
-	if (!channelMod || !server.channelExists(channelName)) {
-		std::string response = message.getMessages(403, user, "", channelMod->getChannelName()); // 403: ERR_NOSUCHCHANNEL
+	if (cmdSplittedSpace[1] == server.getServerName())
+	{
+		message.sendMessage(user, "You cannot change other user permisions.\r\n");
+		return (0);
+	}
+	else if (!channelMod) {
+		std::string response = message.getMessages(403, user, "", cmdSplittedSpace[1]); // 403: ERR_NOSUCHCHANNEL
 		message.sendMessage(user, response);
 		return 0;
 	}
-
 	// Send the current modes of the channel
 	if (cmdSplittedSpace.size() == 2) {
 		std::string modes = channelMod->_mode.getCurrentChannelMode();

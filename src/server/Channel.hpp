@@ -76,7 +76,7 @@ class Channel
 		return _key;
 	}
 
-	bool getInvite(void)
+	bool getLimit(void)
 	{
 		return _limit;
 	}

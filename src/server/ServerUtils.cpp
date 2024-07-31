@@ -31,6 +31,11 @@ int		Server::getSockfd() const
 	return (_sockfd);
 }
 
+std::string Server::getServerName(void) const 
+{
+	return (_serverName);
+}
+
 void Server::closeServer()
 {
 	std::map<int, Client *>::iterator clientIt;

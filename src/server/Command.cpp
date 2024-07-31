@@ -2,6 +2,7 @@
 #include "Server.hpp"
 #include <iostream>
 #include <cstdlib>
+#include <sstream>
 
 void    Command::getFromClientBuffer(const Client &user)
 {
@@ -188,6 +189,8 @@ int Command::cmdNick(Client &user, Server &server, std::string cmd)
 	return (validationResult);
 }
 
+// TODO: Modify function so that it can send to multiple nicks but not multiple channels and not a mix of both.
+// however, when trying to send to nicks and channel, the user 
 int Command::cmdPrivMsg(Client &user, Server &server, std::string command) {
 	std::string response;
 	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
@@ -268,12 +271,6 @@ int Command::cmdTopic(Client &user, Server &server, std::string command) {
 		message.sendMessage(user, response);
 		return (0);
 	}
-	if (cmdSplittedSpace.size() == 2)
-	{
-		response = channelName + " :No topic is set.\r\n";
-		message.sendMessage(user, response);
-		return (0);
-	}
 	
 	std::map<std::string, Channel*>::iterator it = server._channels.begin();
 	
@@ -281,6 +278,18 @@ int Command::cmdTopic(Client &user, Server &server, std::string command) {
 	{
 		if (it->second->getChannelName() == channelName)
 		{
+			if (cmdSplittedSpace.size() == 2)
+			{
+				if (it->second->getTopic().empty()) {
+					response = ":" + server.getServerName() + " 331 " + user.getNickname() + " " + channelName + " :No topic is set.\r\n";
+					message.sendMessage(user, response);
+					return (0);
+				} else {
+					response = ":" + server.getServerName() + " 332 " + user.getNickname() + " " + channelName + " " + it->second->getTopic() + "\r\n";
+					message.sendMessage(user, response);
+					return (0);
+				}
+			}
 			if (it->second->_mode.getTopic() && !it->second->isUserOp(user.getNickname()))
 			{
 				// user cannot change topic
@@ -542,6 +551,14 @@ int		Command::cmdMode(Client &user, Server &server, std::string command)
 						int limit = std::atoi(cmdSplittedSpace[paramIndex++].c_str());
 						channelMod->_mode.setMode("l");
 						channelMod->setUserLimit(limit);
+						if (limit >= 0) {
+							std::ostringstream ss;
+							ss << limit;
+							std::string strLimit = ss.str();
+							std::string response = ":" + server.getServerName() + " " + user.getNickname() + " " + channelName + " :" + user.getNickname() + " sets channel limit to " + strLimit + "\r\n";
+							message.sendMessage(user, response);
+						}
+						return 0;
 					} else {
 						// Send error message for missing parameter
 						std::string response = message.getMessages(461, user); // 461: ERR_NEEDMOREPARAMS

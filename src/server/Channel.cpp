@@ -87,7 +87,7 @@ void    Channel::removeUserLimit(void)
 
 void    Channel::setUserLimit(int limit)
 {
-    if (limit > 1)
+    if (limit >= 1)
         this->maxUsers = limit;
 }
 

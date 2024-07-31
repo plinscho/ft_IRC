@@ -1,6 +1,8 @@
 #include "Messages.hpp"
 #include "../server/Channel.hpp"
 
+//https://www.alien.net.au/irc/irc2numerics.html
+
 int	Messages::sendMessage(const Client &user, const std::string &msg)
 {
 	if (msg.empty())
@@ -93,6 +95,8 @@ std::string Messages::getMessages(int code, const Client &client, std::string co
 				return ":" + serverName + " 461 " + command + " :Not enough parameters\r\n";
 			case 464:
 				return ":" + serverName + " 464 " + nickname + " :Password required or incorrect\r\n";
+			case 482:
+				return ":" + serverName + " 482 " + nickname + " " + channelName + " :User doesn't have permissions.\r\n";
 
 // ########################### CODIGOS PROPIOS DE NUESTRO SERVIDOR - NO NUMERICO
 			case 1001:

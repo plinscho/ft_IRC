@@ -249,6 +249,7 @@ int Command::cmdPrivMsg(Client &user, Server &server, std::string command) {
 	return (0);
 }
 
+// Modificar topic checkear si el user es op
 int Command::cmdTopic(Client &user, Server &server, std::string command) {
 	std::string response;
 	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
@@ -273,12 +274,20 @@ int Command::cmdTopic(Client &user, Server &server, std::string command) {
 		message.sendMessage(user, response);
 		return (0);
 	}
-
+	
 	std::map<std::string, Channel*>::iterator it = server._channels.begin();
+	
 	while (it != server._channels.end())
 	{
 		if (it->second->getChannelName() == channelName)
 		{
+			if (it->second->_mode.getTopic() && !it->second->isUserOp(user.getNickname()))
+			{
+				// user cannot change topic
+				response = message.getMessages(482, user, "", channelName);
+				message.sendMessage(user, response);
+				return (0);
+			}
 			if (cmdSplittedSpace.size() > 3)
 			{
 				for (size_t i = 3; i < cmdSplittedSpace.size(); ++i)
@@ -432,15 +441,15 @@ int		Command::cmdMode(Client &user, Server &server, std::string command)
 	std::string channelName = cmdSplittedSpace[1];
 	Channel *channelMod = server.getChannelByName(channelName);
 
+	// Send error message for non-existing channel
 	if (!channelMod || !server.channelExists(channelName)) {
-		// Send error message for non-existing channel
 		std::string response = message.getMessages(403, user, "", channelMod->getChannelName()); // 403: ERR_NOSUCHCHANNEL
 		message.sendMessage(user, response);
 		return 0;
 	}
 
+	// Send the current modes of the channel
 	if (cmdSplittedSpace.size() == 2) {
-		// Send the current modes of the channel
 		std::string modes = channelMod->_mode.getCurrentChannelMode();
 		std::string response = message.getMessages(324, user); // 324: RPL_CHANNELMODEIS
 		response += channelName + " " + modes + "\r\n";
@@ -449,7 +458,7 @@ int		Command::cmdMode(Client &user, Server &server, std::string command)
 	}
 
 
-	// Si hemos llegado aquí, es que se modifican los modos
+	// Si append modes to be changed
 	std::string modes;
 	for (size_t i = 2; i < cmdSplittedSpace.size(); ++i) {
 		modes += cmdSplittedSpace[i];

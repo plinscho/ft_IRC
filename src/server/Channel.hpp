@@ -60,6 +60,27 @@ class Channel
 			bool						_limit;				// l
 
 	public:
+
+	bool getInvite(void)
+	{
+		return _invite;
+	}
+	
+	bool getTopic(void)
+	{
+		return _topicRestrict;
+	}
+
+	bool getKey(void)
+	{
+		return _key;
+	}
+
+	bool getInvite(void)
+	{
+		return _limit;
+	}
+
 	void setMode(std::string mode) 
 	{
 		_newMode = mode;

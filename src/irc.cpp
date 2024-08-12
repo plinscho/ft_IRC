@@ -31,9 +31,10 @@ int main(int argc, char **argv) {
 	}
 	
 	Server server(port, argv[2]);
+	server.initServer();
 	
 	signal(SIGINT, sigHandler);
-
+	
 	while (power) 
 		server.run();
 

@@ -136,6 +136,7 @@ void	Channel::addUser(int fd, Client &newUser)
 {
 	_fdUsersMap[fd] = &newUser;
 	activeUsers++;
+	// mandar un WHO o algo para ver quien esta el en canal?
 }
 
 void    Channel::addOpUser(std::string userNick)

@@ -121,11 +121,11 @@ class Channel
 		ChannelMode								_mode;
 		std::map<int, Client*>					_fdUsersMap;
 		std::vector<std::string>				nickOp;		// vector str de nicks que son operadores
+		std::vector<std::string>				invitedUsers;
 		int										activeUsers;
 		Messages								message;
 		int										maxUsers;
 		bool									hasKey;
-		std::vector<std::string>				invitedUsers;
 		Channel(const std::string channelName);
 		~Channel();
 		int 									setNewId();

@@ -18,35 +18,32 @@ enum cmdType
 	CMD_SETNICK,
 	CMD_SETUNAME,
 	CMD_SEND,
-    CMD_PART,
-    CMD_TOPIC,
-    CMD_KICK,
-    CMD_MODE,
-    CMD_INVITE,
+	CMD_PART,
+	CMD_TOPIC,
+	CMD_KICK,
+	CMD_MODE,
+	CMD_INVITE,
 	SEND_MSG
 };
 
 struct Command 
 {
-    std::string                 stringCommands;
-    StringHandler               strTool;
-    Messages                    message;
-	std::vector<std::string>    m_params;
+	StringHandler               strTool;
+	Messages                    message;
 
-    void                        getFromClientBuffer(const Client &user);
-    cmdType                     getCommandType(const std::string &cmd);
+	cmdType                     getCommandType(const std::string &keyWord);
 
-    int                         execute(Client &user, Server &server);
-    int	                        cmdUser(Client &user, std::string command);
-    int	                        cmdPass(Client &user, std::string command, std::string serverPassword);
-    int                         cmdNick(Client &user, Server &server, std::string command);
-    int                         cmdJoin(Client &user, Server &server, std::string command);
-    int                         cmdPrivMsg(Client &user, Server &server, std::string command);
-    int                         cmdPart(Client &user, Server &server, std::string command);
-    int                         cmdTopic(Client &user, Server &server, std::string command);
-    int                         cmdKick(Client &user, Server &server, std::string command);
-    int                         cmdMode(Client &user, Server &server, std::string command);
-    int                         cmdInvite(Client &user, Server &server, std::string command);
+	int                         execute(Client &user, Server &server);
+	int	                        cmdUser(Client &user, std::string command);
+	int	                        cmdPass(Client &user, std::string &userPass, std::string serverPassword);
+	int                         cmdNick(Client &user, Server &server, std::string newNick);
+	int                         cmdJoin(Client &user, Server &server, std::vector<std::string> &cmdSplittedSpace);
+	int                         cmdPrivMsg(Client &user, Server &server, std::vector<std::string> &cmdSplittedSpace);
+	int                         cmdPart(Client &user, Server &server, std::string command);
+	int                         cmdTopic(Client &user, Server &server, std::vector<std::string> &cmdSplittedSpace);
+	int                         cmdKick(Client &user, Server &server, std::string channelName, std::string target);
+	int                         cmdMode(Client &user, Server &server,  std::vector<std::string> &cmdSplittedSpace);
+	int                         cmdInvite(Client &user, Server &server, std::string channelName, std::string target);
 
 };
 

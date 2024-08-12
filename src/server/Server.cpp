@@ -5,7 +5,9 @@ Server::Server(int port, char *password) {
 	_port = port;
 	_password = std::string(password);
 	_serverName = "Middleman";
+}
 
+void	Server::initServer() {
 	// Empezamos el servidor
 	_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_sockfd == -1) {
@@ -184,7 +186,6 @@ void	Server::sendData(pollfd &pollStruct)
 	int fd = pollStruct.fd;
 	std::map<int, Client*>::iterator it = _fdToClientMap.find(fd);
 
-
 	// Client found in map
 	if (it == _fdToClientMap.end())
 	{
@@ -194,9 +195,6 @@ void	Server::sendData(pollfd &pollStruct)
 
 	// debg info:
 	std::cout << "SendData, CMD recived:\n" << it->second->getRecvBuffer() << "**End of CLientbuffer.**" << std::endl;
-
-	// command class business:
-	command.getFromClientBuffer(*(it->second));
 
 	// return 1 if QUIT is send from client. Do not continue process.
 	if (command.execute(*(it->second), *this)) return ;

@@ -1,5 +1,5 @@
-#include "Command.hpp"
-#include "Server.hpp"
+#include "../server/Command.hpp"
+#include "../server/Server.hpp"
 #include <iostream>
 
 static void createNewChannel(Client &user, Server &server, const std::string &channelName) {
@@ -28,6 +28,15 @@ static void handleExistingChannel(Client &user, Server &server, Channel *channel
     if (channel->_mode.getCurrentChannelMode().find('i') != std::string::npos) {
         if (!channel->isInvited(user.getNickname())) {
             response = "Error. You must be invited to join the channel " + channelName + "\r\n";
+            server.message.sendMessage(user, response);
+            return;
+        }
+    }
+
+	// Verify if there is limit of users inside channel
+	if (channel->_mode.getCurrentChannelMode().find('l') != std::string::npos) {
+        if (channel->activeUsers >= channel->maxUsers) {
+            response = "Error. Member limit reached for " + channelName + "\r\n";
             server.message.sendMessage(user, response);
             return;
         }
@@ -86,8 +95,7 @@ static bool handleJoinChannel(Client &user, Server &server, const std::string &c
     return true;
 }
 
-int Command::cmdJoin(Client &user, Server &server, std::string cmd) {
-    std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(cmd, ' ');
+int Command::cmdJoin(Client &user, Server &server, std::vector<std::string> &cmdSplittedSpace) {
 
     // Check if the command is empty or malformed
     if (cmdSplittedSpace.size() < 2) {

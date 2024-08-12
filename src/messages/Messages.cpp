@@ -63,16 +63,6 @@ std::string Messages::getMessages(int code, const Client &client, std::string co
 				return ":" + serverName + " 003 " + nickname + " :This server was created " + datetime + "\r\n";
 			case 4:
 				return ":" + serverName + " 004 " + nickname + " " + serverName + " " + serverVersion + "\r\n";
-			case 251:
-				return ":" + serverName + " 251 " + nickname + " :There are <integer> users and <integer> services on <integer> servers\r\n";
-			case 252:
-				return ":" + serverName + " 252 " + nickname + " :<integer> operator(s) online\r\n";
-			case 253:
-				return ":" + serverName + " 253 " + nickname + " :<integer> unknown connection(s)\r\n";
-			case 254:
-				return ":" + serverName + " 254 " + nickname + " :<integer> channels formed\r\n";
-			case 255:
-				return ":" + serverName + " 255 " + nickname + " :I have <integer> clients and 1> servers\r\n";
 			case 324:
 				return ":" + serverName + " 324 " + nickname + " ";
 			case 332:

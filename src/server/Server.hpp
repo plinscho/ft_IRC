@@ -52,6 +52,7 @@ class Server
 	std::map<std::string, Client*> 	_nicknameMap; // Here we will store the nicknames
 	int								conectedClients;
 
+	void							initServer();
 	int								run();
 	void							closeServer();
 	

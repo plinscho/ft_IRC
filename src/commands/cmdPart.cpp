@@ -1,5 +1,5 @@
-#include "Command.hpp"
-#include "Server.hpp"
+#include "../server/Server.hpp"
+#include "../server/Command.hpp"
 #include <iostream>
 
 static int handlePart(Client &user, Server &server, const std::string channelName)
@@ -22,6 +22,7 @@ static int handlePart(Client &user, Server &server, const std::string channelNam
 		{
 			int fd = it2->first;
 			std::string nickname = it2->second->getNickname();
+			// respuesta para el servidor (channel)
 			response = ":" + user.getPrefix() + " PART " + channelName + "\r\n";
 			currentChnl->broadcastMessage(response);
 			
@@ -31,6 +32,7 @@ static int handlePart(Client &user, Server &server, const std::string channelNam
 			}
 			if (currentChnl->_fdUsersMap.find(fd) != currentChnl->_fdUsersMap.end()) {
 				currentChnl->removeUser(fd);
+				std::cout << "parted user with fd: " + fd << std::endl;
 				flag = 1;
 			}
 			if (!flag)
@@ -43,25 +45,11 @@ static int handlePart(Client &user, Server &server, const std::string channelNam
 	return (1);
 }
 
-int Command::cmdPart(Client &user, Server &server, std::string command)
+int Command::cmdPart(Client &user, Server &server, std::string channelNames)
 {
 	std::string response;
-	std::vector<std::string> cmdSplittedSpace = strTool.stringSplit(command, ' ');
 
-	if (command.empty() || command.size() == 1)
-	{
-		response = message.getMessages(461, user);
-		message.sendMessage(user, response);
-		return (0);
-	}
-	std::string channelName = cmdSplittedSpace[1];
-	if (channelName.empty())
-	{
-		response = message.getMessages(461, user);
-		message.sendMessage(user, response);
-		return (0);
-	}
-	std::vector<std::string> channelsPart = strTool.stringSplit(cmdSplittedSpace[1], ',');
+	std::vector<std::string> channelsPart = strTool.stringSplit(channelNames, ',');
 	// Iterate over each channel name
 	for (size_t i = 0; i < channelsPart.size(); ++i) {
 		std::string channelName = channelsPart[i];

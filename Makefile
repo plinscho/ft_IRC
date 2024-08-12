@@ -8,9 +8,15 @@ OBJECTS = src/irc.cpp \
 			src/server/ServerChannel.cpp \
 			src/server/Channel.cpp \
 			src/server/Command.cpp \
-			src/server/cmdJoin.cpp \
-			src/server/cmdPart.cpp \
 			src/server/ServerAA.cpp \
+			src/commands/cmdNick.cpp \
+			src/commands/cmdJoin.cpp \
+			src/commands/cmdPart.cpp \
+			src/commands/cmdKick.cpp \
+			src/commands/cmdPrivMsg.cpp \
+			src/commands/cmdTopic.cpp \
+			src/commands/cmdMode.cpp \
+			src/commands/cmdInvite.cpp \
 			src/messages/Messages.cpp \
 			src/server/StringHandler.cpp
 

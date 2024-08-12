@@ -96,6 +96,17 @@ std::string			StringHandler::strJoin(std::vector<std::string> &stringVector)
 	return (joinedVector);
 }
 
+std::string StringHandler::strTrim(std::string s1, std::string delimiter)
+{
+    // Trim from the beginning (left)
+    s1.erase(0, s1.find_first_not_of(delimiter));
+
+    // Trim from the end (right)
+    s1.erase(s1.find_last_not_of(delimiter) + 1);
+
+    return s1;
+}
+
 
 
 

@@ -16,35 +16,46 @@
 	Ejemplo de un comando MODE:
 
 	MODE #canal +i -t +pk -pk
-*/ 
-int		Command::cmdMode(Client &user, Server &server, std::vector<std::string> &cmdSplittedSpace)
+
+*/
+
+int modeFirstParse(Client &user, Server &server, std::vector<std::string> &cmdSplittedSpace)
 {
 	std::string channelName = cmdSplittedSpace[1];
 	Channel *channelMod = server.getChannelByName(channelName);
 
+	// check if user can change the modes (if is op)
+	if (!channelMod->isUserOp(user.getNickname())) return (1);
+
 	// Send error message for non-existing channel
 	if (cmdSplittedSpace[1] == server.getServerName())
 	{
-		message.sendMessage(user, "You cannot change other user permisions.\r\n");
-		return (0);
+		server.message.sendMessage(user, "You cannot change other user permisions.\r\n");
+		return (1);
 	}
 	else if (!channelMod) {
-		std::string response = message.getMessages(403, user, "", cmdSplittedSpace[1]); // 403: ERR_NOSUCHCHANNEL
-		message.sendMessage(user, response);
-		return 0;
+		std::string response = server.message.getMessages(403, user, "", cmdSplittedSpace[1]); // 403: ERR_NOSUCHCHANNEL
+		server.message.sendMessage(user, response);
+		return (1);
 	}
 	// Send the current modes of the channel
 	if (cmdSplittedSpace.size() == 2) {
 		std::string modes = channelMod->_mode.getCurrentChannelMode();
-		std::string response = message.getMessages(324, user); // 324: RPL_CHANNELMODEIS
+		std::string response = server.message.getMessages(324, user); // 324: RPL_CHANNELMODEIS
 		response += channelName + " " + modes + "\r\n";
-		message.sendMessage(user, response);
-		return 0;
+		server.message.sendMessage(user, response);
+		return (1);
 	}
+	return (0);
+}
 
-	// check if user can change the modes (if is op)
-	if (!channelMod->isUserOp(user.getNickname())) return (1);
-
+int		Command::cmdMode(Client &user, Server &server, std::vector<std::string> &cmdSplittedSpace)
+{
+	if (modeFirstParse(user, server, cmdSplittedSpace))
+		return (1);//error, do something
+		
+	std::string channelName = cmdSplittedSpace[1];
+	Channel *channelMod = server.getChannelByName(channelName);
 	// Append modes to be changed
 	std::string modes;
 	for (size_t i = 2; i < cmdSplittedSpace.size(); ++i) {

@@ -42,8 +42,6 @@ std::vector<std::string> Channel::getChannelsNicks() {
 
 std::string Channel::getChannelName(void) { return _channelName; }
 
-int Channel::getChannelId(void) { return _channelId; }
-
 std::string Channel::getTopic(void) { return (this->_topic); }
 
 std::string Channel::getChannelKey(void) { return (this->_key); }
@@ -144,5 +142,3 @@ void Channel::addInvited(std::string nick) {
         return;
     invitedUsers.push_back(nick);
 }
-
-std::string Channel::getPassword(void) { return _channelPass; }

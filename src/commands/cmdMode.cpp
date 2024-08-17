@@ -24,7 +24,7 @@ typedef struct mode_s
 	Server		*serverPtr;
 	Channel 	*currentChannel;
 	bool 		addMode;		 	// True if adding modes, false if removing
-	size_t 		paramIndex = 3;	// Index of parameters following the mode string
+	size_t 		paramIndex;	// Index of parameters following the mode string
 	std::string channelName;
 	int			limitUsersInChannel;
 
@@ -48,17 +48,18 @@ void	modeTopic(bool addMode, Channel &currentChannel)
 	}
 }
 
-int	modePassword(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
+int	modePassword(t_mode &mode, Client &user, std::vector<std::string> &cmdSplittedSpace)
 {
 
-	if (!mode.paramIndex < cmdSplittedSpace.size()) return (461);
+	if (mode.paramIndex < cmdSplittedSpace.size()) return (461);
 
 	if (mode.addMode && mode.currentChannel->_mode.getKey()){
-		if (mode.paramIndex < cmdSplittedSpace.size()) {
-			std::string password = cmdSplittedSpace[mode.paramIndex++];
-			mode.currentChannel->_mode.setMode("k");
-			mode.currentChannel->setChannelKey(password);
-		}
+		std::string password = cmdSplittedSpace[mode.paramIndex++];
+		mode.currentChannel->_mode.setMode("k");
+		mode.currentChannel->setChannelKey(password);
+		std::string response = ":" + mode.serverPtr->getServerName() + " " + user.getNickname() + " " + mode.channelName + \
+			" :" + user.getNickname() + " sets channel keyword to " + password + "\r\n";
+		mode.currentChannel->broadcastMessage(response);
 		return (0);
 	}
 	else if (!mode.addMode && mode.currentChannel->_mode.getKey())
@@ -74,7 +75,7 @@ int	modePassword(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 
 int modeOperator(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 {
-	if (!mode.paramIndex < cmdSplittedSpace.size()) return (461);
+	if (mode.paramIndex < cmdSplittedSpace.size()) return (461);
 
 	std::string userName = cmdSplittedSpace[mode.paramIndex++];
 	Client *targetUser = mode.serverPtr->getClientByName(userName);
@@ -89,7 +90,7 @@ int modeOperator(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 
 int modeLimit(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 {
-	if (!mode.paramIndex < cmdSplittedSpace.size()) return (461);
+	if (mode.paramIndex < cmdSplittedSpace.size()) return (461);
 
 	if (mode.addMode && !mode.currentChannel->_mode.getLimit()) {
 		int limit = std::atoi(cmdSplittedSpace[mode.paramIndex++].c_str());
@@ -114,7 +115,12 @@ int modeFirstParse(Client &user, Server &server, std::vector<std::string> &cmdSp
 	Channel *currentChannel = server.getChannelByName(channelName);
 
 	// check if user can change the modes (if is op)
-	if (!currentChannel->isUserOp(user.getNickname())) return (1);
+	if (!currentChannel->isUserOp(user.getNickname())) 
+	{
+        std::string response = server.message.getMessages(482, user, "", currentChannel->getChannelName());
+        server.message.sendMessage(user, response);
+		return (1);
+	}
 
 	// Send error message for non-existing channel
 	if (cmdSplittedSpace[1] == server.getServerName())
@@ -157,6 +163,7 @@ int		Command::cmdMode(Client &user, Server &server, std::vector<std::string> &cm
 	for (size_t i = 2; i < cmdSplittedSpace.size(); ++i) {
 		modes += cmdSplittedSpace[i];
 	}
+	int errorKey, errorLimit, errorOp;
 
 	for (size_t i = 0; i < modes.size(); ++i) {
 		char key = modes[i];
@@ -174,14 +181,14 @@ int		Command::cmdMode(Client &user, Server &server, std::vector<std::string> &cm
 				modeTopic(modeStruct.addMode, *modeStruct.currentChannel);
 				break;
 			case 'k':
-				int errorKey = modePassword(modeStruct, cmdSplittedSpace);
+				errorKey = modePassword(modeStruct, user, cmdSplittedSpace);
 				if (errorKey){
 					std::string response = server.message.getMessages(errorKey, user);
 					server.message.sendMessage(user, response);
 				}
 				break;
 			case 'o':
-				int errorOp = modeOperator(modeStruct, cmdSplittedSpace);
+				errorOp = modeOperator(modeStruct, cmdSplittedSpace);
 				if (errorOp){
 					std::string response = server.message.getMessages(errorOp, user);
 					server.message.sendMessage(user, response);
@@ -189,7 +196,7 @@ int		Command::cmdMode(Client &user, Server &server, std::vector<std::string> &cm
 				break;
 			// hasta aqui
 			case 'l':
-				int errorLimit = modeLimit(modeStruct, cmdSplittedSpace);
+				errorLimit = modeLimit(modeStruct, cmdSplittedSpace);
 				if (errorLimit)
 				{
 					std::string response = server.message.getMessages(errorLimit, user);

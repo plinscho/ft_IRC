@@ -7,13 +7,7 @@ static int handlePart(Client &user, Server &server,
     std::string response;
     Channel *currentChnl = server.getChannelByName(channelName);
 
-    if (!currentChnl) {
-        response = "Error. " + channelName + " does not exist.\r\n";
-        server.message.sendMessage(user, response);
-        return 0;
-    }
-
-    if (currentChnl->getChannelName() != channelName)
+    if (!currentChnl || currentChnl->getChannelName() != channelName)
         return 1;
     response = ":" + user.getPrefix() + " PART " + channelName + "\r\n";
     currentChnl->broadcastMessage(response);
@@ -36,8 +30,7 @@ int Command::cmdPart(Client &user, Server &server, std::string channelNames) {
         std::string channelName = channelsPart[i];
         // Manejar la salida del canal
         if (handlePart(user, server, channelName)) {
-            std::string response =
-                "Error. No such channel: " + channelName + "\r\n";
+            std::string response = message.getMessages(461, user, "PART", "");
             message.sendMessage(user, response);
         }
     }

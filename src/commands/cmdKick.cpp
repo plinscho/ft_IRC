@@ -27,11 +27,9 @@ int Command::cmdKick(Client &user, Server &server, std::string channelName, std:
 				if (currentChnl->_fdUsersMap.find(fd) != currentChnl->_fdUsersMap.end()) {
 					currentChnl->removeUser(fd);
 				}
-				
 				if (std::find(currentChnl->nickOp.begin(), currentChnl->nickOp.end(), nickname) != currentChnl->nickOp.end()) {
 					currentChnl->removeOpUser(nickname);
 				}
-
 				return (0);
 			// user is not operator and cannot /kick anyone
 			} else if (it2->second->getNickname() == target) {

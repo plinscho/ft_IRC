@@ -103,15 +103,14 @@ class Channel
 			if (mode == "l") _limit = false;
 		}
 	}
-		std::string	getCurrentChannelMode() const { 
-			return "+" + _modes;
-		};
+
+	std::string	getCurrentChannelMode() const 
+	{ 
+		return "+" + _modes;
 	};
+};
 
 	private:
-
-		int					 					_channelId;
-		std::string								_channelPass;
 		std::string 							_channelName;
 		std::string								_topic;
 		std::string								_key;
@@ -129,14 +128,12 @@ class Channel
 		Channel(const std::string channelName);
 		~Channel();
 		int 									setNewId();
-		int										getChannelId(void);
 		std::string 							getChannelName(void);
 		std::vector<std::string>				getChannelsNicks();
 		std::string								getTopic(void);
 		std::string								getChannelKey(void); 
 		void									setChannelKey(std::string &);
 		void    								removeChannelKey(void);
-		std::string								getPassword(void);
 		bool 									isInvited(std::string nick);
 		void 									addInvited(std::string nick);
 		void									setTopic(std::string &topic);

@@ -53,11 +53,6 @@ std::string Channel::getChannelName(void)
 	return _channelName;
 }
 
-int			Channel::getChannelId(void) 
-{
-	return _channelId;
-}
-
 std::string	Channel::getTopic(void)
 {
 	return (this->_topic);
@@ -175,10 +170,4 @@ void Channel::addInvited(std::string nick)
     if (it != invitedUsers.end())
         return ;
     invitedUsers.push_back(nick);
-}
-
-
-std::string Channel::getPassword(void)
-{
-    return _channelPass;
 }

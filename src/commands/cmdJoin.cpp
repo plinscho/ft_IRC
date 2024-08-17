@@ -44,7 +44,7 @@ static void handleExistingChannel(Client &user, Server &server, Channel *channel
 
     // Verify password
     if (channel->_mode.getCurrentChannelMode().find('k') != std::string::npos) {
-        if (channel->getPassword() != password) {
+        if (channel->getChannelKey() != password) {
             response = "Error. Incorrect password for channel " + channelName + "\r\n";
             server.message.sendMessage(user, response);
             return;

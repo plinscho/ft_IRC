@@ -178,7 +178,6 @@ void	Server::receiveData(pollfd &pollStruct)
 		pollStruct.revents = POLLOUT;
 		tmpClient->changeRevent = true;
 	}
-
 }
 
 void	Server::sendData(pollfd &pollStruct)
@@ -209,9 +208,6 @@ void	Server::sendData(pollfd &pollStruct)
 		message.sendMessage(*it->second, ":Middleman 005 " + it->second->getNickname() + " NETWORK=Middleman\r\n");
 	}
 	pollStruct.revents = POLLIN;
-
-	// Channel management
-
 }
 
 Client*		Server::getClientByName(std::string &userNick)

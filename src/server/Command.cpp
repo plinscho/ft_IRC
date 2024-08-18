@@ -72,7 +72,7 @@ int Command::execute(Client &user, Server &server)
 				break ;
 			case (CMD_INVITE):
 				if (!paramsCheck(server, user, splittedCmd[1]) && !paramsCheck(server, user, splittedCmd[2]))
-					cmdInvite(user, server, splittedCmd[1], splittedCmd[2]);
+					cmdInvite(user, server, splittedCmd[2], splittedCmd[1]);
 				break ;
 			default:
 				break ;

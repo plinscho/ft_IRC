@@ -50,7 +50,7 @@ void	modeTopic(bool addMode, Channel &currentChannel)
 
 int	modePassword(t_mode &mode, Client &user, std::vector<std::string> &cmdSplittedSpace)
 {
-	if (mode.paramIndex < cmdSplittedSpace.size()) return (461);
+	if (mode.paramIndex <= cmdSplittedSpace.size()) return (461);
 
 	std::cout << "BBBBBBBBBBB\n" << std::endl;
 	if (mode.addMode && mode.currentChannel->_mode.getKey()){
@@ -80,7 +80,7 @@ int	modePassword(t_mode &mode, Client &user, std::vector<std::string> &cmdSplitt
 
 int modeOperator(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 {
-	if (mode.paramIndex > cmdSplittedSpace.size()) return (461);
+	if (mode.paramIndex <= cmdSplittedSpace.size()) return (461);
 
 	std::string userName = cmdSplittedSpace[mode.paramIndex++];
 	Client *targetUser = mode.serverPtr->getClientByName(userName);
@@ -95,7 +95,7 @@ int modeOperator(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 
 int modeLimit(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 {
-	if (mode.paramIndex > cmdSplittedSpace.size()) return (461);
+	if (mode.paramIndex <= cmdSplittedSpace.size()) return (461);
 
 	if (mode.addMode && !mode.currentChannel->_mode.getLimit()) {
 		int limit = std::atoi(cmdSplittedSpace[mode.paramIndex++].c_str());
@@ -120,7 +120,12 @@ int modeFirstParse(Client &user, Server &server, std::vector<std::string> &cmdSp
 	Channel *currentChannel = server.getChannelByName(channelName);
 
 	// check if user can change the modes (if is op)
-	if (!currentChannel->isUserOp(user.getNickname())) 
+	if (!currentChannel) {
+		std::string response = server.message.getMessages(403, user, "", cmdSplittedSpace[1]); // 403: ERR_NOSUCHCHANNEL
+		server.message.sendMessage(user, response);
+		return (1);
+	}
+	else if (!currentChannel->isUserOp(user.getNickname())) 
 	{
         std::string response = server.message.getMessages(482, user, "", currentChannel->getChannelName());
         server.message.sendMessage(user, response);
@@ -131,11 +136,6 @@ int modeFirstParse(Client &user, Server &server, std::vector<std::string> &cmdSp
 	if (cmdSplittedSpace[1] == server.getServerName())
 	{
 		server.message.sendMessage(user, "You cannot change other user permisions.\r\n");
-		return (1);
-	}
-	else if (!currentChannel) {
-		std::string response = server.message.getMessages(403, user, "", cmdSplittedSpace[1]); // 403: ERR_NOSUCHCHANNEL
-		server.message.sendMessage(user, response);
 		return (1);
 	}
 	// Send the current modes of the channel

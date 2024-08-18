@@ -50,9 +50,9 @@ void	modeTopic(bool addMode, Channel &currentChannel)
 
 int	modePassword(t_mode &mode, Client &user, std::vector<std::string> &cmdSplittedSpace)
 {
-
 	if (mode.paramIndex < cmdSplittedSpace.size()) return (461);
 
+	std::cout << "BBBBBBBBBBB\n" << std::endl;
 	if (mode.addMode && mode.currentChannel->_mode.getKey()){
 		std::string password = cmdSplittedSpace[mode.paramIndex++];
 		mode.currentChannel->_mode.setMode("k");
@@ -68,14 +68,19 @@ int	modePassword(t_mode &mode, Client &user, std::vector<std::string> &cmdSplitt
 			mode.currentChannel->_mode.unsetMode("k");
 			mode.currentChannel->removeChannelKey();
 		}
+		mode.currentChannel->broadcastMessage("Password was removed\r\n");
 		return (0);
+	}
+	else
+	{
+		return (411);
 	}
 	return (0);
 }
 
 int modeOperator(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 {
-	if (mode.paramIndex < cmdSplittedSpace.size()) return (461);
+	if (mode.paramIndex > cmdSplittedSpace.size()) return (461);
 
 	std::string userName = cmdSplittedSpace[mode.paramIndex++];
 	Client *targetUser = mode.serverPtr->getClientByName(userName);
@@ -90,7 +95,7 @@ int modeOperator(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 
 int modeLimit(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 {
-	if (mode.paramIndex < cmdSplittedSpace.size()) return (461);
+	if (mode.paramIndex > cmdSplittedSpace.size()) return (461);
 
 	if (mode.addMode && !mode.currentChannel->_mode.getLimit()) {
 		int limit = std::atoi(cmdSplittedSpace[mode.paramIndex++].c_str());
@@ -158,15 +163,22 @@ int		Command::cmdMode(Client &user, Server &server, std::vector<std::string> &cm
 	modeStruct.paramIndex = 3;
 	modeStruct.limitUsersInChannel = 0;
 
+    // Check if currentChannel is valid
+    if (!modeStruct.currentChannel) {
+        std::string response = server.message.getMessages(403, user, "", modeStruct.channelName); // 403: ERR_NOSUCHCHANNEL
+        server.message.sendMessage(user, response);
+        return (1);
+    }
+
 	// Append modes to be changed
 	std::string modes;
 	for (size_t i = 2; i < cmdSplittedSpace.size(); ++i) {
 		modes += cmdSplittedSpace[i];
 	}
 	int errorKey, errorLimit, errorOp;
-
+	char key;
 	for (size_t i = 0; i < modes.size(); ++i) {
-		char key = modes[i];
+		key = modes[i];
 		switch (key) {
 			case '+':
 				modeStruct.addMode = true;
@@ -222,7 +234,7 @@ int		Command::cmdMode(Client &user, Server &server, std::vector<std::string> &cm
 				std::string response = message.getMessages(472, user); // 472: ERR_UNKNOWNMODE
 				response += key;
 				message.sendMessage(user, response);
-				return 0;
+				break;
 		}
 	}
 	// Send the updated mode information to the user

@@ -87,6 +87,8 @@ std::string Messages::getMessages(int code, const Client &client, std::string co
 				return ":" + serverName + " 422 " + nickname + " :MOTD File is missing\r\n";
 			case 433:
 				return ":" + serverName + " 433 " + username + " " + nickname + " :Nickname is already in use\r\n";
+			case 444:
+				return ":" + serverName + " 444 " + username + " " + nickname + " Error: User is not logged in.\r\n";
 			case 461:
 				return ":" + serverName + " 461 " + command + " :Not enough parameters\r\n";
 			case 464:

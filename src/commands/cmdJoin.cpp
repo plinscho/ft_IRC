@@ -8,6 +8,11 @@ static void createNewChannel(Client &user, Server &server,
 
     // Create new channel
     Channel *newChannel = new Channel(channelName);
+	if (!newChannel) {
+        // Handle memory allocation failure
+        std::cerr << "Failed to allocate memory for new channel" << std::endl;
+        return;
+    }
     server._channels[channelName] = newChannel; // Using channelName as the key
     newChannel->addUser(user.getFd(), user);
 
@@ -106,15 +111,22 @@ static bool handleJoinChannel(Client &user, Server &server,
     return true;
 }
 
-int Command::cmdJoin(Client &user, Server &server,
-                     std::vector<std::string> &cmdSplittedSpace) {
+int Command::cmdJoin(Client &user, Server &server, std::vector<std::string> &cmdSplittedSpace) {
+
+	std::string response;
 
     // Check if the command is empty or malformed
     if (cmdSplittedSpace.size() < 2) {
-        std::string response = message.getMessages(461, user);
+        response = message.getMessages(461, user);
         message.sendMessage(user, response);
         return 0;
     }
+	else if (user.getLogin() == false)
+	{
+		response =  server.message.getMessages(444, user);
+		message.sendMessage(user, response);
+		return (0);
+	}
 
     std::string channelsStr = cmdSplittedSpace[1];
     std::string passwordsStr =

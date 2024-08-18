@@ -7,51 +7,13 @@
 #include <vector>
 #include <map>
 
-/*
-
-class ChannelMode {
-private:
-	std::string _newMode;
-	std::string _modes;
-	bool _invite;           // i
-	bool _topicRestrict;    // t
-	bool _key;              // k
-	bool _limit;            // l
-
-public:
-	void setMode(std::string mode) {
-		_newMode = mode;
-		_modes += mode;
-		if (mode == "k") _key = true;
-		if (mode == "i") _invite = true;
-		if (mode == "t") _topicRestrict = true;
-		if (mode == "l") _limit = true;
-	}
-
-	void removeMode(std::string mode) {
-		size_t pos = _modes.find(mode);
-		if (pos != std::string::npos) {
-			_modes.erase(pos, 1);
-			if (mode == "k") _key = false;
-			if (mode == "i") _invite = false;
-			if (mode == "t") _topicRestrict = false;
-			if (mode == "l") _limit = false;
-		}
-	}
-
-	std::string getCurrentChannelMode() const { 
-		return "+" + _modes;
-	}
-};
-*/
-
 class Server;
 class Client;
 
 class Channel
 {
 	class ChannelMode {
-	private:
+		private:
 			std::string 				_newMode;
 			std::string					_modes;
 			bool						_invite;			// i
@@ -59,56 +21,66 @@ class Channel
 			bool						_key;				// k
 			bool						_limit;				// l
 
-	public:
+		public:
 
-	bool getInvite(void)
-	{
-		return _invite;
-	}
-	
-	bool getTopic(void)
-	{
-		return _topicRestrict;
-	}
-
-	bool getKey(void)
-	{
-		return _key;
-	}
-
-	bool getLimit(void)
-	{
-		return _limit;
-	}
-
-	void setMode(std::string mode) 
-	{
-		_newMode = mode;
-		_modes += mode;
-		if (mode == "k") _key = true;
-		if (mode == "i") _invite = true;
-		if (mode == "t") _topicRestrict = true; 
-		if (mode == "l") _limit = true;
-	}
-
-	void unsetMode(std::string mode) 
-	{
-		size_t pos = _modes.find(mode);
-		if (pos != std::string::npos) 
+		bool getInvite(void)
 		{
-			_modes.erase(pos, 1);
-			if (mode == "k") _key = false;
-			if (mode == "i") _invite = false;
-			if (mode == "t") _topicRestrict = false;
-			if (mode == "l") _limit = false;
+			return _invite;
 		}
-	}
+		
+		bool getTopic(void)
+		{
+			return _topicRestrict;
+		}
 
-	std::string	getCurrentChannelMode() const 
-	{ 
-		return "+" + _modes;
+		bool getKey(void)
+		{
+			return _key;
+		}
+
+		bool getLimit(void)
+		{
+			return _limit;
+		}
+
+		void modeInit(void)
+		{
+			_newMode = "";
+			_modes = "";
+			_invite = false;			// i
+			_topicRestrict = true;		// t
+			_key = false;				// k
+			_limit = false;				// l
+		}
+
+		void setMode(std::string mode) 
+		{
+			_newMode = mode;
+			_modes += mode;
+			if (mode == "k") _key = true;
+			if (mode == "i") _invite = true;
+			if (mode == "t") _topicRestrict = true; 
+			if (mode == "l") _limit = true;
+		}
+
+		void unsetMode(std::string mode) 
+		{
+			size_t pos = _modes.find(mode);
+			if (pos != std::string::npos) 
+			{
+				_modes.erase(pos, 1);
+				if (mode == "k") _key = false;
+				if (mode == "i") _invite = false;
+				if (mode == "t") _topicRestrict = false;
+				if (mode == "l") _limit = false;
+			}
+		}
+
+		std::string	getCurrentChannelMode() const 
+		{ 
+			return "+" + _modes;
+		};
 	};
-};
 
 	private:
 		std::string 							_channelName;
@@ -146,7 +118,6 @@ class Channel
 		void									removeOpUser(std::string userNick);
 		void 									broadcastMessage(const std::string &message);
 		void 									broadcastMessageExcludeSender(Client *who, const std::string &msg);
-
 };
 
 

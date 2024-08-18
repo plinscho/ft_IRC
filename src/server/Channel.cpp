@@ -5,13 +5,13 @@
 #include <iostream>
 #include <string>
 
-Channel::Channel(const std::string channelName) {
-    this->_channelName = channelName;
-    this->activeUsers = 0;
+Channel::Channel(const std::string channelName) : _channelName(channelName), _mode(), nickOp(), invitedUsers() {
     this->_topic = "";
-    this->_mode.setMode("t");
+	this->_key = "";
+    this->activeUsers = 0;
     this->hasKey = false;
     this->maxUsers = __INT_MAX__;
+	this->_mode.modeInit();
 }
 
 Channel::~Channel() {}

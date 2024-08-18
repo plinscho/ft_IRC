@@ -50,7 +50,7 @@ void	modeTopic(bool addMode, Channel &currentChannel)
 
 int	modePassword(t_mode &mode, Client &user, std::vector<std::string> &cmdSplittedSpace)
 {
-	if (mode.paramIndex < cmdSplittedSpace.size()) return (461);
+	if (mode.paramIndex <= cmdSplittedSpace.size()) return (461);
 
 	std::cout << "BBBBBBBBBBB\n" << std::endl;
 	if (mode.addMode && mode.currentChannel->_mode.getKey()){
@@ -80,7 +80,7 @@ int	modePassword(t_mode &mode, Client &user, std::vector<std::string> &cmdSplitt
 
 int modeOperator(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 {
-	if (mode.paramIndex > cmdSplittedSpace.size()) return (461);
+	if (mode.paramIndex <= cmdSplittedSpace.size()) return (461);
 
 	std::string userName = cmdSplittedSpace[mode.paramIndex++];
 	Client *targetUser = mode.serverPtr->getClientByName(userName);
@@ -95,7 +95,7 @@ int modeOperator(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 
 int modeLimit(t_mode &mode, std::vector<std::string> &cmdSplittedSpace)
 {
-	if (mode.paramIndex > cmdSplittedSpace.size()) return (461);
+	if (mode.paramIndex <= cmdSplittedSpace.size()) return (461);
 
 	if (mode.addMode && !mode.currentChannel->_mode.getLimit()) {
 		int limit = std::atoi(cmdSplittedSpace[mode.paramIndex++].c_str());

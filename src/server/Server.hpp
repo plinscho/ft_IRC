@@ -73,7 +73,7 @@ class Server
 //	DATA
 	void							sendData(pollfd &pollfdStruct);
 	void							receiveData(pollfd &pollfdStruct);
-	void 							checkBytesRead(int bytesRead, int fd);
+	int 							checkBytesRead(int bytesRead, int fd);
 
 //	GETERS & FINDERS
 	int								getPort() const;

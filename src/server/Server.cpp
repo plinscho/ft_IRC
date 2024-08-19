@@ -150,16 +150,19 @@ int Server::run()
 	return (0);
 }
 
-void Server::checkBytesRead(int bytesRead, int fd)
+int Server::checkBytesRead(int bytesRead, int fd)
 {
 	if (bytesRead == 0){
 		std::cerr <<  __LINE__ << std::endl;
-		return (handleDisconnection(fd));
+		handleDisconnection(fd);
+		return (1);
 	} else if (bytesRead < 0) {
 		std::cerr << "Error in recv function.\nDisconnecting. " << __LINE__ <<std::endl; 
 		std::cerr <<  __LINE__ << std::endl;
-		return (handleDisconnection(fd));
+		handleDisconnection(fd);
+		return (1);
 	}
+	return (0);
 }
 
 void	Server::receiveData(pollfd &pollStruct)
@@ -169,9 +172,10 @@ void	Server::receiveData(pollfd &pollStruct)
 
 	// load the message into a buffer
 	ssize_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
-	checkBytesRead(bytesRead, fd);
-	buffer[bytesRead] = '\0';
+	if (checkBytesRead(bytesRead, fd))
+		return ;
 
+	buffer[bytesRead] = '\0';
 	// find the client object correspondant from fd
 	std::map<int, Client *>::iterator it = _fdToClientMap.find(fd);
 	if (it == _fdToClientMap.end())	{

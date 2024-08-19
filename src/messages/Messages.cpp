@@ -113,6 +113,11 @@ std::string Messages::getMessages(int code, const Client &client,
     case 467:
         return ":" + serverName + " 467 " + channelName +
                " :Channel key already set\r\n";
+    case 471:
+        return ":" + serverName + " 471 " + nickname + " " + channelName +
+               " :Channel is full(+l)\r\n";
+    case 473: return ":" + serverName + " 473 " + channelName + " :Cannot join channel (+i)\r\n";
+    case 475: return ":" + serverName + "475 " + nickname + " " + channelName + " :Cannot join channel (+k)";
     case 482:
         return ":" + serverName + " 482 " + nickname + " " + channelName +
                " : You're not channel operator\r\n";

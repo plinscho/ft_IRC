@@ -48,7 +48,7 @@ class Server
 	StringHandler					strTool;
 	Command							command;
 
-	std::map<std::string, Channel*>			_channels;
+	std::map<std::string, Channel*>	_channels;
 	std::map<std::string, Client*> 	_nicknameMap; // Here we will store the nicknames
 	int								conectedClients;
 

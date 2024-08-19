@@ -125,7 +125,6 @@ int Server::updatePoll(void)
 // Because we can only use poll() 1 time to manage all the revents
 int Server::run()
 {
-	static int events = 0;
 	updatePoll();
 
 	// loop through the poll vector to set events:
@@ -144,12 +143,10 @@ int Server::run()
 		if (_vectorPoll[i].revents & POLLOUT){
 				sendData(_vectorPoll[i]);
 		}
-		else if (_vectorPoll[i].revents & (POLLHUP | POLLERR)) {
-			std::cerr <<  __LINE__ << std::endl; 
+		else if (_vectorPoll[i].revents & (POLLHUP | POLLERR)) { 
 			handleDisconnection(i);
 		}
 	}
-	std::cout << "\n<Poll Events updated: " << ++events << std::endl;
 	return (0);
 }
 
@@ -178,7 +175,9 @@ void	Server::receiveData(pollfd &pollStruct)
 	// find the client object correspondant from fd
 	std::map<int, Client *>::iterator it = _fdToClientMap.find(fd);
 	if (it == _fdToClientMap.end())	{
-		std::cout << "Client with fd: " << fd << " not found!" << std::endl;
+		std::cout << "Client not found!" << std::endl;
+		//throw "FD NOT FOUND";
+		return ;
 	}
 
 	// Load client buffer

@@ -2,8 +2,6 @@
 #include "../server/Command.hpp"
 #include <iostream>
 
-// TODO: Modify function so that it can send to multiple nicks but not multiple channels and not a mix of both.
-// however, when trying to send to nicks and channel, the user 
 int Command::cmdPrivMsg(Client &user, Server &server, std::vector<std::string> &cmdSplittedSpace) {
 
 	std::string response;
@@ -16,6 +14,7 @@ int Command::cmdPrivMsg(Client &user, Server &server, std::vector<std::string> &
 		}
 	}
 	std::string msg = cmdSplittedSpace[2];
+
 	//remove the colon from the message
 	msg = msg.substr(1, msg.size());
 	if (target.empty() || msg.empty())

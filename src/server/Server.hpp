@@ -57,7 +57,7 @@ class Server
 	void							closeServer();
 	
 //	CHANNEL MANAGING
-	void							updateChannelNames(Server &server, Client* user, std::string newNick);	// updating everytime someone changes their nick
+	void							updateChannelNick(Server &server, Client* user, std::string oldNickname, std::string newNick);	// updating everytime someone changes their nick
 	void							createChannel(const std::string channelName);
 	void 							deleteChannel(std::string channelName);
 	bool							channelExists(std::string channelName);

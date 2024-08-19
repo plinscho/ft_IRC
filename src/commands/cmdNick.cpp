@@ -2,13 +2,19 @@
 #include "../server/Command.hpp"
 
 // iterate through the users vector channelsJoined to update 
-void	Server::updateChannelNames(Server &server, Client* user, std::string newNick)
+void	Server::updateChannelNick(Server &server, Client* user, std::string oldNickname, std::string newNick)
 {
 	std::vector<std::string>::iterator it;
 	for (it = user->channelsJoined.begin() ; it != user->channelsJoined.end() ; ++it) {
 		Channel *currentChannel = server.getChannelByName(*it);
-		currentChannel->broadcastMessage("Nickname changed to " + newNick + "\r\n");
-		server.message.sendChannelNames(*currentChannel, *user);
+
+		if (currentChannel->isUserOp(oldNickname)) {
+			currentChannel->removeOpUser(oldNickname);
+			currentChannel->addOpUser(newNick);
+		}
+		
+		std::string response = ":" + oldNickname + "!" + user->getAddress() + " NICK :" + newNick + "\r\n";
+		currentChannel->broadcastMessage(response);
 	}
 }
 
@@ -29,6 +35,7 @@ nickReturn	checkNick(std::string& newNick)
 // Handles the result of nickname validation and sets the nickname if valid
 int Command::cmdNick(Client &user, Server &server, std::string newNick)
 {
+	std::string oldNick = user.getNickname();
 	nickReturn validationResult = checkNick(newNick);
 
 	switch (validationResult) 
@@ -50,7 +57,7 @@ int Command::cmdNick(Client &user, Server &server, std::string newNick)
 				server.unregisterNickname(user.getNickname());
 				server.registerNickname(newNick, &user);
 				message.sendMessage(user, "Nickname changed to " + newNick + "\r\n");
-				server.updateChannelNames(server, &user, newNick);
+				server.updateChannelNick(server, &user, oldNick, newNick);
 				return NICK_OK;
 			}
 			break;

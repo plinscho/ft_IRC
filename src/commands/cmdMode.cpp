@@ -110,7 +110,7 @@ int modeLimit(Server &server, Client &user, Channel *currentChannel,
         return 0;
     if (addMode && !currentChannel->_mode.getLimit()) {
         int limit = std::atoi(limitUser.c_str());
-        if (limit > 0 || limit < INT_MAX) {
+        if (limit > 0 && limit < INT_MAX) {
             currentChannel->setUserLimit(limit);
             currentChannel->_mode.setMode("l");
             std::string response = server.message.getMessages(324, user);

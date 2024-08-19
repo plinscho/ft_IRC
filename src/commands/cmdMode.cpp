@@ -53,7 +53,7 @@ int modePassword(Server &server, Client &user, Channel *currentChannel,
         currentChannel->setChannelKey(password);
         std::string response = server.message.getMessages(324, user);
 
-        response += currentChannel->getChannelName() + " +k\r\n";
+        response += currentChannel->getChannelName() + " +k " + password +"\r\n";
         // response += " set channel keyword to " + password + "\r\n ";
         currentChannel->broadcastMessage(response);
         return (0);
@@ -93,7 +93,7 @@ int modeOperator(Server &server, Client &user, Channel *currentChannel,
 
         currentChannel->broadcastMessage(response);
 
-    } else if (addMode && currentChannel->isUserOp(targetUserName)) {
+    } else if (!addMode && currentChannel->isUserOp(targetUserName)) {
         currentChannel->removeOpUser(targetUserName);
         response = server.message.getMessages(324, user);
         response += currentChannel->getChannelName() + " -o " + targetUserName +
@@ -110,7 +110,6 @@ int modeLimit(Server &server, Client &user, Channel *currentChannel,
         return 0;
     if (addMode && !currentChannel->_mode.getLimit()) {
         int limit = std::atoi(limitUser.c_str());
-        std::cout << "limit:" << limit << std::endl;
         if (limit > 0 || limit < INT_MAX) {
             currentChannel->setUserLimit(limit);
             currentChannel->_mode.setMode("l");

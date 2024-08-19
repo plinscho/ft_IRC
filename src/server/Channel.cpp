@@ -2,6 +2,7 @@
 #include "../client/Client.hpp"
 #include <algorithm>
 #include <cstdio>
+#include <climits>
 #include <iostream>
 #include <string>
 
@@ -56,7 +57,7 @@ void Channel::removeChannelKey(void) {
     this->hasKey = false;
 }
 
-void Channel::removeUserLimit(void) { this->maxUsers = 10000; }
+void Channel::removeUserLimit(void) { this->maxUsers = INT_MAX; }
 
 void Channel::setUserLimit(int limit) {
     if (limit >= 1)

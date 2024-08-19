@@ -103,11 +103,28 @@ int Server::grabConnection()
 	return (0);
 }
 
+int Server::updatePoll(void)
+{
+
+	int ret;
+	// call poll() one time and update the _vectorPoll vector.
+	ret = poll(_vectorPoll.data(), _vectorPoll.size(), POLL_TIMEOUT);
+	if (ret < 0)
+	{
+		if (errno == EINTR)
+			return (0);
+		else
+			return (quickError("Error.\nPoll() function failed.", EXIT_FAILURE));
+	}
+	else if (ret == 0)
+		return (quickError("Server timed out.\n", EXIT_FAILURE));
+	return (0);
+}
+
 
 // Because we can only use poll() 1 time to manage all the revents
 int Server::run()
 {
-	static int events = 0;
 	updatePoll();
 
 	// loop through the poll vector to set events:
@@ -126,25 +143,26 @@ int Server::run()
 		if (_vectorPoll[i].revents & POLLOUT){
 				sendData(_vectorPoll[i]);
 		}
-		else if (_vectorPoll[i].revents & (POLLHUP | POLLERR)) {
-			std::cerr <<  __LINE__ << std::endl; 
+		else if (_vectorPoll[i].revents & (POLLHUP | POLLERR)) { 
 			handleDisconnection(i);
 		}
 	}
-	std::cout << "\n<Poll Events updated: " << ++events << std::endl;
 	return (0);
 }
 
-void Server::checkBytesRead(int bytesRead, int fd)
+int Server::checkBytesRead(int bytesRead, int fd)
 {
 	if (bytesRead == 0){
 		std::cerr <<  __LINE__ << std::endl;
-		return (handleDisconnection(fd));
+		handleDisconnection(fd);
+		return (1);
 	} else if (bytesRead < 0) {
 		std::cerr << "Error in recv function.\nDisconnecting. " << __LINE__ <<std::endl; 
 		std::cerr <<  __LINE__ << std::endl;
-		return (handleDisconnection(fd));
+		handleDisconnection(fd);
+		return (1);
 	}
+	return (0);
 }
 
 void	Server::receiveData(pollfd &pollStruct)
@@ -154,13 +172,16 @@ void	Server::receiveData(pollfd &pollStruct)
 
 	// load the message into a buffer
 	ssize_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
-	checkBytesRead(bytesRead, fd);
-	buffer[bytesRead] = '\0';
+	if (checkBytesRead(bytesRead, fd))
+		return ;
 
+	buffer[bytesRead] = '\0';
 	// find the client object correspondant from fd
 	std::map<int, Client *>::iterator it = _fdToClientMap.find(fd);
 	if (it == _fdToClientMap.end())	{
-		std::cout << "Client with fd: " << fd << " not found!" << std::endl;
+		std::cout << "Client not found!" << std::endl;
+		//throw "FD NOT FOUND";
+		return ;
 	}
 
 	// Load client buffer

@@ -1,5 +1,47 @@
 #include "../server/Server.hpp"
 #include "../server/Command.hpp"
+#include <algorithm>
+
+static int updateServerNick(Server &server, std::string &oldNick, std::string &newNick)
+{
+	std::map<std::string, Client *>::iterator it;
+
+	it = server._nicknameMap.find(oldNick);
+
+	// If the oldNick exists in the map
+    if (it != server._nicknameMap.end()) {
+        // Get the associated Client* pointer
+        Client *client = it->second;
+
+        // Erase the oldNick from the map
+        server._nicknameMap.erase(it);
+
+        // Insert the newNick with the previously stored Client* pointer
+        server._nicknameMap[newNick] = client;
+
+        return 0;
+    }
+	return (1);
+}
+
+// iterate through the users vector channelsJoined to update 
+void	Server::updateChannelNick(Server &server, Client* user, std::string oldNickname, std::string newNick)
+{
+	std::vector<std::string>::iterator it;
+	for (it = user->channelsJoined.begin() ; it != user->channelsJoined.end() ; ++it) {
+		Channel *currentChannel = server.getChannelByName(*it);
+		
+
+		if (currentChannel->isUserOp(oldNickname)) {
+			currentChannel->removeOpUser(oldNickname);
+			currentChannel->addOpUser(newNick);
+		}
+		
+		std::string response = ":" + oldNickname + "!" + user->getAddress() + " NICK :" + newNick + "\r\n";
+		currentChannel->broadcastMessage(response);
+	}
+	updateServerNick(server, oldNickname, newNick);
+}
 
 nickReturn	checkNick(std::string& newNick)
 {
@@ -18,6 +60,7 @@ nickReturn	checkNick(std::string& newNick)
 // Handles the result of nickname validation and sets the nickname if valid
 int Command::cmdNick(Client &user, Server &server, std::string newNick)
 {
+	std::string oldNick = user.getNickname();
 	nickReturn validationResult = checkNick(newNick);
 
 	switch (validationResult) 
@@ -38,7 +81,9 @@ int Command::cmdNick(Client &user, Server &server, std::string newNick)
 			{
 				server.unregisterNickname(user.getNickname());
 				server.registerNickname(newNick, &user);
-				message.sendMessage(user, "Nickname changed to " + newNick + "\r\n");
+				std::string response = ":" + oldNick + "!" + user.getAddress() + " NICK :" + newNick + "\r\n";
+				message.sendMessage(user, response); //"Nickname changed to " + newNick + "\r\n");
+				server.updateChannelNick(server, &user, oldNick, newNick);
 				return NICK_OK;
 			}
 			break;

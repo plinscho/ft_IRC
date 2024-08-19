@@ -31,6 +31,7 @@ int Command::cmdKick(Client &user, Server &server, std::string channelName,
         currentChnl->broadcastMessage(response);
         currentChnl->removeUser(targetRef->getFd());
         currentChnl->removeOpUser(target);
+        targetRef->eraseJoinedChannel(channelName);
         return 0;
     }
     response = message.getMessages(401, user);

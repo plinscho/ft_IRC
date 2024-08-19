@@ -22,6 +22,7 @@ static void createNewChannel(Client &user, Server &server,
     // Notify all users in the channel about the new user
     response = ":" + user.getPrefix() + " JOIN " + channelName + "\r\n";
     newChannel->broadcastMessage(response);
+    user.channelsJoined.push_back(channelName); // se guarda el canal en el vector 
 
     // Send the channel names
     server.message.sendChannelNames(*newChannel, user);
@@ -53,7 +54,7 @@ static void handleExistingChannel(Client &user, Server &server,
     }
 
     // Verify password
-    if (channel->_mode.getCurrentChannelMode().find('k') != std::string::npos) {
+    if (channel->_mode.getCurrentChannelMode().find('k')) {
         if (channel->getChannelKey() != password) {
             response = server.message.getMessages(475, user);
             server.message.sendMessage(user, response);
@@ -62,6 +63,7 @@ static void handleExistingChannel(Client &user, Server &server,
     }
 
     channel->addUser(user.getFd(), user);
+    user.channelsJoined.push_back(channelName); // guardamos el canal para iterar luego el NAMES
 
     // Notify all users in the channel about the new user
     response = ":" + user.getPrefix() + " JOIN " + channelName + "\r\n";

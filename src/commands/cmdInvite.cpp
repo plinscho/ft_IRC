@@ -11,8 +11,7 @@ int Command::cmdInvite(Client &user, Server &server, std::string channelName, st
 		message.sendMessage(user, response);
 		return (0);
 	}
-
-	// search for 
+	
 	Client *invitedUser = server.getClientByName(target);
 	std::map<int, Client*>::iterator it2 = currentChnl->_fdUsersMap.begin();
 	if (!invitedUser)

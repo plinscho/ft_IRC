@@ -48,7 +48,7 @@ class Server
 	StringHandler					strTool;
 	Command							command;
 
-	std::map<std::string, Channel*>			_channels;
+	std::map<std::string, Channel*>	_channels;
 	std::map<std::string, Client*> 	_nicknameMap; // Here we will store the nicknames
 	int								conectedClients;
 
@@ -57,6 +57,7 @@ class Server
 	void							closeServer();
 	
 //	CHANNEL MANAGING
+	void							updateChannelNick(Server &server, Client* user, std::string oldNickname, std::string newNick);	// updating everytime someone changes their nick
 	void							createChannel(const std::string channelName);
 	void 							deleteChannel(std::string channelName);
 	bool							channelExists(std::string channelName);
@@ -72,7 +73,7 @@ class Server
 //	DATA
 	void							sendData(pollfd &pollfdStruct);
 	void							receiveData(pollfd &pollfdStruct);
-	void 							checkBytesRead(int bytesRead, int fd);
+	int 							checkBytesRead(int bytesRead, int fd);
 
 //	GETERS & FINDERS
 	int								getPort() const;

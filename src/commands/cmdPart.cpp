@@ -13,6 +13,7 @@ static int handlePart(Client &user, Server &server,
     currentChnl->broadcastMessage(response);
     currentChnl->removeUser(user.getFd());
     currentChnl->removeOpUser(user.getNickname());
+    user.eraseJoinedChannel(channelName);
 
     if (currentChnl->activeUsers == 0)
         server.deleteChannel(channelName);

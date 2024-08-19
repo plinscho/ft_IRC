@@ -37,7 +37,7 @@ void modeTopic(bool addMode, Channel &currentChannel) {
         currentChannel._mode.unsetMode("t");
     }
 }
-// TODO: correct  responses!!
+
 int modePassword(Server &server, Client &user, Channel *currentChannel,
                  std::string password, bool addMode) {
     if (password.empty())
@@ -55,7 +55,7 @@ int modePassword(Server &server, Client &user, Channel *currentChannel,
 
         response += currentChannel->getChannelName() + " +k\r\n";
         // response += " set channel keyword to " + password + "\r\n ";
-        server.message.sendMessage(user, response);
+        currentChannel->broadcastMessage(response);
         return (0);
     } else if (!addMode && currentChannel->_mode.getKey()) {
         if (password != currentChannel->getChannelKey()) {
@@ -70,7 +70,7 @@ int modePassword(Server &server, Client &user, Channel *currentChannel,
         std::string response = server.message.getMessages(324, user);
         response += currentChannel->getChannelName() + " -k\r\n";
         // response += "Password was removed\r\n";
-        server.message.sendMessage(user, response);
+        currentChannel->broadcastMessage(response);
     }
     return (0);
 }
@@ -98,7 +98,7 @@ int modeOperator(Server &server, Client &user, Channel *currentChannel,
         response = server.message.getMessages(324, user);
         response += currentChannel->getChannelName() + " -o " + targetUserName +
                     " \r\n";
-        server.message.sendMessage(user, response);
+        currentChannel->broadcastMessage(response);
     }
     return (0);
 }
@@ -193,14 +193,15 @@ int Command::cmdMode(Client &user, Server &server,
                 response = message.getMessages(
                     324, user, "",
                     channelName + (addMode ? " +i" : " -i") + "\r\n");
-                message.sendMessage(user, response);
+                currentChannel->broadcastMessage(response);  
                 break;
             case 't':
                 modeTopic(addMode, *currentChannel);
                 response = message.getMessages(
                     324, user, "",
                     channelName + (addMode ? " +t" : " -t") + "\r\n");
-                message.sendMessage(user, response);
+
+                currentChannel->broadcastMessage(response);
                 break;
             case 'k':
                 if (j + 1 < params.size() && !params[j + 1].empty()) {

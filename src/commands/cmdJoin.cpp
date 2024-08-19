@@ -36,8 +36,8 @@ static void handleExistingChannel(Client &user, Server &server,
     // Verify if the user is invited if the channel is in invite-only mode
     if (channel->_mode.getCurrentChannelMode().find('i') != std::string::npos) {
         if (!channel->isInvited(user.getNickname())) {
-            response = "Error. You must be invited to join the channel " +
-                       channelName + "\r\n";
+
+            response = server.message.getMessages(473, user);
             server.message.sendMessage(user, response);
             return;
         }
@@ -46,8 +46,7 @@ static void handleExistingChannel(Client &user, Server &server,
     // Verify if there is limit of users inside channel
     if (channel->_mode.getCurrentChannelMode().find('l') != std::string::npos) {
         if (channel->activeUsers >= channel->maxUsers) {
-            response =
-                "Error. Member limit reached for " + channelName + "\r\n";
+            response = server.message.getMessages(471, user);
             server.message.sendMessage(user, response);
             return;
         }
@@ -56,8 +55,7 @@ static void handleExistingChannel(Client &user, Server &server,
     // Verify password
     if (channel->_mode.getCurrentChannelMode().find('k') != std::string::npos) {
         if (channel->getChannelKey() != password) {
-            response =
-                "Error. Incorrect password for channel " + channelName + "\r\n";
+            response = server.message.getMessages(475, user);
             server.message.sendMessage(user, response);
             return;
         }
@@ -86,7 +84,7 @@ static bool handleJoinChannel(Client &user, Server &server,
                               const std::string &password) {
     // Check if the channel name is empty
     if (channelName.empty()) {
-        std::string response = server.message.getMessages(461, user);
+        std::string response = server.message.getMessages(461, user, "JOIN");
         server.message.sendMessage(user, response);
         return false;
     }
@@ -117,7 +115,7 @@ int Command::cmdJoin(Client &user, Server &server, std::vector<std::string> &cmd
 
     // Check if the command is empty or malformed
     if (cmdSplittedSpace.size() < 2) {
-        response = message.getMessages(461, user);
+        response = message.getMessages(461, user, "JOIN");
         message.sendMessage(user, response);
         return 0;
     }

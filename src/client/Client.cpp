@@ -1,7 +1,7 @@
 #include <iostream>
 #include "Client.hpp"
 
-Client::Client()
+Client::Client() : channelsJoined()
 {
 	_nickName = "RandomUser";
 	_userName = "RandomUser";
@@ -91,6 +91,19 @@ bool	Client::getLogStat()
 		return (true);
 	else
 		return (false);
+}
+
+void	Client::eraseJoinedChannel(std::string channelName)
+{
+	std::vector<std::string>::iterator it;
+
+	for (it = channelsJoined.begin() ; it != channelsJoined.end() ; ++it)
+	{
+		if (*it == channelName) {
+			channelsJoined.erase(it);
+			return;
+		}
+	}
 }
 
 std::string Client::getPrefix() const

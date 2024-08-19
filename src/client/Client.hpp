@@ -26,6 +26,7 @@ class Client {
 	bool				_hasUser;
 
   public:
+	std::vector<std::string> 	channelsJoined;
 	std::vector<std::string>	handshakeVector;
 	bool						changeRevent;
 	
@@ -40,6 +41,7 @@ class Client {
 	bool			getLogin(void) const;
 	bool			getLogStat();
 
+	void			eraseJoinedChannel(std::string channelName);
 	void			clearBuffer(void) {this->_clientBuffer.clear();}
 	void			setBuffer(std::string newBuffer);
 	void			setNickname(std::string newNick);

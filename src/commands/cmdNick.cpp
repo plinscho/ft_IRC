@@ -1,6 +1,17 @@
 #include "../server/Server.hpp"
 #include "../server/Command.hpp"
 
+// iterate through the users vector channelsJoined to update 
+void	Server::updateChannelNames(Server &server, Client* user, std::string newNick)
+{
+	std::vector<std::string>::iterator it;
+	for (it = user->channelsJoined.begin() ; it != user->channelsJoined.end() ; ++it) {
+		Channel *currentChannel = server.getChannelByName(*it);
+		currentChannel->broadcastMessage("Nickname changed to " + newNick + "\r\n");
+		server.message.sendChannelNames(*currentChannel, *user);
+	}
+}
+
 nickReturn	checkNick(std::string& newNick)
 {
 	if (newNick.empty()) return EMPTY_NICK;
@@ -39,6 +50,7 @@ int Command::cmdNick(Client &user, Server &server, std::string newNick)
 				server.unregisterNickname(user.getNickname());
 				server.registerNickname(newNick, &user);
 				message.sendMessage(user, "Nickname changed to " + newNick + "\r\n");
+				server.updateChannelNames(server, &user, newNick);
 				return NICK_OK;
 			}
 			break;

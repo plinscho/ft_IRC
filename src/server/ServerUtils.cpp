@@ -89,6 +89,8 @@ void Server::handleDisconnection(int fd)
 		close(fd);
 
 		unregisterNickname(tmpClient->getNickname());
+		tmpClient->channelsJoined.clear();
+
 		// free memory 
 		delete tmpClient;
 		tmpClient = NULL;

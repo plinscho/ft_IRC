@@ -20,12 +20,10 @@ int Command::execute(Client &user, Server &server) {
     std::vector<std::string> commands =
         strTool.stringSplit(user.getRecvBuffer(), "\r\n");
 
-    //	strTool.printBuffer("TEST" + trimmedStr + "ENDOFTEST");
     for (size_t i = 0; i < commands.size(); ++i) {
         std::vector<std::string> splittedCmd =
             strTool.stringSplit(commands[i], ' ');
         cmdType type = getCommandType(splittedCmd[0]);
-        std::cout << "enum type: " << type << " ." << std::endl;
         switch (type) {
         case (CMD_CAP):
             break;

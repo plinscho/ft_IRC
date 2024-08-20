@@ -8,8 +8,8 @@
 bool power = true;
 
 void sigHandler(int sigNum) {
-	(void)sigNum;
-	power = false;
+	std::cout << "Caught signal " << sigNum << std::endl;
+	power = false;	
 }
 
 int main(int argc, char **argv) {
@@ -35,8 +35,11 @@ int main(int argc, char **argv) {
 	
 	signal(SIGINT, sigHandler);
 	
-	while (power) 
+	while (power){
 		server.run();
+		if (!power)
+			break;
+	}
 
 	server.closeServer();
 	return 0;

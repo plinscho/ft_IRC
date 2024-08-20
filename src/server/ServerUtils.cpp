@@ -44,19 +44,15 @@ void Server::closeServer()
 	std::cout << "Closing server ...\n" << std::endl;
 
 	// Cierra todos los sockets de los clientes
-	while (!_fdToClientMap.empty())
+	clientIt = _fdToClientMap.begin();
+	for (size_t i = 0 ; i < _vectorPoll.size() ; ++i)
 	{
-		clientIt = _fdToClientMap.begin();
-		for (size_t i = 0 ; i < _vectorPoll.size() ; ++i)
+		if (_vectorPoll[i].fd == clientIt->first)
 		{
-			if (_vectorPoll[i].fd == clientIt->first)
-			{
-				handleDisconnection(_vectorPoll[i].fd);
-				break;
-			}
+			handleDisconnection(_vectorPoll[i].fd);
 		}
 	}
-	
+
 	for (channelIt = _channels.begin() ; channelIt != _channels.end()  ; ++channelIt)
 	{
 		delete channelIt->second;
@@ -76,29 +72,30 @@ void Server::handleDisconnection(int fd)
 	
 	std::vector<pollfd>::iterator pollIterator;
 	std::map<int, Client *>::iterator clientIterator;
-	Client *tmpClient = NULL;
+	
 
 	clientIterator = _fdToClientMap.find(fd);
 	pollIterator = findPollFd(fd);
 
 	if (clientIterator != _fdToClientMap.end() && pollIterator != _vectorPoll.end())
 	{
-		tmpClient = clientIterator->second;
-		std::cout << tmpClient->getNickname() << " with ip: "
+		Client *tmpClient = clientIterator->second;
+		std::cout << "Ip: "
 		<< tmpClient->getAddress() << " disconnected from server." << std::endl;
-		close(fd);
+		
 
 		unregisterNickname(tmpClient->getNickname());
-		tmpClient->channelsJoined.clear();
 
 		// free memory 
 		delete tmpClient;
-		tmpClient = NULL;
 
 	//	Erasing vectorPoll & Client map with fd	
+		conectedClients--;
+		close(fd);
+		pollIterator->fd = -1;
+		pollIterator->revents = POLLHUP;
 		_fdToClientMap.erase(clientIterator);
 		_vectorPoll.erase(pollIterator);
-		conectedClients--;
 	}
 }
 

@@ -14,6 +14,7 @@ OBJECTS = src/irc.cpp \
 			src/commands/cmdKick.cpp \
 			src/commands/cmdPrivMsg.cpp \
 			src/commands/cmdTopic.cpp \
+			src/commands/cmdQuit.cpp \
 			src/commands/cmdMode.cpp \
 			src/commands/cmdInvite.cpp \
 			src/messages/Messages.cpp \

@@ -83,14 +83,6 @@ void Server::handleDisconnection(int fd)
 		std::cout << "Ip: "
 		<< tmpClient->getAddress() << " disconnected from server." << std::endl;
 		
-		/*
-		std::vector<std::string>::iterator channelIterator;
-		for (channelIterator = tmpClient->channelsJoined.begin() ;
-				channelIterator != tmpClient->channelsJoined.end() ; 
-				++channelIterator) {
-					command.cmdPart(*tmpClient, *this, *channelIterator);
-				}
-		*/
 
 		unregisterNickname(tmpClient->getNickname());
 
@@ -98,12 +90,12 @@ void Server::handleDisconnection(int fd)
 		delete tmpClient;
 
 	//	Erasing vectorPoll & Client map with fd	
-		_fdToClientMap.erase(clientIterator);
-		_vectorPoll.erase(pollIterator);
 		conectedClients--;
 		close(fd);
 		pollIterator->fd = -1;
 		pollIterator->revents = POLLHUP;
+		_fdToClientMap.erase(clientIterator);
+		_vectorPoll.erase(pollIterator);
 	}
 }
 

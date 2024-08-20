@@ -38,15 +38,6 @@ std::vector<std::string> StringHandler::stringSplit(std::string str, std::string
     substr = str.substr(start);
     if (!substr.empty())
         split.push_back(substr);
-
-/*
-	std::cout << "\nstringToHex(*it)" << std::endl;
-	for (std::vector<std::string>::iterator it = split.begin() ; it != split.end() ; ++it)
-	{
-		std::cout << *it << std::endl;
-	}
-*/
-
     return split;
 }
 

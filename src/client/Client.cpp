@@ -28,11 +28,7 @@ Client::Client(int fd, std::string address)
 	std::cout << "New connection established with ip: " + _clientIp << std::endl;
 }
 
-Client::~Client() 
-{
-	std::cout << "Client " + getAddress() + " has disconnected" << std::endl;
-	close(_clientSocketFd);
-}
+Client::~Client() {}
 
 std::string Client::getNickname() const
 {

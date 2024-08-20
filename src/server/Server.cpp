@@ -219,7 +219,7 @@ Client *Server::getClientByName(std::string &userNick) {
 	std::map<std::string, Client *>::iterator it;
 
 	it = _nicknameMap.find(userNick);
-	if (!it->second) {
+	if (it == _nicknameMap.end() || !it->second) {
 		std::string response;
 		response = "Nickname " + userNick + " was not found!\n";
 		quickError(response, 0);

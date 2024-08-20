@@ -123,7 +123,7 @@ int Command::cmdPass(Client &user, std::string &userPass, std::string pass) {
     std::string response;
 
     //		std::cout << getPassword().length() << pass.length() <<
-    //std::endl;
+    // std::endl;
     if (userPass == pass) {
         response = "Password accepted.\r\n";
         message.sendMessage(user, response);

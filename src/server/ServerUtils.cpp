@@ -83,12 +83,14 @@ void Server::handleDisconnection(int fd)
 		std::cout << "Ip: "
 		<< tmpClient->getAddress() << " disconnected from server." << std::endl;
 		
+		/*
 		std::vector<std::string>::iterator channelIterator;
 		for (channelIterator = tmpClient->channelsJoined.begin() ;
 				channelIterator != tmpClient->channelsJoined.end() ; 
 				++channelIterator) {
 					command.cmdPart(*tmpClient, *this, *channelIterator);
 				}
+		*/
 
 		unregisterNickname(tmpClient->getNickname());
 

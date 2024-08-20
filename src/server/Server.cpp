@@ -137,7 +137,7 @@ int Server::run() {
 		if (_vectorPoll[i].revents & POLLOUT) {
 			sendData(_vectorPoll[i]);
 		} else if (_vectorPoll[i].revents & (POLLHUP | POLLERR)) {
-			handleDisconnection(i);
+			handleDisconnection(_vectorPoll[i].fd);
 		}
 	}
 	return (0);
@@ -158,7 +158,7 @@ void Server::receiveData(pollfd &pollStruct) {
 
 	ssize_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);
 	if (checkBytesRead(bytesRead, fd)) return ;
-	
+
 	buffer[bytesRead] = '\0';
 	// find the client object correspondant from fd
 	std::map<int, Client *>::iterator it = _fdToClientMap.find(fd);

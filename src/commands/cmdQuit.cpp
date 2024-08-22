@@ -2,7 +2,9 @@
 #include "../server/Server.hpp"
 #include <iostream>
 
-int Command::cmdQuit(Server &server, Client &user, std::string reason) {
+int Command::cmdQuit(Server &server, int fd, Client &user, std::string reason) {
+    
+    if (!fd|| fd < 0) return (1); 
     std::string response;
     if (reason.empty())
         reason = "Leaving...";

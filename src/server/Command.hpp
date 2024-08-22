@@ -36,7 +36,7 @@ struct Command {
     int cmdPass(Client &user, std::string &userPass,
                 std::string serverPassword);
     int cmdNick(Client &user, Server &server, std::string newNick);
-    int cmdQuit(Server &server, Client &user, std::string reason);
+    int cmdQuit(Server &server, int fd, Client &user, std::string reason);
     int cmdJoin(Client &user, Server &server,
                 std::vector<std::string> &cmdSplittedSpace);
     int cmdPrivMsg(Client &user, Server &server,

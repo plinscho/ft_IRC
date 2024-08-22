@@ -66,6 +66,7 @@ void Server::handleDisconnection(int fd) {
                   << " disconnected from server." << std::endl;
 
         unregisterNickname(tmpClient->getNickname());
+        tmpClient->clearBuffer();
 
         // free memory
         delete tmpClient;

@@ -111,7 +111,7 @@ int Server::grabConnection() {
 int Server::updatePoll() {
     int ret = poll(_vectorPoll.data(), _vectorPoll.size(), POLL_TIMEOUT);
     if (ret < 0) {
-        return quickError("Error.\nPoll() function failed.", EXIT_FAILURE);
+        return quickError("POll interrupted\nExiting...\n", EXIT_FAILURE);
     }
     if (ret == 0) {
         return quickError("Server timed out.\n", EXIT_FAILURE);
@@ -121,6 +121,8 @@ int Server::updatePoll() {
 
 // Because we can only use poll() 1 time to manage all the revents
 int Server::run() {
+
+	static int reventCounter = 0;
 	updatePoll();
 
 	// loop through the poll vector to set events:
@@ -139,7 +141,9 @@ int Server::run() {
 		} else if (_vectorPoll[i].revents & (POLLHUP | POLLERR)) {
 			handleDisconnection(_vectorPoll[i].fd);
 		}
+		
 	}
+	std::cout << "Revents: " << reventCounter++ << std::endl;
 	return (0);
 }
 
@@ -153,7 +157,7 @@ int Server::checkBytesRead(int bytesRead, int fd) {
 
 void Server::receiveData(pollfd &pollStruct) {
 	int fd = pollStruct.fd;
-	char buffer[1024] = {0};
+	char buffer[4096] = {0};
 
 
 	ssize_t bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0);

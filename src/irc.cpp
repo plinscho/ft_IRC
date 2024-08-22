@@ -7,6 +7,8 @@
 
 bool power = true;
 
+
+
 void sigHandler(int sigNum) {
 	std::cout << "Caught signal " << sigNum << std::endl;
 	power = false;	
